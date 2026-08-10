@@ -1,131 +1,138 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FlockMod · fallback</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link href="style.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drawing App</title>
+    <!-- Подключение CSS -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Подключение иконок (Font Awesome) для тулбара -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- main container: canvas left, sidebar right -->
-    <div class="flex h-screen w-screen overflow-hidden bg-[#1a1a1e] text-gray-200">
-
-        <!-- ===== CANVAS (left) ===== -->
-        <main class="flex-1 h-full bg-white relative" id="canvasContainer">
-            <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
-            
-            <!-- floating text frame (hidden by default) -->
-            <div id="textFrame" class="absolute hidden bg-white/10 backdrop-blur-sm border-2 border-dashed border-white/40 rounded-lg p-2 min-w-[120px] min-h-[40px] cursor-move shadow-lg" style="pointer-events: auto;">
-                <span id="textContent" class="text-gray-700 text-sm font-sans select-none">type something</span>
+    <!-- Главный контейнер приложения -->
+    <div class="app-container">
+        
+        <!-- ЛЕВАЯ ПАНЕЛЬ ИНСТРУМЕНТОВ -->
+        <div class="toolbar">
+            <div class="toolbar-top">
+                <button class="tool-button" id="pan-tool"><i class="fas fa-hand-paper"></i></button>
+                <button class="tool-button" id="rotate-tool"><i class="fas fa-sync-alt"></i></button>
+                <button class="tool-button" id="eyedropper-tool"><i class="fas fa-eye-dropper"></i></button>
+                <button class="tool-button" id="select-tool"><i class="fas fa-mouse-pointer"></i></button>
+                <!-- Активная кнопка "Кисть" -->
+                <button class="tool-button active" id="pen-tool"><i class="fas fa-paint-brush"></i></button>
+                <button class="tool-button" id="bucket-tool"><i class="fas fa-fill-drip"></i></button>
+                <button class="tool-button" id="text-tool"><i class="fas fa-font"></i></button>
+                <button class="tool-button" id="stamp-tool"><i class="fas fa-arrows-alt-v"></i></button>
+                <button class="tool-button" id="rect-tool"><i class="fas fa-square"></i></button>
+                <button class="tool-button" id="circle-tool"><i class="fas fa-circle"></i></button>
+                <button class="tool-button" id="lasso-tool"><i class="fas fa-vector-square"></i></button>
+                <button class="tool-button" id="effect-tool"><i class="fas fa-star"></i></button>
             </div>
-        </main>
+            <div class="toolbar-bottom">
+                <button class="tool-button" id="pencil-tool"><i class="fas fa-pencil-alt"></i></button>
+            </div>
+        </div>
 
-        <!-- ===== SIDEBAR (right) – glassmorphism ===== -->
-        <aside class="w-[280px] min-w-[280px] h-full bg-white/10 backdrop-blur-xl border-l border-white/20 flex flex-col p-3 overflow-y-auto space-y-4 text-sm shadow-2xl">
-
-            <!-- header -->
-            <div class="flex items-center justify-between border-b border-white/10 pb-2">
-                <span class="text-xs font-mono tracking-wider text-white/70">#fallback · FlockMod</span>
-                <span class="text-[10px] text-white/40">flockmod.com</span>
+        <!-- ОСНОВНАЯ ОБЛАСТЬ (Канвас + Правая панель настроек) -->
+        <div class="main-area">
+            <!-- Холст для рисования -->
+            <div class="canvas-container">
+                <canvas id="drawingCanvas"></canvas>
             </div>
 
-            <!-- user list -->
-            <div class="bg-white/5 backdrop-blur-sm rounded-lg p-2 border border-white/10">
-                <div class="text-[10px] uppercase tracking-wider text-white/50 mb-1">Список пользователей</div>
-                <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-green-400"></span>
-                    <span class="text-white/80 font-medium">Вы</span>
-                    <span class="text-white/40 text-xs ml-1">Anonymous</span>
+            <!-- ПРАВАЯ ПАНЕЛЬ НАСТРОЕК -->
+            <div class="settings-panel">
+                <!-- Список пользователей -->
+                <div class="panel-section">
+                    <h3><i class="fas fa-users"></i> СПИСОК ПОЛЬЗОВАТЕЛЕЙ</h3>
+                    <div class="user-list">
+                        <span>Вы</span>
+                        <span>Anonymous</span>
+                    </div>
                 </div>
-                <div class="flex items-center gap-2 mt-1 text-white/40 text-xs">
-                    <span class="w-2 h-2 rounded-full bg-gray-500"></span>
-                    <span>test123</span>
-                </div>
-            </div>
 
-            <!-- tool settings -->
-            <div class="bg-white/5 backdrop-blur-sm rounded-lg p-2 border border-white/10">
-                <div class="text-[10px] uppercase tracking-wider text-white/50 mb-1.5">Настройки инструмента</div>
-                <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs">
-                    <span class="text-white/60">Размер</span>
-                    <span class="text-white/80 text-right" id="sizeDisplay">8</span>
-                    <span class="text-white/60">Непрозрачность</span>
-                    <span class="text-white/80 text-right" id="opacityDisplay">100</span>
-                    <span class="text-white/60">Размытие</span>
-                    <span class="text-white/80 text-right" id="blurDisplay">0</span>
-                    <span class="text-white/60">Сглаживание</span>
-                    <span class="text-white/80 text-right" id="smoothDisplay">0</span>
-                    <span class="text-white/60">Промежуток</span>
-                    <span class="text-white/80 text-right" id="gapDisplay">0</span>
-                    <span class="text-white/60">Давление</span>
-                    <span class="text-white/80 text-right" id="pressureDisplay">100</span>
-                    <span class="text-white/60">Правый клик</span>
-                    <span class="text-white/80 text-right">Отменить штрих</span>
+                <!-- Настройки инструмента -->
+                <div class="panel-section">
+                    <h3><i class="fas fa-sliders-h"></i> НАСТРОЙКИ ИНСТРУМЕНТА</h3>
+                    <div class="tool-settings">
+                        <div class="setting-item">
+                            <label>Размер</label>
+                            <input type="number" id="size-setting" value="8">
+                        </div>
+                        <div class="setting-item">
+                            <label>Непрозрачность</label>
+                            <input type="number" id="opacity-setting" value="100">
+                        </div>
+                        <div class="setting-item">
+                            <label>Размытие</label>
+                            <input type="number" id="blur-setting" value="0">
+                        </div>
+                        <div class="setting-item">
+                            <label>Сглаживание</label>
+                            <input type="number" id="smoothing-setting" value="0">
+                        </div>
+                        <div class="setting-item">
+                            <label>Шрифт</label>
+                            <select id="font-setting">
+                                <option>Rubik</option>
+                                <option>Arial</option>
+                            </select>
+                        </div>
+                        <div class="setting-item">
+                            <label>Правый клик</label>
+                            <select id="rightclick-setting">
+                                <option>Следующий шрифт</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex items-center justify-between mt-1 pt-1 border-t border-white/10 text-xs">
-                    <span class="text-white/60">Курсор</span>
-                    <span class="text-white/80">Круг</span>
+
+                <!-- Пресеты цветов -->
+                <div class="panel-section">
+                    <h3><i class="fas fa-cloud"></i> ПРЕДУСТАНОВКИ</h3>
+                    <div class="presets-grid" id="presets-grid">
+                        <!-- 18 пресетов будут сгенерированы через JavaScript -->
+                    </div>
+                    <p class="presets-hint">Удерживайте для установки. Нажмите, чтобы загрузить.</p>
                 </div>
-            </div>
 
-            <!-- tools row -->
-            <div class="flex gap-2">
-                <button id="penBtn" class="flex-1 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs font-medium hover:bg-white/20 transition-all active">
-                    <i class="fas fa-pen-fancy block text-lg mb-0.5"></i> Pen
-                </button>
-                <button id="eraserBtn" class="flex-1 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs font-medium hover:bg-white/20 transition-all">
-                    <i class="fas fa-eraser block text-lg mb-0.5"></i> Eraser
-                </button>
-                <button id="textBtn" class="flex-1 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs font-medium hover:bg-white/20 transition-all">
-                    <i class="fas fa-font block text-lg mb-0.5"></i> Text
-                </button>
-            </div>
-
-            <!-- presets -->
-            <div class="bg-white/5 backdrop-blur-sm rounded-lg p-2 border border-white/10">
-                <div class="text-[10px] uppercase tracking-wider text-white/50 mb-1">Предустановки</div>
-                <div class="grid grid-cols-9 gap-1 text-center text-[11px] font-mono">
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">1</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">2</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">3</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">4</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">5</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">6</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">7</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">8</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">9</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">10</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">11</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">12</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">13</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">14</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">15</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">16</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">17</span>
-                    <span class="bg-white/5 px-1 py-0.5 rounded border border-white/10 text-white/60">18</span>
+                <!-- Цветовое колесо -->
+                <div class="panel-section">
+                    <h3><i class="fas fa-palette"></i> ЦВЕТОВОЕ КОЛЕСО</h3>
+                    <div class="color-picker-wrapper">
+                        <div class="color-wheel" id="colorWheel"></div>
+                        <div class="color-preview">
+                            <div class="color-swatch" id="primary-color" style="background-color: black;"></div>
+                            <div class="color-swatch" id="secondary-color" style="background-color: white;"></div>
+                            <i class="fas fa-exchange-alt swap-icon"></i>
+                        </div>
+                    </div>
                 </div>
-                <div class="text-[9px] text-white/30 mt-1 text-center">Удерживайте для установки. Нажмите, чтобы загрузить.</div>
-            </div>
 
-            <!-- color wheel -->
-            <div class="bg-white/5 backdrop-blur-sm rounded-lg p-2 border border-white/10">
-                <div class="text-[10px] uppercase tracking-wider text-white/50 mb-2">Цветовое колесо</div>
-                <div class="flex items-center gap-3">
-                    <div id="colorWheel" class="w-10 h-10 rounded-full border-2 border-white/20 cursor-pointer" style="background: conic-gradient(from 0deg, #ff3b30, #ff9500, #ffcc00, #34c759, #00c7be, #007aff, #5856d6, #af52de, #ff3b30);"></div>
-                    <div class="flex flex-col gap-1 flex-1">
-                        <div id="colorSwatch" class="w-full h-6 rounded border border-white/20" style="background: #000000;"></div>
-                        <input type="color" id="colorPicker" value="#000000" class="w-full h-5 rounded border-0 bg-transparent cursor-pointer" />
+                <!-- Слои -->
+                <div class="panel-section">
+                    <h3><i class="fas fa-layer-group"></i> СЛОЙ</h3>
+                    <div class="layers-controls">
+                        <button><i class="fas fa-arrow-down"></i></button>
+                        <button><i class="fas fa-folder-plus"></i></button>
+                        <button><i class="fas fa-arrows-alt-h"></i></button>
+                        <button><i class="fas fa-arrows-alt-v"></i></button>
+                        <button><i class="fas fa-save"></i></button>
+                    </div>
+                    <div class="layers-list" id="layers-list">
+                        <!-- Слои будут сгенерированы через JavaScript -->
                     </div>
                 </div>
             </div>
-
-            <!-- footer -->
-            <div class="text-[9px] text-white/20 text-center pt-2 border-t border-white/10 mt-auto">https://flockmod.com/r/fallback</div>
-        </aside>
+        </div>
     </div>
 
+    <!-- Подключение скриптов -->
     <script src="app.js"></script>
+    <script src="tools.js"></script>
+    <script src="ui.js"></script>
+    <script src="layers.js"></script>
 </body>
 </html>
