@@ -8,7 +8,7 @@ const state = {
     brushSize: 8,
     opacity: 100,
     font: 'Rubik',
-    rightClick: 'undo',
+    rightClick: 'nextFont',
     isDrawing: false,
     lastX: 0,
     lastY: 0,
@@ -51,13 +51,28 @@ function resizeCanvas() {
     const rect = canvas.parentElement.getBoundingClientRect();
     canvas.width = rect.width;
     canvas.height = rect.height;
+    // Fill with white background
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
     redrawAll();
 }
 
 function redrawAll() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    // Clear with white background
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
     state.strokes.forEach(stroke => {
-        drawStroke(stroke);
+        if (stroke.type === 'text') {
+            ctx.font = `${stroke.size}px ${stroke.font}`;
+            ctx.fillStyle = stroke.color;
+            ctx.globalAlpha = stroke.opacity / 100;
+            ctx.textBaseline = 'top';
+            ctx.fillText(stroke.text, stroke.x, stroke.y);
+            ctx.globalAlpha = 1;
+        } else if (stroke.type === 'draw') {
+            drawStroke(stroke);
+        }
     });
 }
 
@@ -114,13 +129,21 @@ canvas.addEventListener('mousedown', (e) => {
             state.font = fonts[(currentIndex + 1) % fonts.length];
             fontSelect.value = state.font;
         } else if (state.rightClick === 'eraser') {
-            // Simple eraser: just draw with white
+            // Simple eraser: draw with white
             const pos = getCanvasPos(e);
             ctx.globalCompositeOperation = 'destination-out';
             ctx.beginPath();
             ctx.arc(pos.x, pos.y, state.brushSize * 0.7, 0, Math.PI * 2);
             ctx.fill();
             ctx.globalCompositeOperation = 'source-over';
+            // Add to strokes as eraser stroke
+            state.strokes.push({
+                type: 'draw',
+                points: [{ x: pos.x, y: pos.y }],
+                color: 'white',
+                size: state.brushSize * 1.4,
+                opacity: 100,
+            });
         }
         return;
     }
@@ -241,24 +264,6 @@ canvas.addEventListener('click', (e) => {
     });
 });
 
-// Override redrawAll for text
-const originalRedraw = redrawAll;
-redrawAll = function() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    state.strokes.forEach(stroke => {
-        if (stroke.type === 'text') {
-            ctx.font = `${stroke.size}px ${stroke.font}`;
-            ctx.fillStyle = stroke.color;
-            ctx.globalAlpha = stroke.opacity / 100;
-            ctx.textBaseline = 'top';
-            ctx.fillText(stroke.text, stroke.x, stroke.y);
-            ctx.globalAlpha = 1;
-        } else {
-            drawStroke(stroke);
-        }
-    });
-};
-
 // ============================================
 // USER LABELS
 // ============================================
@@ -353,9 +358,10 @@ colorPicker.addEventListener('input', () => {
 // ============================================
 document.querySelectorAll('.preset-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        // Load preset - just random colors for demo
-        const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6bff', '#ff9f43', '#00d2d3', '#a29bfe', '#fd79a8', '#fdcb6e'];
-        state.color = colors[Math.floor(Math.random() * colors.length)];
+        // Load preset - different colors for demo
+        const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6bff', '#ff9f43', '#00d2d3', '#a29bfe', '#fd79a8', '#fdcb6e', '#6c5ce7', '#00b894', '#e17055', '#0984e3', '#fdcb6e', '#e84393', '#00cec9', '#fd79a8'];
+        const index = parseInt(btn.textContent) - 1;
+        state.color = colors[index % colors.length];
         colorPicker.value = state.color;
         selectedColor.style.background = state.color;
     });
@@ -404,11 +410,6 @@ function renderUserList() {
 // ============================================
 window.addEventListener('resize', resizeCanvas);
 drawColorWheel();
-
-// Simulate other users
-setInterval(() => {
-    // Randomly update user positions for demo
-}, 3000);
 
 console.log('🖌️ #fallback - FlockMod clone loaded!');
 console.log('👤 Join room: fallback');
