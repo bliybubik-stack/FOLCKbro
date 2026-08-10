@@ -22,7 +22,7 @@
         applySettings();
     }
 
-    // ---- settings (exact from screenshot) ----
+    // ---- settings ----
     const settings = {
         size: 8,
         opacity: 100,
@@ -34,13 +34,17 @@
         cursor: 'Круг'
     };
 
-    // ---- DOM refs for display ----
+    // ---- DOM refs ----
     const sizeDisplay = document.getElementById('sizeDisplay');
     const opacityDisplay = document.getElementById('opacityDisplay');
     const blurDisplay = document.getElementById('blurDisplay');
     const smoothDisplay = document.getElementById('smoothDisplay');
     const gapDisplay = document.getElementById('gapDisplay');
     const pressureDisplay = document.getElementById('pressureDisplay');
+    const colorWheel = document.getElementById('colorWheel');
+    const colorSwatch = document.getElementById('colorSwatch');
+    const colorPicker = document.getElementById('colorPicker');
+    const textBtn = document.getElementById('textBtn');
 
     function updateDisplays() {
         if (sizeDisplay) sizeDisplay.textContent = settings.size;
@@ -69,7 +73,6 @@
     let dragOffsetX = 0;
     let dragOffsetY = 0;
 
-    // ---- activate/deactivate text tool ----
     function activateTextTool() {
         textToolActive = true;
         textPlaced = false;
@@ -100,24 +103,18 @@
         textDisplay.contentEditable = false;
     }
 
-    // ---- text button (using right-click "Следующий шрифт" - we'll use a simple toggle) ----
-    // We'll add a hidden text toggle via a keyboard shortcut or we can add a small button
-    // For now, we'll use the preset system to trigger text mode (click on preset 18 triggers text)
-    document.querySelectorAll('#sidebar .grid span').forEach((cell, index) => {
-        if (index === 17) { // preset 18
-            cell.addEventListener('click', function(e) {
-                if (!textToolActive) {
-                    activateTextTool();
-                    this.style.borderColor = '#ffaa44';
-                    setTimeout(() => { this.style.borderColor = '#3d3d48'; }, 400);
-                } else {
-                    deactivateTextTool();
-                }
-            });
+    // ---- text button ----
+    textBtn.addEventListener('click', function() {
+        if (textToolActive) {
+            deactivateTextTool();
+            this.style.background = '#1b1b21';
+            return;
         }
+        this.style.background = '#353540';
+        activateTextTool();
     });
 
-    // ---- click on canvas to place text ----
+    // ---- text placement ----
     canvas.addEventListener('click', function(e) {
         if (textToolActive && !textPlaced) {
             const rect = canvas.getBoundingClientRect();
@@ -207,7 +204,7 @@
         document.removeEventListener('touchend', stopDragTouch);
     }
 
-    // ---- text display ----
+    // ---- text finalize ----
     textDisplay.addEventListener('keydown', function(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -215,6 +212,7 @@
         }
         if (e.key === 'Escape') {
             deactivateTextTool();
+            textBtn.style.background = '#1b1b21';
         }
     });
 
@@ -229,6 +227,7 @@
         const text = textDisplay.textContent.trim();
         if (text === '' || text === 'Type something') {
             deactivateTextTool();
+            textBtn.style.background = '#1b1b21';
             return;
         }
         
@@ -251,9 +250,68 @@
         
         saveStroke();
         deactivateTextTool();
+        textBtn.style.background = '#1b1b21';
     }
 
-    // ---- drawing state ----
+    // ---- color wheel ----
+    colorWheel.addEventListener('click', function(e) {
+        const rect = this.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+        const angle = Math.atan2(y - cy, x - cx);
+        const deg = ((angle * 180 / Math.PI) + 360) % 360;
+        const hue = deg;
+        const sat = 80;
+        const lig = 55;
+        const color = `hsl(${hue}, ${sat}%, ${lig}%)`;
+        const hex = hslToHex(hue, sat, lig);
+        colorPicker.value = hex;
+        settings.color = hex;
+        colorSwatch.style.background = hex;
+        applySettings();
+        if (textToolActive) {
+            textDisplay.style.color = hex;
+        }
+    });
+
+    function hslToHex(h, s, l) {
+        h /= 360;
+        s /= 100;
+        l /= 100;
+        let r, g, b;
+        if (s === 0) {
+            r = g = b = l;
+        } else {
+            const hue2rgb = (p, q, t) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1/6) return p + (q - p) * 6 * t;
+                if (t < 1/2) return q;
+                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+            };
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1/3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1/3);
+        }
+        const toHex = (c) => Math.round(c * 255).toString(16).padStart(2, '0');
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+    }
+
+    colorPicker.addEventListener('input', function() {
+        settings.color = this.value;
+        colorSwatch.style.background = settings.color;
+        if (textToolActive) {
+            textDisplay.style.color = settings.color;
+        }
+        applySettings();
+    });
+
+    // ---- drawing ----
     let isDrawing = false;
     let lastX = 0, lastY = 0;
 
@@ -267,7 +325,6 @@
         };
     }
 
-    // ---- drawing ----
     function startDrawing(e) {
         if (textToolActive) return;
         e.preventDefault();
@@ -317,7 +374,7 @@
     function saveStroke() {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         strokeHistory.push(imageData);
-        if (strokeHistory.length > 30) strokeHistory.shift();
+        if (strokeHistory.length > 20) strokeHistory.shift();
     }
 
     function undoLastStroke() {
@@ -352,11 +409,16 @@
                 const size = 4 + (num % 10);
                 const hue = (num * 25) % 360;
                 settings.size = Math.min(40, Math.max(2, size));
-                settings.color = `hsl(${hue}, 80%, 60%)`;
+                const color = `hsl(${hue}, 80%, 60%)`;
+                const hex = hslToHex(hue, 80, 60);
+                settings.color = hex;
+                colorPicker.value = hex;
+                colorSwatch.style.background = hex;
                 updateDisplays();
                 applySettings();
-                // update color swatch
-                document.getElementById('colorSwatch').style.background = settings.color;
+                if (textToolActive) {
+                    textDisplay.style.color = hex;
+                }
                 this.style.borderColor = '#8888ff';
                 setTimeout(() => { this.style.borderColor = '#3d3d48'; }, 200);
             });
@@ -368,10 +430,16 @@
                         const size = 4 + (num % 10);
                         const hue = (num * 25) % 360;
                         settings.size = Math.min(40, Math.max(2, size));
-                        settings.color = `hsl(${hue}, 80%, 60%)`;
+                        const color = `hsl(${hue}, 80%, 60%)`;
+                        const hex = hslToHex(hue, 80, 60);
+                        settings.color = hex;
+                        colorPicker.value = hex;
+                        colorSwatch.style.background = hex;
                         updateDisplays();
                         applySettings();
-                        document.getElementById('colorSwatch').style.background = settings.color;
+                        if (textToolActive) {
+                            textDisplay.style.color = hex;
+                        }
                         this.style.borderColor = '#ffaa44';
                         setTimeout(() => { this.style.borderColor = '#3d3d48'; }, 400);
                     }, 600);
@@ -379,87 +447,18 @@
             });
             cell.addEventListener('mouseup', () => { clearTimeout(holdTimer); holdTimer = null; });
             cell.addEventListener('mouseleave', () => { clearTimeout(holdTimer); holdTimer = null; });
-            // touch hold
-            let touchTimer = null;
-            cell.addEventListener('touchstart', function(e) {
-                touchTimer = setTimeout(() => {
-                    const size = 4 + (num % 10);
-                    const hue = (num * 25) % 360;
-                    settings.size = Math.min(40, Math.max(2, size));
-                    settings.color = `hsl(${hue}, 80%, 60%)`;
-                    updateDisplays();
-                    applySettings();
-                    document.getElementById('colorSwatch').style.background = settings.color;
-                    this.style.borderColor = '#ffaa44';
-                    setTimeout(() => { this.style.borderColor = '#3d3d48'; }, 400);
-                }, 600);
-            }, { passive: true });
-            cell.addEventListener('touchend', () => { clearTimeout(touchTimer); touchTimer = null; });
-            cell.addEventListener('touchcancel', () => { clearTimeout(touchTimer); touchTimer = null; });
         });
-    }
-
-    // ---- color wheel ----
-    function setupColorWheel() {
-        const wheel = document.getElementById('colorWheel');
-        const swatch = document.getElementById('colorSwatch');
-        if (wheel) {
-            wheel.addEventListener('click', function(e) {
-                const rect = this.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const cx = rect.width / 2;
-                const cy = rect.height / 2;
-                const angle = Math.atan2(y - cy, x - cx);
-                const deg = ((angle * 180 / Math.PI) + 360) % 360;
-                const hue = deg;
-                const sat = 80;
-                const lig = 55;
-                const color = `hsl(${hue}, ${sat}%, ${lig}%)`;
-                // convert to hex
-                const hex = hslToHex(hue, sat, lig);
-                settings.color = hex;
-                swatch.style.background = hex;
-                applySettings();
-            });
-        }
-    }
-
-    function hslToHex(h, s, l) {
-        h /= 360;
-        s /= 100;
-        l /= 100;
-        let r, g, b;
-        if (s === 0) {
-            r = g = b = l;
-        } else {
-            const hue2rgb = (p, q, t) => {
-                if (t < 0) t += 1;
-                if (t > 1) t -= 1;
-                if (t < 1/6) return p + (q - p) * 6 * t;
-                if (t < 1/2) return q;
-                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-                return p;
-            };
-            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-            const p = 2 * l - q;
-            r = hue2rgb(p, q, h + 1/3);
-            g = hue2rgb(p, q, h);
-            b = hue2rgb(p, q, h - 1/3);
-        }
-        const toHex = (c) => Math.round(c * 255).toString(16).padStart(2, '0');
-        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
     }
 
     // ---- init ----
     function init() {
         resizeCanvas();
         settings.color = '#ffffff';
-        document.getElementById('colorSwatch').style.background = '#ffffff';
+        colorPicker.value = '#ffffff';
+        colorSwatch.style.background = '#ffffff';
         updateDisplays();
         applySettings();
         setupPresets();
-        setupColorWheel();
 
         window.addEventListener('resize', () => {
             const oldData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -475,6 +474,7 @@
             }
             if (e.key === 'Escape' && textToolActive) {
                 deactivateTextTool();
+                textBtn.style.background = '#1b1b21';
             }
         });
     }
