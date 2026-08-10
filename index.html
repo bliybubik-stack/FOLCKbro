@@ -2,235 +2,229 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>FlockMod · fallback</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlockMod · Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
     <link href="style.css" rel="stylesheet" />
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body>
-    <div class="flex h-screen w-screen overflow-hidden bg-[#202125] text-[#d7d7db] select-none">
-
-        <!-- ===== LEFT TOOL STRIP ===== -->
-        <aside class="left-tools flex flex-col items-center bg-[#3b3c41] border-r border-[#4c4d52] w-[90px] min-w-[90px] h-full overflow-y-auto">
-            <div class="tool-button active" data-tab="brush" title="Brush"><i data-lucide="brush"></i></div>
-            <div class="tool-button" data-tab="hand" title="Pan"><i data-lucide="hand"></i></div>
-            <div class="tool-button" data-tab="rotate" title="Rotate"><i data-lucide="refresh-cw"></i></div>
-            <div class="tool-button" data-tab="eyedropper" title="Eyedropper"><i data-lucide="pipette"></i></div>
-            <div class="tool-button" data-tab="cursor" title="Pointer"><i data-lucide="mouse-pointer-2"></i></div>
-            <div class="tool-button" data-tab="brush2" title="Paintbrush"><i data-lucide="paintbrush"></i></div>
-            <div class="tool-button" data-tab="eraser" title="Eraser"><i data-lucide="eraser"></i></div>
-            <div class="tool-button" data-tab="text" title="Text"><i data-lucide="a-large-small"></i></div>
-            <div class="tool-button" data-tab="move" title="Move"><i data-lucide="move-vertical"></i></div>
-            <div class="tool-button" data-tab="rectangle" title="Rectangle"><i data-lucide="square"></i></div>
-            <div class="tool-button" data-tab="ellipse" title="Ellipse"><i data-lucide="circle"></i></div>
-            <div class="tool-button" data-tab="fill" title="Fill"><i data-lucide="paint-bucket"></i></div>
-            <div class="tool-button" data-tab="dotted" title="Select"><i data-lucide="loader-circle"></i></div>
-            <div class="tool-button" data-tab="pencil" title="Pencil"><i data-lucide="pencil"></i></div>
-        </aside>
-
-        <!-- ===== MAIN SIDEBAR ===== -->
-        <aside class="sidebar flex-1 h-full overflow-y-auto bg-[#202125] p-2 pb-8" id="sidebar">
-
-            <!-- Users Section -->
-            <section class="section users" id="usersSection">
-                <div class="section-head">
-                    <div class="title"><i data-lucide="users" size="20"></i> USERS</div>
-                    <button class="section-collapse" data-collapse="usersSection"><i data-lucide="chevron-up" size="18"></i></button>
-                </div>
-                <div class="section-body">
-                    <div class="user-tabs"><span class="font-semibold text-white">You</span><span class="text-gray-400">Anonymous</span></div>
-                    <div class="user-area"></div>
-                    <div class="drag-bar"></div>
-                </div>
-            </section>
-
-            <!-- Tool Settings -->
-            <section class="section" id="brushSettings">
-                <div class="section-head">
-                    <div class="title"><i data-lucide="paintbrush" size="18"></i> <span id="settingsTitle">TOOL SETTINGS</span></div>
-                    <button class="section-collapse" data-collapse="brushSettings"><i data-lucide="chevron-up" size="18"></i></button>
-                </div>
-                <div class="section-body">
-
-                    <!-- Brush controls -->
-                    <div id="brushControls">
-                        <div class="setting-row">
-                            <label>Size</label>
-                            <div class="control">
-                                <input id="sizeRange" type="range" min="1" max="100" value="8">
-                                <span class="value" id="sizeValue">8</span>
-                            </div>
-                        </div>
-                        <div class="setting-row">
-                            <label>Opacity</label>
-                            <div class="control">
-                                <input id="opacityRange" type="range" min="0" max="100" value="100">
-                                <span class="value right" id="opacityValue">100</span>
-                            </div>
-                        </div>
-                        <div class="setting-row">
-                            <label>Blur</label>
-                            <div class="control">
-                                <input id="blurRange" type="range" min="0" max="100" value="0">
-                                <span class="value" id="blurValue">0</span>
-                            </div>
-                        </div>
-                        <div class="setting-row">
-                            <label>Smoothing</label>
-                            <div class="control">
-                                <input id="smoothRange" type="range" min="0" max="100" value="0">
-                                <span class="value" id="smoothValue">0</span>
-                            </div>
-                        </div>
-                        <div class="setting-row">
-                            <label>Spacing</label>
-                            <div class="control">
-                                <input id="spacingRange" type="range" min="0" max="100" value="0">
-                                <span class="value" id="spacingValue">0</span>
-                            </div>
-                        </div>
-                        <div class="setting-row">
-                            <label>Pressure</label>
-                            <div class="control flex items-center gap-3 px-3">
-                                <input type="checkbox" checked class="w-5 h-5 accent-gray-400">
-                                <span class="value right">100</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Text controls -->
-                    <div id="textControls" class="hidden">
-                        <div class="setting-row">
-                            <label>Size</label>
-                            <div class="control">
-                                <input id="textSizeRange" type="range" min="1" max="100" value="24">
-                                <span class="value" id="textSizeValue">24</span>
-                            </div>
-                        </div>
-                        <div class="setting-row">
-                            <label>Opacity</label>
-                            <div class="control">
-                                <input id="textOpacityRange" type="range" min="0" max="100" value="100">
-                                <span class="value right" id="textOpacityValue">100</span>
-                            </div>
-                        </div>
-                        <div class="setting-row">
-                            <label>Font</label>
-                            <div class="select-wrap">
-                                <select id="fontSelect">
-                                    <option>Rubik</option>
-                                    <option>Arial</option>
-                                    <option>Inter</option>
-                                    <option>Roboto</option>
-                                    <option>Georgia</option>
-                                </select>
-                                <i data-lucide="chevron-down" size="18"></i>
-                            </div>
-                        </div>
-                        <div class="setting-row">
-                            <label>Right Click</label>
-                            <div class="select-wrap">
-                                <select id="rightClickSelect">
-                                    <option>Next font</option>
-                                    <option>Previous font</option>
-                                    <option>No action</option>
-                                </select>
-                                <i data-lucide="chevron-down" size="18"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Generic controls -->
-                    <div id="genericControls" class="hidden">
-                        <div class="setting-row">
-                            <label>Size</label>
-                            <div class="control">
-                                <input id="genericSizeRange" type="range" min="1" max="100" value="8">
-                                <span class="value" id="genericSizeValue">8</span>
-                            </div>
-                        </div>
-                        <div class="setting-row">
-                            <label>Opacity</label>
-                            <div class="control">
-                                <input id="genericOpacityRange" type="range" min="0" max="100" value="100">
-                                <span class="value right" id="genericOpacityValue">100</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="drag-bar"></div>
-                </div>
-            </section>
-
-            <!-- Presets -->
-            <section class="section" id="presetsSection">
-                <div class="section-head">
-                    <div class="title"><i data-lucide="cloud" size="18"></i> PRESETS</div>
-                    <button class="section-collapse" data-collapse="presetsSection"><i data-lucide="chevron-up" size="18"></i></button>
-                </div>
-                <div class="section-body">
-                    <div class="preset-grid" id="presetGrid"></div>
-                    <p class="preset-help">Hold to set. Click to load.</p>
-                </div>
-            </section>
-
-            <!-- Color Wheel -->
-            <section class="section" id="colorSection">
-                <div class="section-head">
-                    <div class="title"><i data-lucide="palette" size="18"></i> COLOR WHEEL</div>
-                    <button class="section-collapse" data-collapse="colorSection"><i data-lucide="chevron-up" size="18"></i></button>
-                </div>
-                <div class="section-body">
-                    <div class="color-wheel" id="colorWheel">
-                        <div class="color-picker" id="colorPicker"></div>
-                        <div class="wheel-handle" id="wheelHandle"></div>
-                    </div>
-                    <div class="color-under">
-                        <div class="color-square" id="fgColor" style="background:#ff3366"></div>
-                        <div class="swap" id="swapColors">↕</div>
-                        <div class="color-square" id="bgColor" style="background:#ffffff"></div>
-                        <input type="color" id="hiddenColor" value="#ff3366" class="ml-auto w-10 h-10 bg-transparent border-0 rounded cursor-pointer">
-                    </div>
-                </div>
-            </section>
-
-            <!-- Layers -->
-            <section class="section" id="layersSection">
-                <div class="section-head">
-                    <div class="title"><i data-lucide="layers-3" size="18"></i> LAYERS</div>
-                    <button class="section-collapse" data-collapse="layersSection"><i data-lucide="chevron-up" size="18"></i></button>
-                </div>
-                <div class="section-body p-0">
-                    <div class="layers-toolbar">
-                        <button title="Delete"><i data-lucide="eraser" size="16"></i></button>
-                        <button title="New Layer" id="newLayer"><i data-lucide="layers" size="16"></i></button>
-                        <button title="Options"><i data-lucide="chevron-down" size="16"></i></button>
-                        <button title="Back"><i data-lucide="arrow-left-right" size="16"></i></button>
-                        <button title="Move"><i data-lucide="move-vertical" size="16"></i></button>
-                        <button title="Save"><i data-lucide="save" size="16"></i></button>
-                    </div>
-                    <div id="layersList">
-                        <div class="layer">
-                            <div class="layer-thumb"></div>
-                            <div class="layer-number">1</div>
-                            <i class="layer-icon" data-lucide="eye" size="16"></i>
-                            <i class="layer-icon" data-lucide="lock" size="16"></i>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-        </aside>
+    <div class="flex h-screen w-screen overflow-hidden bg-[#0d0d0f] text-gray-200">
 
         <!-- ===== CANVAS AREA ===== -->
-        <main class="flex-1 h-full bg-[#2a2a2e] flex items-center justify-center p-4">
-            <div class="bg-white rounded-lg shadow-2xl overflow-hidden w-full h-full">
-                <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+        <div class="flex-1 flex flex-col bg-[#1a1a1e]">
+            <!-- Top toolbar -->
+            <div class="h-11 bg-[#141417] border-b border-[#2a2a30] flex items-center px-3 gap-1.5">
+                <button id="undoBtn" class="p-1.5 rounded hover:bg-[#2a2a30] transition-colors" title="Undo (Ctrl+Z)">
+                    <i data-lucide="undo-2" class="w-4 h-4 text-gray-400"></i>
+                </button>
+                <button id="redoBtn" class="p-1.5 rounded hover:bg-[#2a2a30] transition-colors" title="Redo (Ctrl+Y)">
+                    <i data-lucide="redo-2" class="w-4 h-4 text-gray-400"></i>
+                </button>
+                <div class="w-px h-6 bg-[#2a2a30] mx-1"></div>
+                <button id="clearBtn" class="p-1.5 rounded hover:bg-[#2a2a30] transition-colors" title="Clear Canvas">
+                    <i data-lucide="trash-2" class="w-4 h-4 text-gray-400"></i>
+                </button>
+                <div class="flex-1"></div>
+                <span class="text-[10px] text-gray-600 font-mono" id="canvasInfo">1920 × 1080</span>
             </div>
-        </main>
+
+            <!-- Canvas container -->
+            <div class="flex-1 flex items-center justify-center p-6 bg-[#1a1a1e]">
+                <div class="bg-white rounded-xl shadow-2xl overflow-hidden" style="width: 94%; height: 92%;">
+                    <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+                </div>
+            </div>
+
+            <!-- Bottom bar -->
+            <div class="h-10 bg-[#141417] border-t border-[#2a2a30] flex items-center px-4 gap-4">
+                <span class="text-[10px] text-gray-500" id="toolStatus">🖊 Pen</span>
+                <span class="text-[10px] text-gray-500">|</span>
+                <span class="text-[10px] text-gray-500" id="sizeStatus">Size: 8</span>
+                <span class="text-[10px] text-gray-500" id="opacityStatus">Opacity: 100%</span>
+                <div class="flex-1"></div>
+                <span class="text-[10px] text-gray-600" id="layerStatus">Layer 1/2</span>
+            </div>
+        </div>
+
+        <!-- ===== SIDEBAR ===== -->
+        <aside class="w-[320px] min-w-[320px] h-full bg-[#141417] border-l border-[#2a2a30] flex flex-col overflow-hidden">
+
+            <!-- Sidebar header -->
+            <div class="h-11 flex items-center px-4 border-b border-[#2a2a30] gap-2">
+                <span class="text-xs font-bold tracking-wider text-gray-300">FlockMod</span>
+                <span class="text-[9px] text-gray-600 font-mono">v2.0</span>
+                <div class="flex-1"></div>
+                <span class="text-[9px] text-gray-600">fallback</span>
+            </div>
+
+            <!-- Scrollable content -->
+            <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scroll">
+
+                <!-- Tools -->
+                <div>
+                    <div class="text-[9px] uppercase tracking-widest text-gray-500 mb-2">Tools</div>
+                    <div class="grid grid-cols-4 gap-1.5">
+                        <button data-tool="pen" class="tool-btn active group relative p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
+                            <i data-lucide="pencil" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
+                            <span class="text-[8px] text-gray-500 block mt-0.5">Pen</span>
+                        </button>
+                        <button data-tool="marker" class="tool-btn group p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
+                            <i data-lucide="highlighter" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
+                            <span class="text-[8px] text-gray-500 block mt-0.5">Marker</span>
+                        </button>
+                        <button data-tool="text" class="tool-btn group p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
+                            <i data-lucide="type" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
+                            <span class="text-[8px] text-gray-500 block mt-0.5">Text</span>
+                        </button>
+                        <button data-tool="eraser" class="tool-btn group p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
+                            <i data-lucide="eraser" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
+                            <span class="text-[8px] text-gray-500 block mt-0.5">Eraser</span>
+                        </button>
+                        <button data-tool="fill" class="tool-btn group p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
+                            <i data-lucide="droplet" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
+                            <span class="text-[8px] text-gray-500 block mt-0.5">Fill</span>
+                        </button>
+                        <button data-tool="select" class="tool-btn group p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
+                            <i data-lucide="square-dashed" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
+                            <span class="text-[8px] text-gray-500 block mt-0.5">Select</span>
+                        </button>
+                        <button data-tool="drag" class="tool-btn group p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
+                            <i data-lucide="hand" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
+                            <span class="text-[8px] text-gray-500 block mt-0.5">Drag</span>
+                        </button>
+                        <button data-tool="transform" class="tool-btn group p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
+                            <i data-lucide="move" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
+                            <span class="text-[8px] text-gray-500 block mt-0.5">Move</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Brush Settings -->
+                <div>
+                    <div class="text-[9px] uppercase tracking-widest text-gray-500 mb-2">Brush</div>
+                    <div class="space-y-2.5 bg-[#1a1a1e] rounded-xl p-3 border border-[#2a2a30]">
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] text-gray-400 w-14">Size</span>
+                            <input type="range" id="sizeSlider" min="1" max="60" value="8" class="slider flex-1" />
+                            <span class="text-[10px] text-gray-300 w-6 text-right" id="sizeDisplay">8</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] text-gray-400 w-14">Opacity</span>
+                            <input type="range" id="opacitySlider" min="5" max="100" value="100" class="slider flex-1" />
+                            <span class="text-[10px] text-gray-300 w-6 text-right" id="opacityDisplay">100</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] text-gray-400 w-14">Blur</span>
+                            <input type="range" id="blurSlider" min="0" max="25" value="0" class="slider flex-1" />
+                            <span class="text-[10px] text-gray-300 w-6 text-right" id="blurDisplay">0</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] text-gray-400 w-14">Spacing</span>
+                            <input type="range" id="gapSlider" min="0" max="30" value="0" class="slider flex-1" />
+                            <span class="text-[10px] text-gray-300 w-6 text-right" id="gapDisplay">0</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-[10px] text-gray-400 w-14">Pressure</span>
+                            <input type="range" id="pressureSlider" min="0" max="100" value="100" class="slider flex-1" />
+                            <span class="text-[10px] text-gray-300 w-6 text-right" id="pressureDisplay">100</span>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <label class="text-[10px] text-gray-400 w-14">Pressure</label>
+                            <input type="checkbox" id="pressureToggle" class="toggle" />
+                            <span class="text-[9px] text-gray-500">Enabled</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Color -->
+                <div>
+                    <div class="text-[9px] uppercase tracking-widest text-gray-500 mb-2">Color</div>
+                    <div class="bg-[#1a1a1e] rounded-xl p-3 border border-[#2a2a30]">
+                        <div class="relative w-full aspect-square max-w-[260px] mx-auto">
+                            <canvas id="colorWheel" class="w-full h-full rounded-full cursor-crosshair"></canvas>
+                        </div>
+                        <div class="flex items-center gap-3 mt-3">
+                            <div id="colorPreview" class="w-9 h-9 rounded-xl border border-[#2a2a30] flex-shrink-0" style="background:#ff3366;"></div>
+                            <input id="hexInput" class="flex-1 bg-[#0d0d0f] border border-[#2a2a30] rounded-lg px-3 py-1.5 text-xs font-mono text-gray-200 focus:border-[#4a4a5a] outline-none transition-colors" value="FF3366" maxlength="6" />
+                            <button id="copyColorBtn" class="p-1.5 rounded-lg bg-[#2a2a30] hover:bg-[#3a3a44] transition-colors">
+                                <i data-lucide="copy" class="w-4 h-4 text-gray-400"></i>
+                            </button>
+                        </div>
+                        <div id="colorHistory" class="flex gap-1.5 mt-3 flex-wrap"></div>
+                    </div>
+                </div>
+
+                <!-- Layers -->
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[9px] uppercase tracking-widest text-gray-500">Layers</span>
+                        <div class="flex gap-1">
+                            <button id="addLayer" class="p-1 rounded bg-[#2a2a30] hover:bg-[#3a3a44] transition-colors">
+                                <i data-lucide="plus" class="w-3.5 h-3.5 text-gray-400"></i>
+                            </button>
+                            <button id="removeLayer" class="p-1 rounded bg-[#2a2a30] hover:bg-[#3a3a44] transition-colors">
+                                <i data-lucide="minus" class="w-3.5 h-3.5 text-gray-400"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div id="layerList" class="space-y-1.5 max-h-[140px] overflow-y-auto custom-scroll pr-1"></div>
+                </div>
+
+                <!-- Templates -->
+                <div>
+                    <div class="text-[9px] uppercase tracking-widest text-gray-500 mb-2">Templates</div>
+                    <div class="grid grid-cols-4 gap-1.5">
+                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Pencil</button>
+                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Watercolor</button>
+                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Oil</button>
+                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Pastel</button>
+                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Marker</button>
+                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Calligraphy</button>
+                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Hatching</button>
+                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Airbrush</button>
+                    </div>
+                    <div class="text-[8px] text-gray-600 mt-1 text-center">Click to load · Right-click to save</div>
+                </div>
+
+                <!-- Presets -->
+                <div>
+                    <div class="text-[9px] uppercase tracking-widest text-gray-500 mb-2">Presets</div>
+                    <div class="grid grid-cols-9 gap-1">
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">1</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">2</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">3</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">4</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">5</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">6</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">7</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">8</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">9</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">10</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">11</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">12</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">13</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">14</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">15</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">16</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">17</span>
+                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">18</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
     </div>
 
+    <!-- Toast -->
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#2a2a30] border border-[#3a3a44] rounded-xl px-5 py-2.5 text-sm text-gray-200 shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none">
+        <span id="toastMsg">Copied</span>
+    </div>
+
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
     <script src="app.js"></script>
 </body>
-                          </html>
+</html>
