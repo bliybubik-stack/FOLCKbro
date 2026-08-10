@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CollabDraw - Collaborative Drawing</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-container">
+            <h1>🎨 CollabDraw</h1>
+            <p>Collaborative Drawing Platform</p>
+            <form id="loginForm">
+                <div class="input-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter your name" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password <span style="color: #888; font-size: 0.8rem;">(optional)</span></label>
+                    <input type="password" id="password" placeholder="Leave empty to skip">
+                </div>
+                <div class="input-group">
+                    <label for="room">Room Name</label>
+                    <input type="text" id="room" placeholder="Enter room name" value="fallback" required>
+                </div>
+                <button type="submit" class="login-btn">Join Room</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="app" class="app" style="display: none;">
+        <!-- Canvas Area -->
+        <div class="canvas-container" id="canvasContainer">
+            <canvas id="canvas"></canvas>
+            <!-- Text input overlay -->
+            <div id="textInputContainer" style="display: none; position: absolute; pointer-events: none;">
+                <input type="text" id="textInput" style="position: absolute; pointer-events: auto; background: transparent; border: 2px solid #ff6b6b; color: white; font-size: 20px; padding: 4px 8px; outline: none; font-family: 'Rubik', sans-serif; min-width: 100px;">
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <!-- Users List -->
+            <div class="sidebar-section">
+                <div class="section-title">👥 USERS</div>
+                <div class="users-list" id="usersList">
+                    <div class="user-item current-user" id="currentUserDisplay">You</div>
+                </div>
+            </div>
+
+            <!-- Tool Settings -->
+            <div class="sidebar-section">
+                <div class="section-title">🛠️ TOOL SETTINGS</div>
+                
+                <div class="setting-group">
+                    <label>Size</label>
+                    <input type="range" id="brushSize" min="1" max="50" value="8">
+                    <span class="value-display" id="sizeDisplay">8</span>
+                </div>
+                
+                <div class="setting-group">
+                    <label>Opacity</label>
+                    <input type="range" id="opacity" min="1" max="100" value="100">
+                    <span class="value-display" id="opacityDisplay">100%</span>
+                </div>
+                
+                <div class="setting-group">
+                    <label>Font</label>
+                    <select id="fontSelect">
+                        <option value="Rubik">Rubik</option>
+                        <option value="Arial">Arial</option>
+                        <option value="Helvetica">Helvetica</option>
+                        <option value="Georgia">Georgia</option>
+                        <option value="Courier New">Courier New</option>
+                    </select>
+                </div>
+                
+                <div class="setting-group">
+                    <label>Right Click</label>
+                    <select id="rightClickAction">
+                        <option value="nextFont">Next Font</option>
+                        <option value="undoStroke">Undo Stroke</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Presets -->
+            <div class="sidebar-section">
+                <div class="section-title">🎨 PRESETS</div>
+                <div class="presets-grid" id="presetsGrid">
+                    <!-- Will be populated by JS -->
+                </div>
+                <div class="presets-hint">Hold to set. Click to load.</div>
+            </div>
+
+            <!-- Color Wheel -->
+            <div class="sidebar-section">
+                <div class="section-title">🌈 COLOR</div>
+                <div class="color-picker-container">
+                    <input type="color" id="colorPicker" value="#ff6b6b">
+                </div>
+            </div>
+
+            <!-- Tools -->
+            <div class="sidebar-section tools-section">
+                <div class="tool-buttons">
+                    <button class="tool-btn active" data-tool="brush" title="Brush">🖊️</button>
+                    <button class="tool-btn" data-tool="text" title="Text">📝</button>
+                    <button class="tool-btn" data-tool="eraser" title="Eraser">🧹</button>
+                    <button class="tool-btn" data-tool="clear" id="clearCanvas" title="Clear All">🗑️</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cursor indicator template -->
+    <div id="cursorTemplate" style="display: none;">
+        <div class="cursor-indicator">
+            <div class="cursor-name"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
