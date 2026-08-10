@@ -8,25 +8,27 @@
     <link href="style.css" rel="stylesheet" />
 </head>
 <body>
-    <!-- main container: canvas left, sidebar right -->
+    <!-- main container -->
     <div class="flex h-screen w-screen overflow-hidden bg-[#1a1a1e] text-gray-200 select-none">
 
         <!-- ===== CANVAS (left) ===== -->
-        <main class="flex-1 h-full bg-white relative">
-            <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+        <main class="flex-1 h-full flex flex-col items-center justify-center bg-[#2a2a2e] p-8">
+            <div class="bg-white rounded-lg shadow-2xl overflow-hidden" style="width: 90%; height: 85%;">
+                <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+            </div>
         </main>
 
-        <!-- ===== SIDEBAR (right) - EXACT MATCH ===== -->
-        <aside class="w-[280px] min-w-[280px] h-full bg-[#25252b] border-l border-[#3a3a42] flex flex-col p-3 overflow-y-auto space-y-4 text-sm">
+        <!-- ===== SIDEBAR (right) – COMPLETE OVERHAUL ===== -->
+        <aside class="w-[320px] min-w-[320px] h-full bg-[#1e1e24] border-l border-[#33333c] flex flex-col overflow-y-auto p-3 space-y-3 text-sm">
 
             <!-- header -->
-            <div class="flex items-center justify-between border-b border-[#3a3a42] pb-2">
+            <div class="flex items-center justify-between border-b border-[#33333c] pb-2">
                 <span class="text-xs font-mono tracking-wider text-gray-400">#fallback · FlockMod</span>
                 <span class="text-[10px] text-gray-500">flockmod.com</span>
             </div>
 
-            <!-- СПИСОК ПОЛЬЗОВАТЕЛЕЙ -->
-            <div class="bg-[#1e1e24] rounded-md p-2 border border-[#33333c]">
+            <!-- user list -->
+            <div class="bg-[#16161c] rounded-md p-2 border border-[#2a2a32]">
                 <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Список пользователей</div>
                 <div class="flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-green-400"></span>
@@ -35,64 +37,98 @@
                 </div>
             </div>
 
-            <!-- НАСТРОЙКИ ИНСТРУМЕНТА -->
-            <div class="bg-[#1e1e24] rounded-md p-2 border border-[#33333c]">
-                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Настройки инструмента</div>
-                <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs">
-                    <span class="text-gray-400">Размер</span>
-                    <span class="text-gray-200 text-right" id="sizeDisplay">8</span>
-                    <span class="text-gray-400">Непрозрачность</span>
-                    <span class="text-gray-200 text-right" id="opacityDisplay">100</span>
-                    <span class="text-gray-400">Размытие</span>
-                    <span class="text-gray-200 text-right" id="blurDisplay">0</span>
-                    <span class="text-gray-400">Сглаживание</span>
-                    <span class="text-gray-200 text-right" id="smoothDisplay">0</span>
-                    <span class="text-gray-400">Промежуток</span>
-                    <span class="text-gray-200 text-right" id="gapDisplay">0</span>
-                    <span class="text-gray-400">Давление</span>
-                    <span class="text-gray-200 text-right" id="pressureDisplay">100</span>
-                    <span class="text-gray-400">Правый клик</span>
-                    <span class="text-gray-200 text-right">Отменить штрих</span>
+            <!-- TOOL SELECTOR -->
+            <div class="bg-[#16161c] rounded-md p-2 border border-[#2a2a32]">
+                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Инструменты</div>
+                <div class="grid grid-cols-4 gap-1.5">
+                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="pen">✏️ Pen</button>
+                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="marker">🖊️ Marker</button>
+                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="text">T Text</button>
+                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="eraser">🧹 Eraser</button>
+                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="fill">🪣 Fill</button>
+                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="select">🔲 Select</button>
+                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="drag">✋ Drag</button>
+                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="transform">🔄 Transform</button>
                 </div>
-                <!-- Курсор row -->
-                <div class="flex items-center justify-between mt-1 pt-1 border-t border-[#33333c] text-xs">
-                    <span class="text-gray-400">Курсор</span>
-                    <span class="text-gray-200">Круг</span>
+            </div>
+
+            <!-- НАСТРОЙКИ ИНСТРУМЕНТА (dynamic) -->
+            <div class="bg-[#16161c] rounded-md p-2 border border-[#2a2a32]">
+                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Настройки инструмента</div>
+                <div id="toolSettings" class="space-y-1.5">
+                    <!-- populated by JS -->
+                    <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs">
+                        <span class="text-gray-400">Размер</span>
+                        <span class="text-gray-200 text-right" id="sizeDisplay">8</span>
+                        <span class="text-gray-400">Непрозрачность</span>
+                        <span class="text-gray-200 text-right" id="opacityDisplay">100</span>
+                        <span class="text-gray-400">Размытие</span>
+                        <span class="text-gray-200 text-right" id="blurDisplay">0</span>
+                        <span class="text-gray-400">Сглаживание</span>
+                        <span class="text-gray-200 text-right" id="smoothDisplay">0</span>
+                        <span class="text-gray-400">Промежуток</span>
+                        <span class="text-gray-200 text-right" id="gapDisplay">0</span>
+                        <span class="text-gray-400">Давление</span>
+                        <span class="text-gray-200 text-right" id="pressureDisplay">100</span>
+                        <span class="text-gray-400">Правый клик</span>
+                        <span class="text-gray-200 text-right" id="rightClickDisplay">Отменить штрих</span>
+                    </div>
+                    <div class="flex items-center justify-between pt-1 border-t border-[#2a2a32] text-xs">
+                        <span class="text-gray-400">Курсор</span>
+                        <span class="text-gray-200" id="cursorDisplay">Круг</span>
+                    </div>
+                    <!-- pressure sensitivity toggle -->
+                    <div class="flex items-center justify-between pt-1 border-t border-[#2a2a32] text-xs">
+                        <span class="text-gray-400">Чувствительность</span>
+                        <button id="pressureToggle" class="bg-[#282830] px-3 py-0.5 rounded border border-[#3d3d48] text-[10px] hover:bg-[#3a3a46]">Вкл</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- templates -->
+            <div class="bg-[#16161c] rounded-md p-2 border border-[#2a2a32]">
+                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Шаблоны</div>
+                <div class="grid grid-cols-4 gap-1">
+                    <button class="template-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1 text-[9px] border border-[#3d3d48]" data-template="sketch">Sketch</button>
+                    <button class="template-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1 text-[9px] border border-[#3d3d48]" data-template="ink">Ink</button>
+                    <button class="template-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1 text-[9px] border border-[#3d3d48]" data-template="watercolor">Water</button>
+                    <button class="template-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1 text-[9px] border border-[#3d3d48]" data-template="neon">Neon</button>
                 </div>
             </div>
 
             <!-- ПРЕДУСТАНОВКИ -->
-            <div class="bg-[#1e1e24] rounded-md p-2 border border-[#33333c]">
+            <div class="bg-[#16161c] rounded-md p-2 border border-[#2a2a32]">
                 <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Предустановки</div>
                 <div class="grid grid-cols-9 gap-1 text-center text-[11px] font-mono">
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">1</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">2</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">3</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">4</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">5</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">6</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">7</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">8</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">9</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">10</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">11</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">12</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">13</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">14</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">15</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">16</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">17</span>
-                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">18</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">1</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">2</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">3</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">4</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">5</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">6</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">7</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">8</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">9</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">10</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">11</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">12</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">13</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">14</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">15</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">16</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">17</span>
+                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">18</span>
                 </div>
                 <div class="text-[9px] text-gray-500 mt-1 text-center">Удерживайте для установки. Нажмите, чтобы загрузить.</div>
             </div>
 
             <!-- ЦВЕТОВОЕ КОЛЕСО + СЛОЙ -->
-            <div class="bg-[#1e1e24] rounded-md p-2 border border-[#33333c] flex flex-col gap-1">
+            <div class="bg-[#16161c] rounded-md p-2 border border-[#2a2a32] flex flex-col gap-1">
                 <div class="text-[10px] uppercase tracking-wider text-gray-400">Цветовое колесо</div>
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 via-yellow-300 via-green-400 to-blue-500 border border-gray-600"></div>
-                    <div class="w-6 h-6 rounded-full bg-white border border-gray-500"></div>
+                <div class="flex items-center gap-3">
+                    <div id="colorWheel" class="w-10 h-10 rounded-full border-2 border-gray-600 cursor-pointer" style="background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);"></div>
+                    <div id="colorPreview" class="w-8 h-8 rounded-full border-2 border-gray-500" style="background: #000000;"></div>
+                    <input type="color" id="colorPicker" value="#000000" class="w-8 h-8 rounded border-0 cursor-pointer bg-transparent" />
                     <span class="text-[10px] text-gray-400 ml-auto">СЛОЙ</span>
                 </div>
             </div>
