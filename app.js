@@ -1,4 +1,4 @@
-// app.js – FlockMod drawing app · exact replica
+// app.js – FlockMod drawing app with exact sidebar
 
 (function() {
     const canvas = document.getElementById('drawCanvas');
@@ -27,12 +27,10 @@
         gap: 0,
         pressure: 100,
         color: '#ffffff',
-        rightClick: 'Отменить штрих',
-        cursor: 'Круг',
-        font: 'Rubik'
+        cursor: 'Круг'
     };
 
-    // ---- DOM references ----
+    // ---- DOM refs ----
     const sizeDisplay = document.getElementById('sizeDisplay');
     const opacityDisplay = document.getElementById('opacityDisplay');
     const blurDisplay = document.getElementById('blurDisplay');
@@ -56,15 +54,12 @@
         ctx.shadowColor = settings.color;
         ctx.strokeStyle = settings.color;
         ctx.fillStyle = settings.color;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
     }
 
     // ---- drawing state ----
     let isDrawing = false;
     let lastX = 0, lastY = 0;
 
-    // ---- get coords ----
     function getCoords(e) {
         const rect = canvas.getBoundingClientRect();
         const clientX = e.clientX || e.touches?.[0]?.clientX || 0;
@@ -75,13 +70,72 @@
         };
     }
 
-    // ---- stroke history for undo ----
+    // ---- drawing ----
+    function startDrawing(e) {
+        e.preventDefault();
+        isDrawing = true;
+        const { x, y } = getCoords(e);
+        lastX = x;
+        lastY = y;
+        // draw dot
+        ctx.beginPath();
+        ctx.arc(x, y, settings.size / 2, 0, Math.PI * 2);
+        ctx.fillStyle = settings.color;
+        ctx.globalAlpha = settings.opacity / 100;
+        ctx.shadowBlur = settings.blur;
+        ctx.shadowColor = settings.color;
+        ctx.fill();
+        // start stroke
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.strokeStyle = settings.color;
+        ctx.lineWidth = settings.size;
+        ctx.globalAlpha = settings.opacity / 100;
+        ctx.shadowBlur = settings.blur;
+        ctx.shadowColor = settings.color;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+    }
+
+    function draw(e) {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const { x, y } = getCoords(e);
+        // gap logic
+        if (settings.gap > 0) {
+            const dx = x - lastX;
+            const dy = y - lastY;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < settings.gap) return;
+        }
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        lastX = x;
+        lastY = y;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        ctx.strokeStyle = settings.color;
+        ctx.lineWidth = settings.size;
+        ctx.globalAlpha = settings.opacity / 100;
+        ctx.shadowBlur = settings.blur;
+        ctx.shadowColor = settings.color;
+    }
+
+    function stopDrawing(e) {
+        if (isDrawing) {
+            isDrawing = false;
+            ctx.closePath();
+            saveStroke();
+        }
+    }
+
+    // ---- undo (right-click) ----
     let strokeHistory = [];
 
-    function saveState() {
+    function saveStroke() {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         strokeHistory.push(imageData);
-        if (strokeHistory.length > 30) strokeHistory.shift();
+        if (strokeHistory.length > 20) strokeHistory.shift();
     }
 
     function undoLastStroke() {
@@ -93,91 +147,26 @@
         ctx.beginPath();
     }
 
-    // ---- drawing functions ----
-    function startDrawing(e) {
-        e.preventDefault();
-        isDrawing = true;
-        const { x, y } = getCoords(e);
-        lastX = x;
-        lastY = y;
-        
-        // save state before drawing new stroke
-        saveState();
-        
-        // draw dot
-        ctx.beginPath();
-        ctx.arc(x, y, settings.size / 2, 0, Math.PI * 2);
-        ctx.fillStyle = settings.color;
-        ctx.globalAlpha = settings.opacity / 100;
-        ctx.shadowBlur = settings.blur;
-        ctx.shadowColor = settings.color;
-        ctx.fill();
-        
-        // start path for stroke
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        ctx.strokeStyle = settings.color;
-        ctx.lineWidth = settings.size;
-        ctx.globalAlpha = settings.opacity / 100;
-        ctx.shadowBlur = settings.blur;
-        ctx.shadowColor = settings.color;
-    }
-
-    function draw(e) {
-        if (!isDrawing) return;
-        e.preventDefault();
-        const { x, y } = getCoords(e);
-        
-        // gap check
-        if (settings.gap > 0) {
-            const dx = x - lastX;
-            const dy = y - lastY;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            if (dist < settings.gap) {
-                return;
-            }
-        }
-        
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        lastX = x;
-        lastY = y;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-    }
-
-    function stopDrawing(e) {
-        if (isDrawing) {
-            isDrawing = false;
-            ctx.closePath();
-        }
-    }
-
-    // ---- right-click: undo ----
+    // ---- events ----
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseleave', stopDrawing);
+    canvas.addEventListener('touchstart', startDrawing, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+    canvas.addEventListener('touchcancel', stopDrawing);
     canvas.addEventListener('contextmenu', (e) => {
         e.preventDefault();
         undoLastStroke();
     });
 
-    // ---- mouse events ----
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mouseleave', stopDrawing);
-
-    // ---- touch events ----
-    canvas.addEventListener('touchstart', startDrawing, { passive: false });
-    canvas.addEventListener('touchmove', draw, { passive: false });
-    canvas.addEventListener('touchend', stopDrawing);
-    canvas.addEventListener('touchcancel', stopDrawing);
-
     // ---- presets ----
     function setupPresets() {
-        const presetCells = document.querySelectorAll('.preset-cell');
-        presetCells.forEach((cell, index) => {
+        const cells = document.querySelectorAll('#sidebar .grid span');
+        cells.forEach((cell, index) => {
             const num = index + 1;
-            
-            // click: load preset
+            // click = load preset
             cell.addEventListener('click', function(e) {
                 const size = 4 + (num % 10);
                 const hue = (num * 25) % 360;
@@ -186,10 +175,9 @@
                 updateDisplays();
                 applySettings();
                 this.style.borderColor = '#8888ff';
-                setTimeout(() => { this.style.borderColor = '#3a3a44'; }, 200);
+                setTimeout(() => { this.style.borderColor = '#3d3d48'; }, 200);
             });
-            
-            // hold: set as current (long press)
+            // hold = set preset (Удерживайте для установки)
             let holdTimer = null;
             cell.addEventListener('mousedown', function(e) {
                 if (e.button === 0) {
@@ -201,23 +189,12 @@
                         updateDisplays();
                         applySettings();
                         this.style.borderColor = '#ffaa44';
-                        setTimeout(() => { this.style.borderColor = '#3a3a44'; }, 400);
+                        setTimeout(() => { this.style.borderColor = '#3d3d48'; }, 400);
                     }, 600);
                 }
             });
-            cell.addEventListener('mouseup', function() {
-                if (holdTimer) {
-                    clearTimeout(holdTimer);
-                    holdTimer = null;
-                }
-            });
-            cell.addEventListener('mouseleave', function() {
-                if (holdTimer) {
-                    clearTimeout(holdTimer);
-                    holdTimer = null;
-                }
-            });
-            
+            cell.addEventListener('mouseup', () => { clearTimeout(holdTimer); holdTimer = null; });
+            cell.addEventListener('mouseleave', () => { clearTimeout(holdTimer); holdTimer = null; });
             // touch hold
             let touchTimer = null;
             cell.addEventListener('touchstart', function(e) {
@@ -229,27 +206,17 @@
                     updateDisplays();
                     applySettings();
                     this.style.borderColor = '#ffaa44';
-                    setTimeout(() => { this.style.borderColor = '#3a3a44'; }, 400);
+                    setTimeout(() => { this.style.borderColor = '#3d3d48'; }, 400);
                 }, 600);
             }, { passive: true });
-            cell.addEventListener('touchend', function() {
-                if (touchTimer) {
-                    clearTimeout(touchTimer);
-                    touchTimer = null;
-                }
-            });
-            cell.addEventListener('touchcancel', function() {
-                if (touchTimer) {
-                    clearTimeout(touchTimer);
-                    touchTimer = null;
-                }
-            });
+            cell.addEventListener('touchend', () => { clearTimeout(touchTimer); touchTimer = null; });
+            cell.addEventListener('touchcancel', () => { clearTimeout(touchTimer); touchTimer = null; });
         });
     }
 
-    // ---- color wheel click ----
+    // ---- color wheel click (demo) ----
     function setupColorWheel() {
-        const wheel = document.querySelector('.color-wheel');
+        const wheel = document.querySelector('.color-wheel-mock');
         if (wheel) {
             wheel.addEventListener('click', function() {
                 const hue = Math.floor(Math.random() * 360);
@@ -267,8 +234,6 @@
         updateDisplays();
         setupPresets();
         setupColorWheel();
-
-        // resize handler
         window.addEventListener('resize', () => {
             const oldData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             resizeCanvas();
