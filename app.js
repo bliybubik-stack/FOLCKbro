@@ -1,4 +1,4 @@
-// app.js – FlockMod drawing app with sidebar on right
+// app.js – FlockMod exact match
 
 (function() {
     const canvas = document.getElementById('drawCanvas');
@@ -16,7 +16,7 @@
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         applySettings();
-        // fill with white background
+        // white background
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = settings.color;
@@ -30,8 +30,7 @@
         smoothing: 0,
         gap: 0,
         pressure: 100,
-        color: '#000000',
-        cursor: 'Круг'
+        color: '#000000'
     };
 
     // ---- DOM refs ----
@@ -133,7 +132,7 @@
         }
     }
 
-    // ---- undo (right-click) ----
+    // ---- undo ----
     let strokeHistory = [];
 
     function saveStroke() {
@@ -170,7 +169,7 @@
         const cells = document.querySelectorAll('#sidebar .grid span');
         cells.forEach((cell, index) => {
             const num = index + 1;
-            // click = load preset
+            // click
             cell.addEventListener('click', function(e) {
                 const size = 4 + (num % 10);
                 const hue = (num * 25) % 360;
@@ -179,9 +178,9 @@
                 updateDisplays();
                 applySettings();
                 this.style.borderColor = '#8888ff';
-                setTimeout(() => { this.style.borderColor = '#3d3d48'; }, 200);
+                setTimeout(() => { this.style.borderColor = '#444'; }, 200);
             });
-            // hold = set preset
+            // hold
             let holdTimer = null;
             cell.addEventListener('mousedown', function(e) {
                 if (e.button === 0) {
@@ -193,7 +192,7 @@
                         updateDisplays();
                         applySettings();
                         this.style.borderColor = '#ffaa44';
-                        setTimeout(() => { this.style.borderColor = '#3d3d48'; }, 400);
+                        setTimeout(() => { this.style.borderColor = '#444'; }, 400);
                     }, 600);
                 }
             });
@@ -210,7 +209,7 @@
                     updateDisplays();
                     applySettings();
                     this.style.borderColor = '#ffaa44';
-                    setTimeout(() => { this.style.borderColor = '#3d3d48'; }, 400);
+                    setTimeout(() => { this.style.borderColor = '#444'; }, 400);
                 }, 600);
             }, { passive: true });
             cell.addEventListener('touchend', () => { clearTimeout(touchTimer); touchTimer = null; });
@@ -218,7 +217,7 @@
         });
     }
 
-    // ---- color wheel click ----
+    // ---- color wheel ----
     function setupColorWheel() {
         const wheel = document.querySelector('.color-wheel-mock');
         if (wheel) {
