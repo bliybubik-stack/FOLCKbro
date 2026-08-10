@@ -9,21 +9,20 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
-    <!-- main container: canvas left, sidebar right -->
     <div class="flex h-screen w-screen overflow-hidden bg-[#1a1a1e] text-gray-200">
 
         <!-- ===== CANVAS (left) ===== -->
         <main class="flex-1 h-full bg-white relative" id="canvasContainer">
             <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
-            <!-- text overlay for text tool -->
-            <div id="textOverlay" class="absolute hidden pointer-events-none" style="top:0; left:0; width:100%; height:100%;">
-                <div id="textFrame" class="absolute border-2 border-gray-400/60 bg-white/5 backdrop-blur-sm rounded-lg p-2 pointer-events-auto" style="display:none; min-width:120px; min-height:40px;">
-                    <div id="textDisplay" class="text-black/80 text-base outline-none" contenteditable="false" style="min-width:80px; min-height:24px;">Type something</div>
+            <!-- text overlay -->
+            <div id="textOverlay" class="absolute hidden" style="top:0; left:0; width:100%; height:100%; pointer-events:none;">
+                <div id="textFrame" class="absolute border-2 border-gray-400/60 bg-white/5 backdrop-blur-sm rounded-lg px-3 py-1.5 pointer-events-auto" style="display:none; min-width:80px;">
+                    <div id="textDisplay" class="text-black/80 text-base outline-none" contenteditable="false" style="min-width:60px;">Type something</div>
                 </div>
             </div>
         </main>
 
-        <!-- ===== SIDEBAR (right) – exact replica of screenshots ===== -->
+        <!-- ===== SIDEBAR (right) – EXACTLY like screenshots ===== -->
         <aside class="w-[280px] min-w-[280px] h-full bg-[#23232a] border-l border-[#33333c] flex flex-col p-3 overflow-y-auto space-y-4 text-sm">
 
             <!-- header -->
@@ -97,13 +96,18 @@
             <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38] flex flex-col gap-1">
                 <div class="text-[10px] uppercase tracking-wider text-gray-400">Цветовое колесо</div>
                 <div class="flex items-center gap-2">
-                    <div id="colorWheel" class="w-8 h-8 rounded-full cursor-pointer border border-gray-600" style="background: conic-gradient(from 0deg, #ff3b30, #ff9500, #ffcc00, #34c759, #00c7be, #007aff, #5856d6, #af52de, #ff3b30);"></div>
-                    <div id="colorSwatch" class="w-6 h-6 rounded-full border border-gray-500" style="background: #ffffff;"></div>
+                    <div id="colorWheel" class="w-8 h-8 rounded-full border border-gray-600 cursor-pointer" style="background: conic-gradient(from 0deg, #ff3b30, #ff9500, #ffcc00, #34c759, #00c7be, #007aff, #5856d6, #af52de, #ff3b30);"></div>
+                    <div id="colorSwatch" class="w-6 h-6 rounded-full border border-gray-500" style="background:#ffffff;"></div>
+                    <input type="color" id="colorPicker" value="#ffffff" class="w-6 h-6 rounded border-0 bg-transparent cursor-pointer p-0" style="opacity:0; position:absolute; width:24px; height:24px;" />
                     <span class="text-[10px] text-gray-400 ml-auto">СЛОЙ</span>
                 </div>
             </div>
 
-            <!-- footer link -->
+            <!-- Text tool button (added to match functionality) -->
+            <button id="textBtn" class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38] text-gray-300 text-xs hover:bg-[#282830] transition-all">
+                <i class="fas fa-font mr-2"></i> Text tool
+            </button>
+
             <div class="text-[9px] text-gray-600 text-center pt-1 border-t border-[#2a2a32]">https://flockmod.com/r/fallback</div>
         </aside>
     </div>
