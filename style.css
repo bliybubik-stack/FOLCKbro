@@ -1,505 +1,208 @@
-/* Глобальные стили и сброс */
+/* style.css – clean right‑toolbar layout */
+
 * {
+    box-sizing: border-box;
     margin: 0;
     padding: 0;
-    box-sizing: border-box;
 }
 
 body {
-    font-family: 'Rubik', 'Segoe UI', Arial, sans-serif;
-    background: #1a1a1a;
-    color: #d4d4d4;
-    overflow: hidden;
-    height: 100vh;
-    user-select: none;
-}
-
-/* Главный контейнер */
-.app-container {
+    background: #f0f2f5;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     display: flex;
-    height: 100vh;
-    background: #2d2d2d;
-}
-
-/* ===== ЛЕВАЯ ПАНЕЛЬ ИНСТРУМЕНТОВ ===== */
-.toolbar {
-    width: 48px;
-    background: #252525;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    border-right: 1px solid #3a3a3a;
-    flex-shrink: 0;
-    padding: 4px 0;
-}
-
-.toolbar-top {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-}
-
-.toolbar-bottom {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    padding-bottom: 4px;
-}
-
-.tool-button {
-    width: 38px;
-    height: 38px;
-    background: transparent;
-    border: none;
-    color: #999;
-    font-size: 18px;
-    border-radius: 4px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
     justify-content: center;
-    transition: all 0.15s ease;
-}
-
-.tool-button:hover {
-    background: #3a3a3a;
-    color: #fff;
-}
-
-.tool-button.active {
-    background: #4a4a4a;
-    color: #fff;
-    border: 1px solid #666;
-}
-
-.tool-button i {
-    pointer-events: none;
-}
-
-/* ===== ОСНОВНАЯ ОБЛАСТЬ ===== */
-.main-area {
-    flex: 1;
-    display: flex;
-    background: #2d2d2d;
-    height: 100vh;
-    overflow: hidden;
-}
-
-/* Холст */
-.canvas-container {
-    flex: 1;
-    display: flex;
     align-items: center;
-    justify-content: center;
-    background: #1e1e1e;
+    min-height: 100vh;
+    margin: 0;
     padding: 20px;
-    position: relative;
-    overflow: hidden;
 }
 
-#drawingCanvas {
+#app {
+    display: flex;
+    flex-wrap: wrap;
     background: white;
-    border-radius: 4px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    border-radius: 24px;
+    box-shadow: 0 20px 40px -12px rgba(0,0,0,0.25);
+    overflow: hidden;
+    max-width: 1100px;
     width: 100%;
-    height: 100%;
-    cursor: crosshair;
-    max-width: calc(100% - 40px);
-    max-height: calc(100% - 40px);
-    object-fit: contain;
 }
 
-/* ===== ПРАВАЯ ПАНЕЛЬ НАСТРОЕК ===== */
-.settings-panel {
-    width: 320px;
-    background: #252525;
-    border-left: 1px solid #3a3a3a;
-    padding: 16px 18px;
-    overflow-y: auto;
-    flex-shrink: 0;
+/* canvas area */
+.canvas-wrapper {
+    flex: 1;
+    min-width: 500px;
+    background: #ffffff;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#drawCanvas {
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    background: white;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 800 / 600;
+    cursor: crosshair;
+    touch-action: none;  /* prevent scroll on touch */
+}
+
+/* right toolbar — fixed width, scrollable */
+.toolbar {
+    width: 240px;
+    min-width: 200px;
+    background: #f8fafc;
+    padding: 20px 16px;
+    border-left: 1px solid #e2e8f0;
     display: flex;
     flex-direction: column;
     gap: 16px;
+    overflow-y: auto;
+    max-height: 640px;
 }
 
-.settings-panel::-webkit-scrollbar {
-    width: 6px;
-}
-
-.settings-panel::-webkit-scrollbar-track {
-    background: #1e1e1e;
-}
-
-.settings-panel::-webkit-scrollbar-thumb {
-    background: #4a4a4a;
-    border-radius: 3px;
-}
-
-.panel-section {
+.tool-group {
     display: flex;
-    flex-direction: column;
     gap: 8px;
+    justify-content: space-around;
 }
 
-.panel-section h3 {
-    font-size: 11px;
-    font-weight: 600;
-    color: #aaa;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border-bottom: 1px solid #333;
-    padding-bottom: 6px;
-}
-
-.panel-section h3 i {
-    font-size: 14px;
-    color: #888;
-}
-
-/* Список пользователей */
-.user-list {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    padding: 4px 0;
-    color: #ccc;
-}
-
-.user-list span:first-child {
-    color: #fff;
-    font-weight: 500;
-}
-
-.user-list span:last-child {
-    color: #888;
-}
-
-/* Настройки инструмента */
-.tool-settings {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 6px 12px;
-}
-
-.setting-item {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-}
-
-.setting-item label {
-    font-size: 10px;
-    color: #999;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-}
-
-.setting-item input,
-.setting-item select {
-    background: #1e1e1e;
-    border: 1px solid #3a3a3a;
-    color: #ddd;
-    padding: 4px 8px;
-    border-radius: 3px;
-    font-size: 12px;
-    font-family: inherit;
-    width: 100%;
-    outline: none;
-    transition: border-color 0.2s;
-}
-
-.setting-item input:focus,
-.setting-item select:focus {
-    border-color: #666;
-}
-
-.setting-item input[type="number"] {
-    -moz-appearance: textfield;
-}
-
-.setting-item input[type="number"]::-webkit-inner-spin-button,
-.setting-item input[type="number"]::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-}
-
-/* Пресеты */
-.presets-grid {
-    display: grid;
-    grid-template-columns: repeat(9, 1fr);
-    gap: 6px;
-    padding: 4px 0;
-}
-
-.preset-circle {
-    width: 100%;
-    aspect-ratio: 1;
-    border-radius: 50%;
+.tool-btn {
+    flex: 1;
+    background: transparent;
     border: 2px solid transparent;
+    border-radius: 40px;
+    font-size: 1.6rem;
+    padding: 8px 0;
     cursor: pointer;
-    transition: all 0.2s;
-    position: relative;
+    transition: 0.15s;
+    background: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+}
+
+.tool-btn:hover {
+    background: #eef2f6;
+}
+
+.tool-btn.active {
+    border-color: #3b82f6;
+    background: #dbeafe;
+    box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+}
+
+.separator {
+    border-top: 1px solid #e2e8f0;
+    margin: 4px 0;
+}
+
+/* setting rows */
+.setting-group {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
-    justify-content: center;
-    font-size: 8px;
-    color: rgba(255,255,255,0.6);
+    justify-content: space-between;
+    gap: 4px 0;
+}
+
+.setting-group label {
+    font-size: 0.75rem;
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: #475569;
+    width: 60px;
 }
 
-.preset-circle:hover {
-    transform: scale(1.1);
-    border-color: #888;
+.setting-group input[type="range"] {
+    flex: 1;
+    min-width: 60px;
+    height: 4px;
+    -webkit-appearance: none;
+    background: #d1d9e6;
+    border-radius: 8px;
+    outline: none;
 }
 
-.preset-circle.active {
-    border-color: #fff;
-    box-shadow: 0 0 8px rgba(255,255,255,0.3);
-}
-
-.preset-circle .preset-number {
-    pointer-events: none;
-    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
-}
-
-.presets-hint {
-    font-size: 10px;
-    color: #777;
-    text-align: center;
-    margin-top: 2px;
-}
-
-/* Цветовое колесо */
-.color-picker-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-}
-
-.color-wheel {
-    width: 100%;
-    max-width: 260px;
-    aspect-ratio: 1;
-    background: conic-gradient(
-        red, yellow, lime, cyan, blue, magenta, red
-    );
-    border-radius: 50%;
-    position: relative;
-    cursor: pointer;
-    border: 2px solid #333;
-}
-
-.color-wheel .wheel-pointer {
+.setting-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
     width: 14px;
     height: 14px;
-    border: 2px solid red;
+    background: #1e293b;
     border-radius: 50%;
-    background: white;
-    position: absolute;
-    transform: translate(-50%, -50%);
-    pointer-events: none;
+    cursor: pointer;
+    border: 2px solid white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.15);
 }
 
-.color-wheel .inner-square {
-    position: absolute;
-    top: 20%;
-    left: 20%;
-    width: 60%;
-    height: 60%;
-    border-radius: 4px;
-    background: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(0,0,0,0.8));
-    border: 2px solid #333;
-}
-
-.color-preview {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 4px 0;
-}
-
-.color-swatch {
+.setting-group input[type="color"] {
     width: 40px;
-    height: 40px;
-    border-radius: 4px;
-    border: 2px solid #444;
-    cursor: pointer;
-    transition: border-color 0.2s;
-}
-
-.color-swatch:hover {
-    border-color: #888;
-}
-
-.color-swatch#primary-color {
-    border-color: #fff;
-}
-
-.swap-icon {
-    color: #888;
-    font-size: 18px;
-    cursor: pointer;
-}
-
-.swap-icon:hover {
-    color: #ccc;
-}
-
-/* Слои */
-.layers-controls {
-    display: flex;
-    gap: 4px;
-    padding: 4px 0;
-}
-
-.layers-controls button {
-    background: #1e1e1e;
-    border: 1px solid #3a3a3a;
-    color: #aaa;
-    padding: 4px 8px;
-    border-radius: 3px;
-    cursor: pointer;
-    font-size: 13px;
-    transition: all 0.2s;
-}
-
-.layers-controls button:hover {
-    background: #333;
-    color: #fff;
-    border-color: #555;
-}
-
-.layers-list {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-top: 4px;
-}
-
-.layer-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 10px;
-    background: #1e1e1e;
-    border: 1px solid #333;
-    border-radius: 3px;
-    cursor: pointer;
-    transition: all 0.15s;
-}
-
-.layer-item:hover {
-    background: #2a2a2a;
-}
-
-.layer-item.active {
-    border-color: #666;
-    background: #2a2a2a;
-}
-
-.layer-item .layer-thumb {
-    width: 32px;
     height: 32px;
-    background: repeating-conic-gradient(#444 0% 25%, #555 0% 50%) 0 0 / 8px 8px;
-    border-radius: 2px;
-    flex-shrink: 0;
-    border: 1px solid #333;
-}
-
-.layer-item .layer-name {
-    flex: 1;
-    font-size: 12px;
-    color: #ccc;
-}
-
-.layer-item .layer-actions {
-    display: flex;
-    gap: 6px;
-    color: #666;
-}
-
-.layer-item .layer-actions i {
+    border: 1px solid #d1d9e6;
+    border-radius: 8px;
+    background: white;
+    padding: 2px;
     cursor: pointer;
-    font-size: 14px;
-    transition: color 0.2s;
 }
 
-.layer-item .layer-actions i:hover {
-    color: #ccc;
+.setting-group span {
+    font-size: 0.7rem;
+    font-weight: 500;
+    color: #1e293b;
+    min-width: 32px;
+    text-align: right;
 }
 
-.layer-item .layer-actions .fa-eye {
-    color: #aaa;
+/* action buttons */
+.action-btn {
+    background: #eef2f6;
+    border: none;
+    border-radius: 40px;
+    padding: 10px 0;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #1e293b;
+    cursor: pointer;
+    transition: 0.1s;
+    width: 100%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
 
-.layer-item .layer-actions .fa-eye-slash {
-    color: #444;
+.action-btn:hover {
+    background: #e2e8f0;
 }
 
-/* ===== АДАПТИВНОСТЬ ===== */
-@media (max-width: 1024px) {
-    .settings-panel {
-        width: 260px;
-        padding: 12px 14px;
-    }
-    
-    .tool-settings {
-        grid-template-columns: 1fr;
-    }
+.action-btn:active {
+    background: #cbd5e1;
 }
 
-@media (max-width: 768px) {
-    .app-container {
+/* small responsive tweaks */
+@media (max-width: 760px) {
+    #app {
         flex-direction: column;
+        border-radius: 20px;
     }
-    
     .toolbar {
         width: 100%;
-        height: 48px;
-        flex-direction: row;
-        padding: 0 8px;
-        border-right: none;
-        border-bottom: 1px solid #3a3a3a;
-    }
-    
-    .toolbar-top,
-    .toolbar-bottom {
-        flex-direction: row;
-    }
-    
-    .settings-panel {
-        width: 100%;
-        height: 300px;
         border-left: none;
-        border-top: 1px solid #3a3a3a;
+        border-top: 1px solid #e2e8f0;
+        flex-direction: row;
+        flex-wrap: wrap;
+        max-height: 300px;
+        padding: 16px;
+        gap: 10px;
     }
-    
-    .canvas-container {
-        padding: 10px;
+    .tool-group {
+        width: 100%;
+        justify-content: center;
     }
-}
-
-/* ===== СКРОЛЛБАР ===== */
-::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
-}
-
-::-webkit-scrollbar-track {
-    background: #1e1e1e;
-}
-
-::-webkit-scrollbar-thumb {
-    background: #444;
-    border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: #555;
+    .setting-group {
+        flex: 1 0 40%;
+    }
+    .canvas-wrapper {
+        min-width: unset;
+        padding: 16px;
+    }
 }
