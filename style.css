@@ -1,111 +1,505 @@
-/* style.css – FlockMod glassmorphism */
-
+/* Глобальные стили и сброс */
 * {
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  background: #1a1a1e;
-  color: #e5e5e8;
-  overflow: hidden;
+    font-family: 'Rubik', 'Segoe UI', Arial, sans-serif;
+    background: #1a1a1a;
+    color: #d4d4d4;
+    overflow: hidden;
+    height: 100vh;
+    user-select: none;
 }
 
+/* Главный контейнер */
+.app-container {
+    display: flex;
+    height: 100vh;
+    background: #2d2d2d;
+}
+
+/* ===== ЛЕВАЯ ПАНЕЛЬ ИНСТРУМЕНТОВ ===== */
+.toolbar {
+    width: 48px;
+    background: #252525;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-right: 1px solid #3a3a3a;
+    flex-shrink: 0;
+    padding: 4px 0;
+}
+
+.toolbar-top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+}
+
+.toolbar-bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding-bottom: 4px;
+}
+
+.tool-button {
+    width: 38px;
+    height: 38px;
+    background: transparent;
+    border: none;
+    color: #999;
+    font-size: 18px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+.tool-button:hover {
+    background: #3a3a3a;
+    color: #fff;
+}
+
+.tool-button.active {
+    background: #4a4a4a;
+    color: #fff;
+    border: 1px solid #666;
+}
+
+.tool-button i {
+    pointer-events: none;
+}
+
+/* ===== ОСНОВНАЯ ОБЛАСТЬ ===== */
+.main-area {
+    flex: 1;
+    display: flex;
+    background: #2d2d2d;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* Холст */
+.canvas-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #1e1e1e;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+#drawingCanvas {
+    background: white;
+    border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    width: 100%;
+    height: 100%;
+    cursor: crosshair;
+    max-width: calc(100% - 40px);
+    max-height: calc(100% - 40px);
+    object-fit: contain;
+}
+
+/* ===== ПРАВАЯ ПАНЕЛЬ НАСТРОЕК ===== */
+.settings-panel {
+    width: 320px;
+    background: #252525;
+    border-left: 1px solid #3a3a3a;
+    padding: 16px 18px;
+    overflow-y: auto;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.settings-panel::-webkit-scrollbar {
+    width: 6px;
+}
+
+.settings-panel::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+.settings-panel::-webkit-scrollbar-thumb {
+    background: #4a4a4a;
+    border-radius: 3px;
+}
+
+.panel-section {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.panel-section h3 {
+    font-size: 11px;
+    font-weight: 600;
+    color: #aaa;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid #333;
+    padding-bottom: 6px;
+}
+
+.panel-section h3 i {
+    font-size: 14px;
+    color: #888;
+}
+
+/* Список пользователей */
+.user-list {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 4px 0;
+    color: #ccc;
+}
+
+.user-list span:first-child {
+    color: #fff;
+    font-weight: 500;
+}
+
+.user-list span:last-child {
+    color: #888;
+}
+
+/* Настройки инструмента */
+.tool-settings {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 12px;
+}
+
+.setting-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.setting-item label {
+    font-size: 10px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.setting-item input,
+.setting-item select {
+    background: #1e1e1e;
+    border: 1px solid #3a3a3a;
+    color: #ddd;
+    padding: 4px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    font-family: inherit;
+    width: 100%;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.setting-item input:focus,
+.setting-item select:focus {
+    border-color: #666;
+}
+
+.setting-item input[type="number"] {
+    -moz-appearance: textfield;
+}
+
+.setting-item input[type="number"]::-webkit-inner-spin-button,
+.setting-item input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Пресеты */
+.presets-grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 6px;
+    padding: 4px 0;
+}
+
+.preset-circle {
+    width: 100%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 8px;
+    color: rgba(255,255,255,0.6);
+    font-weight: 600;
+}
+
+.preset-circle:hover {
+    transform: scale(1.1);
+    border-color: #888;
+}
+
+.preset-circle.active {
+    border-color: #fff;
+    box-shadow: 0 0 8px rgba(255,255,255,0.3);
+}
+
+.preset-circle .preset-number {
+    pointer-events: none;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+
+.presets-hint {
+    font-size: 10px;
+    color: #777;
+    text-align: center;
+    margin-top: 2px;
+}
+
+/* Цветовое колесо */
+.color-picker-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.color-wheel {
+    width: 100%;
+    max-width: 260px;
+    aspect-ratio: 1;
+    background: conic-gradient(
+        red, yellow, lime, cyan, blue, magenta, red
+    );
+    border-radius: 50%;
+    position: relative;
+    cursor: pointer;
+    border: 2px solid #333;
+}
+
+.color-wheel .wheel-pointer {
+    width: 14px;
+    height: 14px;
+    border: 2px solid red;
+    border-radius: 50%;
+    background: white;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.color-wheel .inner-square {
+    position: absolute;
+    top: 20%;
+    left: 20%;
+    width: 60%;
+    height: 60%;
+    border-radius: 4px;
+    background: linear-gradient(to bottom, rgba(255,255,255,0.8), rgba(0,0,0,0.8));
+    border: 2px solid #333;
+}
+
+.color-preview {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 0;
+}
+
+.color-swatch {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    border: 2px solid #444;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.color-swatch:hover {
+    border-color: #888;
+}
+
+.color-swatch#primary-color {
+    border-color: #fff;
+}
+
+.swap-icon {
+    color: #888;
+    font-size: 18px;
+    cursor: pointer;
+}
+
+.swap-icon:hover {
+    color: #ccc;
+}
+
+/* Слои */
+.layers-controls {
+    display: flex;
+    gap: 4px;
+    padding: 4px 0;
+}
+
+.layers-controls button {
+    background: #1e1e1e;
+    border: 1px solid #3a3a3a;
+    color: #aaa;
+    padding: 4px 8px;
+    border-radius: 3px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.layers-controls button:hover {
+    background: #333;
+    color: #fff;
+    border-color: #555;
+}
+
+.layers-list {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 4px;
+}
+
+.layer-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 3px;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.layer-item:hover {
+    background: #2a2a2a;
+}
+
+.layer-item.active {
+    border-color: #666;
+    background: #2a2a2a;
+}
+
+.layer-item .layer-thumb {
+    width: 32px;
+    height: 32px;
+    background: repeating-conic-gradient(#444 0% 25%, #555 0% 50%) 0 0 / 8px 8px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    border: 1px solid #333;
+}
+
+.layer-item .layer-name {
+    flex: 1;
+    font-size: 12px;
+    color: #ccc;
+}
+
+.layer-item .layer-actions {
+    display: flex;
+    gap: 6px;
+    color: #666;
+}
+
+.layer-item .layer-actions i {
+    cursor: pointer;
+    font-size: 14px;
+    transition: color 0.2s;
+}
+
+.layer-item .layer-actions i:hover {
+    color: #ccc;
+}
+
+.layer-item .layer-actions .fa-eye {
+    color: #aaa;
+}
+
+.layer-item .layer-actions .fa-eye-slash {
+    color: #444;
+}
+
+/* ===== АДАПТИВНОСТЬ ===== */
+@media (max-width: 1024px) {
+    .settings-panel {
+        width: 260px;
+        padding: 12px 14px;
+    }
+    
+    .tool-settings {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .app-container {
+        flex-direction: column;
+    }
+    
+    .toolbar {
+        width: 100%;
+        height: 48px;
+        flex-direction: row;
+        padding: 0 8px;
+        border-right: none;
+        border-bottom: 1px solid #3a3a3a;
+    }
+    
+    .toolbar-top,
+    .toolbar-bottom {
+        flex-direction: row;
+    }
+    
+    .settings-panel {
+        width: 100%;
+        height: 300px;
+        border-left: none;
+        border-top: 1px solid #3a3a3a;
+    }
+    
+    .canvas-container {
+        padding: 10px;
+    }
+}
+
+/* ===== СКРОЛЛБАР ===== */
 ::-webkit-scrollbar {
-  width: 3px;
-  height: 3px;
+    width: 8px;
+    height: 8px;
 }
+
 ::-webkit-scrollbar-track {
-  background: rgba(255,255,255,0.03);
+    background: #1e1e1e;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.15);
-  border-radius: 8px;
+    background: #444;
+    border-radius: 4px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.25);
-}
-
-#drawCanvas {
-  background: #ffffff;
-  image-rendering: crisp-edges;
-}
-
-/* glassmorphism base */
-.glass {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-/* active tool button */
-.tool-btn.active {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.4);
-  box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
-}
-
-/* presets hover */
-#sidebar .grid span {
-  transition: all 0.15s ease;
-  cursor: default;
-}
-#sidebar .grid span:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-}
-#sidebar .grid span:active {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(0.95);
-}
-
-/* color wheel */
-#colorWheel {
-  transition: transform 0.15s ease;
-}
-#colorWheel:hover {
-  transform: scale(1.05);
-}
-#colorWheel:active {
-  transform: scale(0.95);
-}
-
-input[type="color"] {
-  padding: 0;
-  border: none;
-  background: transparent;
-}
-input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-input[type="color"]::-webkit-color-swatch {
-  border: 1px solid rgba(255,255,255,0.15);
-  border-radius: 4px;
-}
-
-/* text frame */
-#textFrame {
-  transition: none;
-  pointer-events: auto;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-}
-#textFrame:hover {
-  border-color: rgba(255,255,255,0.6);
-}
-#textContent {
-  outline: none;
-  display: inline-block;
-  min-width: 80px;
-  min-height: 24px;
-}
-#textContent:focus {
-  outline: none;
-}
-
-/* sidebar smoothness */
-aside {
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.1) transparent;
+    background: #555;
 }
