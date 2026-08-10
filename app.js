@@ -17,6 +17,9 @@ class CollabDraw {
         this.textInput = document.getElementById('textInput');
         this.textInputContainer = document.getElementById('textInputContainer');
         this.textPosition = null;
+        this.isConnected = false;
+        this.reconnectAttempts = 0;
+        this.maxReconnectAttempts = 5;
         
         // User
         this.username = '';
@@ -30,7 +33,11 @@ class CollabDraw {
         // Drawing data
         this.drawingData = [];
         this.textElements = [];
+        this.pendingDrawData = [];
+        this.isInitialized = false;
         
+        // Load saved data
+        this.loadSavedData();
         this.init();
     }
     
@@ -43,56 +50,215 @@ class CollabDraw {
         this.setupResize();
     }
     
+    loadSavedData() {
+        try {
+            // Load saved login data
+            const savedUsername = localStorage.getItem('collabdraw_username');
+            const savedRoom = localStorage.getItem('collabdraw_room');
+            const savedPassword = localStorage.getItem('collabdraw_password');
+            
+            if (savedUsername) {
+                document.getElementById('username').value = savedUsername;
+            }
+            if (savedRoom) {
+                document.getElementById('room').value = savedRoom;
+            }
+            if (savedPassword) {
+                document.getElementById('password').value = savedPassword;
+            }
+            
+            // Load saved settings
+            const savedSettings = localStorage.getItem('collabdraw_settings');
+            if (savedSettings) {
+                const settings = JSON.parse(savedSettings);
+                if (settings.brushSize) {
+                    this.brushSize = settings.brushSize;
+                    document.getElementById('brushSize').value = settings.brushSize;
+                    document.getElementById('sizeDisplay').textContent = settings.brushSize;
+                }
+                if (settings.opacity) {
+                    this.opacity = settings.opacity;
+                    document.getElementById('opacity').value = settings.opacity;
+                    document.getElementById('opacityDisplay').textContent = settings.opacity + '%';
+                }
+                if (settings.font) {
+                    this.fontFamily = settings.font;
+                    document.getElementById('fontSelect').value = settings.font;
+                }
+                if (settings.color) {
+                    this.currentColor = settings.color;
+                    document.getElementById('colorPicker').value = settings.color;
+                }
+            }
+        } catch (e) {
+            console.error('Error loading saved data:', e);
+        }
+    }
+    
+    saveSettings() {
+        try {
+            const settings = {
+                brushSize: this.brushSize,
+                opacity: this.opacity,
+                font: this.fontFamily,
+                color: this.currentColor
+            };
+            localStorage.setItem('collabdraw_settings', JSON.stringify(settings));
+        } catch (e) {
+            console.error('Error saving settings:', e);
+        }
+    }
+    
     setupLogin() {
         const form = document.getElementById('loginForm');
+        const statusEl = document.getElementById('connectionStatus');
+        
         form.addEventListener('submit', (e) => {
             e.preventDefault();
-            this.username = document.getElementById('username').value || 'Anonymous';
+            
+            this.username = document.getElementById('username').value.trim() || 'Anonymous';
             const password = document.getElementById('password').value;
-            this.room = document.getElementById('room').value || 'fallback';
+            this.room = document.getElementById('room').value.trim() || 'fallback';
+            
+            // Save login data to localStorage
+            try {
+                localStorage.setItem('collabdraw_username', this.username);
+                localStorage.setItem('collabdraw_room', this.room);
+                if (password) {
+                    localStorage.setItem('collabdraw_password', password);
+                } else {
+                    localStorage.removeItem('collabdraw_password');
+                }
+            } catch (e) {
+                console.error('Error saving login data:', e);
+            }
+            
+            statusEl.textContent = 'Connecting...';
+            statusEl.style.color = '#ffd93d';
             
             this.connectWebSocket();
         });
+        
+        // Auto-login if saved data exists
+        const savedUsername = localStorage.getItem('collabdraw_username');
+        const savedRoom = localStorage.getItem('collabdraw_room');
+        if (savedUsername && savedRoom) {
+            // Don't auto-login, just fill the fields
+        }
     }
     
     connectWebSocket() {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-        const host = window.location.host;
-        this.ws = new WebSocket(`${protocol}//${host}`);
+        // Close existing connection if any
+        if (this.ws) {
+            this.ws.close();
+            this.ws = null;
+        }
         
-        this.ws.onopen = () => {
-            this.ws.send(JSON.stringify({
-                type: 'join',
-                username: this.username,
-                room: this.room,
-                password: document.getElementById('password').value || ''
-            }));
+        try {
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const host = window.location.host;
+            const wsUrl = `${protocol}//${host}`;
             
-            document.getElementById('loginScreen').style.display = 'none';
-            document.getElementById('app').style.display = 'flex';
-            document.getElementById('currentUserDisplay').textContent = `You (${this.username})`;
+            console.log('Connecting to WebSocket:', wsUrl);
+            this.ws = new WebSocket(wsUrl);
             
-            this.resizeCanvas();
-            this.loadPresets();
-        };
-        
-        this.ws.onmessage = (event) => {
-            try {
-                const data = JSON.parse(event.data);
-                this.handleWebSocketMessage(data);
-            } catch (e) {
-                console.error('Error parsing WebSocket message:', e);
-            }
-        };
-        
-        this.ws.onerror = (error) => {
-            console.error('WebSocket error:', error);
-            alert('Connection error. Please try again.');
-        };
-        
-        this.ws.onclose = () => {
-            console.log('WebSocket disconnected');
-        };
+            // Set connection timeout
+            const connectionTimeout = setTimeout(() => {
+                if (!this.isConnected) {
+                    this.ws.close();
+                    this.showConnectionError('Connection timeout. Please try again.');
+                }
+            }, 5000);
+            
+            this.ws.onopen = () => {
+                clearTimeout(connectionTimeout);
+                this.isConnected = true;
+                this.reconnectAttempts = 0;
+                console.log('WebSocket connected successfully');
+                
+                // Send join message
+                this.ws.send(JSON.stringify({
+                    type: 'join',
+                    username: this.username,
+                    room: this.room,
+                    password: document.getElementById('password').value || ''
+                }));
+                
+                // Update UI
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('app').style.display = 'flex';
+                document.getElementById('currentUserDisplay').textContent = `You (${this.username})`;
+                document.getElementById('connectionStatus').textContent = '';
+                
+                // Update connection indicator
+                const indicator = document.getElementById('connectionStatusIndicator');
+                if (indicator) {
+                    indicator.textContent = '● Connected';
+                    indicator.style.color = '#4CAF50';
+                }
+                
+                this.resizeCanvas();
+                this.loadPresets();
+            };
+            
+            this.ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    this.handleWebSocketMessage(data);
+                } catch (e) {
+                    console.error('Error parsing WebSocket message:', e);
+                }
+            };
+            
+            this.ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                clearTimeout(connectionTimeout);
+                this.showConnectionError('Connection error. Please check your network and try again.');
+            };
+            
+            this.ws.onclose = (event) => {
+                clearTimeout(connectionTimeout);
+                this.isConnected = false;
+                console.log('WebSocket disconnected', event.code, event.reason);
+                
+                // Update connection indicator
+                const indicator = document.getElementById('connectionStatusIndicator');
+                if (indicator) {
+                    indicator.textContent = '● Disconnected';
+                    indicator.style.color = '#ff6b6b';
+                }
+                
+                // Attempt to reconnect
+                if (this.reconnectAttempts < this.maxReconnectAttempts) {
+                    this.reconnectAttempts++;
+                    const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 10000);
+                    console.log(`Reconnecting in ${delay}ms... (Attempt ${this.reconnectAttempts})`);
+                    setTimeout(() => {
+                        if (!this.isConnected) {
+                            this.connectWebSocket();
+                        }
+                    }, delay);
+                } else {
+                    this.showConnectionError('Failed to reconnect after multiple attempts. Please refresh the page.');
+                }
+            };
+        } catch (e) {
+            console.error('Error creating WebSocket:', e);
+            this.showConnectionError('Failed to create connection. Please check your network.');
+        }
+    }
+    
+    showConnectionError(message) {
+        const statusEl = document.getElementById('connectionStatus');
+        if (statusEl) {
+            statusEl.textContent = '❌ ' + message;
+            statusEl.style.color = '#ff6b6b';
+        }
+        const indicator = document.getElementById('connectionStatusIndicator');
+        if (indicator) {
+            indicator.textContent = '● Error';
+            indicator.style.color = '#ff6b6b';
+        }
     }
     
     handleWebSocketMessage(data) {
@@ -101,6 +267,7 @@ class CollabDraw {
                 this.drawingData = data.drawingData || [];
                 this.textElements = data.textElements || [];
                 this.users = data.users || [];
+                this.isInitialized = true;
                 this.updateUsersList();
                 this.redrawAll();
                 break;
@@ -142,6 +309,13 @@ class CollabDraw {
             case 'typing':
                 this.updateTypingIndicator(data.username, data.isTyping);
                 break;
+                
+            case 'error':
+                console.error('Server error:', data.message);
+                break;
+                
+            default:
+                console.log('Unknown message type:', data.type);
         }
     }
     
@@ -153,6 +327,14 @@ class CollabDraw {
         this.canvas.addEventListener('contextmenu', (e) => e.preventDefault());
         
         this.textInput.addEventListener('keydown', this.handleTextInput.bind(this));
+        this.textInput.addEventListener('blur', () => {
+            if (this.isTextMode) {
+                this.textInputContainer.style.display = 'none';
+                this.isTextMode = false;
+                this.textPosition = null;
+                this.sendTypingStatus(false);
+            }
+        });
     }
     
     startDraw(e) {
@@ -195,6 +377,8 @@ class CollabDraw {
             this.lastY = y;
         } else if (this.currentTool === 'eraser') {
             this.eraseAt(x, y);
+            this.lastX = x;
+            this.lastY = y;
         }
     }
     
@@ -240,8 +424,9 @@ class CollabDraw {
     startTextMode(x, y) {
         this.textPosition = { x, y };
         this.textInputContainer.style.display = 'block';
-        this.textInputContainer.style.left = (x / (this.canvas.width / this.container.clientWidth)) + 'px';
-        this.textInputContainer.style.top = (y / (this.canvas.height / this.container.clientHeight)) + 'px';
+        const rect = this.canvas.getBoundingClientRect();
+        this.textInputContainer.style.left = (e.clientX - rect.left) + 'px';
+        this.textInputContainer.style.top = (e.clientY - rect.top) + 'px';
         this.textInput.style.fontFamily = this.fontFamily;
         this.textInput.style.color = this.currentColor;
         this.textInput.style.fontSize = this.brushSize * 3 + 'px';
@@ -290,6 +475,7 @@ class CollabDraw {
             const index = (select.selectedIndex + 1) % select.options.length;
             select.selectedIndex = index;
             this.fontFamily = select.value;
+            this.saveSettings();
         } else if (action === 'undoStroke') {
             // Undo last stroke
             let lastIndex = -1;
@@ -302,10 +488,17 @@ class CollabDraw {
             if (lastIndex !== -1) {
                 this.drawingData.splice(lastIndex, 1);
                 this.redrawAll();
+                // Send clear and resync
                 this.sendClearData();
-                // Resend all drawing data to sync
+                // Resend all remaining drawing data
                 this.drawingData.forEach(data => {
-                    this.sendDrawData(data);
+                    if (data.type === 'brush') {
+                        this.sendDrawData(data);
+                    }
+                });
+                // Resend text data
+                this.textElements.forEach(data => {
+                    this.sendTextData(data);
                 });
             }
         }
@@ -341,7 +534,10 @@ class CollabDraw {
     }
     
     sendDrawData(data) {
-        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            // Store pending data to send when reconnected
+            return;
+        }
         
         const drawData = data || {
             type: 'brush',
@@ -354,12 +550,10 @@ class CollabDraw {
             opacity: this.opacity
         };
         
-        // Fix: Ensure we're sending proper drawing data
-        const message = {
+        this.ws.send(JSON.stringify({
             type: 'draw',
             data: drawData
-        };
-        this.ws.send(JSON.stringify(message));
+        }));
     }
     
     sendTextData(data) {
@@ -388,8 +582,8 @@ class CollabDraw {
         
         this.ws.send(JSON.stringify({
             type: 'cursor',
-            x: x,
-            y: y
+            x: x / (this.canvas.width / this.container.clientWidth),
+            y: y / (this.canvas.height / this.container.clientHeight)
         }));
     }
     
@@ -418,8 +612,8 @@ class CollabDraw {
         
         // Position
         const rect = this.canvas.getBoundingClientRect();
-        const px = rect.left + (x / (this.canvas.width / rect.width));
-        const py = rect.top + (y / (this.canvas.height / rect.height));
+        const px = rect.left + (x * (rect.width / this.canvas.width));
+        const py = rect.top + (y * (rect.height / this.canvas.height));
         cursor.style.left = px + 'px';
         cursor.style.top = py + 'px';
         
@@ -437,8 +631,9 @@ class CollabDraw {
         
         // Show typing indicator
         const typingUsers = Object.keys(this.typingUsers);
+        let indicator = document.querySelector('.typing-indicator');
+        
         if (typingUsers.length > 0) {
-            let indicator = document.querySelector('.typing-indicator');
             if (!indicator) {
                 indicator = document.createElement('div');
                 indicator.className = 'typing-indicator';
@@ -446,9 +641,9 @@ class CollabDraw {
             }
             const names = typingUsers.join(', ');
             indicator.textContent = `${names} ${typingUsers.length === 1 ? 'is' : 'are'} typing...`;
-        } else {
-            const indicator = document.querySelector('.typing-indicator');
-            if (indicator) indicator.remove();
+            indicator.style.display = 'block';
+        } else if (indicator) {
+            indicator.style.display = 'none';
         }
     }
     
@@ -488,6 +683,8 @@ class CollabDraw {
                 
                 if (tool === 'text') {
                     this.canvas.style.cursor = 'text';
+                } else if (tool === 'eraser') {
+                    this.canvas.style.cursor = 'cell';
                 } else {
                     this.canvas.style.cursor = 'crosshair';
                 }
@@ -500,22 +697,26 @@ class CollabDraw {
         document.getElementById('brushSize').addEventListener('input', (e) => {
             this.brushSize = parseInt(e.target.value);
             document.getElementById('sizeDisplay').textContent = this.brushSize;
+            this.saveSettings();
         });
         
         // Opacity
         document.getElementById('opacity').addEventListener('input', (e) => {
             this.opacity = parseInt(e.target.value);
             document.getElementById('opacityDisplay').textContent = this.opacity + '%';
+            this.saveSettings();
         });
         
         // Font
         document.getElementById('fontSelect').addEventListener('change', (e) => {
             this.fontFamily = e.target.value;
+            this.saveSettings();
         });
         
         // Color
         document.getElementById('colorPicker').addEventListener('input', (e) => {
             this.currentColor = e.target.value;
+            this.saveSettings();
         });
     }
     
@@ -540,20 +741,23 @@ class CollabDraw {
                 this.currentColor = btn.dataset.color;
                 document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
+                this.saveSettings();
             });
             
             btn.addEventListener('mousedown', (e) => {
                 // Hold to set color
-                const timeout = setTimeout(() => {
+                let timeout = setTimeout(() => {
                     const color = btn.dataset.color;
                     document.getElementById('colorPicker').value = color;
                     this.currentColor = color;
                     document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
+                    this.saveSettings();
                 }, 500);
                 
-                btn.addEventListener('mouseup', () => clearTimeout(timeout));
-                btn.addEventListener('mouseleave', () => clearTimeout(timeout));
+                const clearTimeoutHandler = () => clearTimeout(timeout);
+                btn.addEventListener('mouseup', clearTimeoutHandler, { once: true });
+                btn.addEventListener('mouseleave', clearTimeoutHandler, { once: true });
             });
             
             grid.appendChild(btn);
