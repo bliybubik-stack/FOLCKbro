@@ -1,249 +1,236 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>FlockMod · fallback</title>
-
-  <!-- Tailwind -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Lucide icons -->
-  <script src="https://unpkg.com/lucide@latest"></script>
-
-  <link href="style.css" rel="stylesheet" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>FlockMod · fallback</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="style.css" rel="stylesheet" />
 </head>
-
 <body>
-  <main class="w-full h-full flex">
+    <div class="flex h-screen w-screen overflow-hidden bg-[#202125] text-[#d7d7db] select-none">
 
-    <!-- LEFT TOOL STRIP -->
-    <aside class="left-tools" id="toolStrip">
-      <div class="tool-button active" data-tab="brush" title="Кисть"><i data-lucide="brush"></i></div>
-      <div class="tool-button" data-tab="hand" title="Панорамирование"><i data-lucide="hand"></i></div>
-      <div class="tool-button" data-tab="rotate" title="Поворот"><i data-lucide="refresh-cw"></i></div>
-      <div class="tool-button" data-tab="eyedropper" title="Пипетка"><i data-lucide="pipette"></i></div>
-      <div class="tool-button" data-tab="cursor" title="Указатель"><i data-lucide="mouse-pointer-2"></i></div>
-      <div class="tool-button" data-tab="brush2" title="Кисть"><i data-lucide="paintbrush"></i></div>
-      <div class="tool-button" data-tab="eraser" title="Ластик"><i data-lucide="eraser"></i></div>
-      <div class="tool-button" data-tab="text" title="Текст"><i data-lucide="a-large-small"></i></div>
-      <div class="tool-button" data-tab="move" title="Перемещение"><i data-lucide="move-vertical"></i></div>
-      <div class="tool-button" data-tab="rectangle" title="Прямоугольник"><i data-lucide="square"></i></div>
-      <div class="tool-button" data-tab="ellipse" title="Эллипс"><i data-lucide="circle"></i></div>
-      <div class="tool-button" data-tab="fill" title="Заливка"><i data-lucide="paint-bucket"></i></div>
-      <div class="tool-button" data-tab="dotted" title="Выделение"><i data-lucide="loader-circle"></i></div>
-      <div class="tool-button" data-tab="pencil" title="Карандаш"><i data-lucide="pencil"></i></div>
-    </aside>
+        <!-- ===== LEFT TOOL STRIP ===== -->
+        <aside class="left-tools flex flex-col items-center bg-[#3b3c41] border-r border-[#4c4d52] w-[90px] min-w-[90px] h-full overflow-y-auto">
+            <div class="tool-button active" data-tab="brush" title="Brush"><i data-lucide="brush"></i></div>
+            <div class="tool-button" data-tab="hand" title="Pan"><i data-lucide="hand"></i></div>
+            <div class="tool-button" data-tab="rotate" title="Rotate"><i data-lucide="refresh-cw"></i></div>
+            <div class="tool-button" data-tab="eyedropper" title="Eyedropper"><i data-lucide="pipette"></i></div>
+            <div class="tool-button" data-tab="cursor" title="Pointer"><i data-lucide="mouse-pointer-2"></i></div>
+            <div class="tool-button" data-tab="brush2" title="Paintbrush"><i data-lucide="paintbrush"></i></div>
+            <div class="tool-button" data-tab="eraser" title="Eraser"><i data-lucide="eraser"></i></div>
+            <div class="tool-button" data-tab="text" title="Text"><i data-lucide="a-large-small"></i></div>
+            <div class="tool-button" data-tab="move" title="Move"><i data-lucide="move-vertical"></i></div>
+            <div class="tool-button" data-tab="rectangle" title="Rectangle"><i data-lucide="square"></i></div>
+            <div class="tool-button" data-tab="ellipse" title="Ellipse"><i data-lucide="circle"></i></div>
+            <div class="tool-button" data-tab="fill" title="Fill"><i data-lucide="paint-bucket"></i></div>
+            <div class="tool-button" data-tab="dotted" title="Select"><i data-lucide="loader-circle"></i></div>
+            <div class="tool-button" data-tab="pencil" title="Pencil"><i data-lucide="pencil"></i></div>
+        </aside>
 
-    <!-- CANVAS (center) -->
-    <div class="flex-1 h-full flex items-center justify-center bg-[#2a2a2e] p-4">
-      <div class="bg-white rounded-lg shadow-2xl overflow-hidden w-full h-full">
-        <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
-      </div>
+        <!-- ===== MAIN SIDEBAR ===== -->
+        <aside class="sidebar flex-1 h-full overflow-y-auto bg-[#202125] p-2 pb-8" id="sidebar">
+
+            <!-- Users Section -->
+            <section class="section users" id="usersSection">
+                <div class="section-head">
+                    <div class="title"><i data-lucide="users" size="20"></i> USERS</div>
+                    <button class="section-collapse" data-collapse="usersSection"><i data-lucide="chevron-up" size="18"></i></button>
+                </div>
+                <div class="section-body">
+                    <div class="user-tabs"><span class="font-semibold text-white">You</span><span class="text-gray-400">Anonymous</span></div>
+                    <div class="user-area"></div>
+                    <div class="drag-bar"></div>
+                </div>
+            </section>
+
+            <!-- Tool Settings -->
+            <section class="section" id="brushSettings">
+                <div class="section-head">
+                    <div class="title"><i data-lucide="paintbrush" size="18"></i> <span id="settingsTitle">TOOL SETTINGS</span></div>
+                    <button class="section-collapse" data-collapse="brushSettings"><i data-lucide="chevron-up" size="18"></i></button>
+                </div>
+                <div class="section-body">
+
+                    <!-- Brush controls -->
+                    <div id="brushControls">
+                        <div class="setting-row">
+                            <label>Size</label>
+                            <div class="control">
+                                <input id="sizeRange" type="range" min="1" max="100" value="8">
+                                <span class="value" id="sizeValue">8</span>
+                            </div>
+                        </div>
+                        <div class="setting-row">
+                            <label>Opacity</label>
+                            <div class="control">
+                                <input id="opacityRange" type="range" min="0" max="100" value="100">
+                                <span class="value right" id="opacityValue">100</span>
+                            </div>
+                        </div>
+                        <div class="setting-row">
+                            <label>Blur</label>
+                            <div class="control">
+                                <input id="blurRange" type="range" min="0" max="100" value="0">
+                                <span class="value" id="blurValue">0</span>
+                            </div>
+                        </div>
+                        <div class="setting-row">
+                            <label>Smoothing</label>
+                            <div class="control">
+                                <input id="smoothRange" type="range" min="0" max="100" value="0">
+                                <span class="value" id="smoothValue">0</span>
+                            </div>
+                        </div>
+                        <div class="setting-row">
+                            <label>Spacing</label>
+                            <div class="control">
+                                <input id="spacingRange" type="range" min="0" max="100" value="0">
+                                <span class="value" id="spacingValue">0</span>
+                            </div>
+                        </div>
+                        <div class="setting-row">
+                            <label>Pressure</label>
+                            <div class="control flex items-center gap-3 px-3">
+                                <input type="checkbox" checked class="w-5 h-5 accent-gray-400">
+                                <span class="value right">100</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Text controls -->
+                    <div id="textControls" class="hidden">
+                        <div class="setting-row">
+                            <label>Size</label>
+                            <div class="control">
+                                <input id="textSizeRange" type="range" min="1" max="100" value="24">
+                                <span class="value" id="textSizeValue">24</span>
+                            </div>
+                        </div>
+                        <div class="setting-row">
+                            <label>Opacity</label>
+                            <div class="control">
+                                <input id="textOpacityRange" type="range" min="0" max="100" value="100">
+                                <span class="value right" id="textOpacityValue">100</span>
+                            </div>
+                        </div>
+                        <div class="setting-row">
+                            <label>Font</label>
+                            <div class="select-wrap">
+                                <select id="fontSelect">
+                                    <option>Rubik</option>
+                                    <option>Arial</option>
+                                    <option>Inter</option>
+                                    <option>Roboto</option>
+                                    <option>Georgia</option>
+                                </select>
+                                <i data-lucide="chevron-down" size="18"></i>
+                            </div>
+                        </div>
+                        <div class="setting-row">
+                            <label>Right Click</label>
+                            <div class="select-wrap">
+                                <select id="rightClickSelect">
+                                    <option>Next font</option>
+                                    <option>Previous font</option>
+                                    <option>No action</option>
+                                </select>
+                                <i data-lucide="chevron-down" size="18"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Generic controls -->
+                    <div id="genericControls" class="hidden">
+                        <div class="setting-row">
+                            <label>Size</label>
+                            <div class="control">
+                                <input id="genericSizeRange" type="range" min="1" max="100" value="8">
+                                <span class="value" id="genericSizeValue">8</span>
+                            </div>
+                        </div>
+                        <div class="setting-row">
+                            <label>Opacity</label>
+                            <div class="control">
+                                <input id="genericOpacityRange" type="range" min="0" max="100" value="100">
+                                <span class="value right" id="genericOpacityValue">100</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="drag-bar"></div>
+                </div>
+            </section>
+
+            <!-- Presets -->
+            <section class="section" id="presetsSection">
+                <div class="section-head">
+                    <div class="title"><i data-lucide="cloud" size="18"></i> PRESETS</div>
+                    <button class="section-collapse" data-collapse="presetsSection"><i data-lucide="chevron-up" size="18"></i></button>
+                </div>
+                <div class="section-body">
+                    <div class="preset-grid" id="presetGrid"></div>
+                    <p class="preset-help">Hold to set. Click to load.</p>
+                </div>
+            </section>
+
+            <!-- Color Wheel -->
+            <section class="section" id="colorSection">
+                <div class="section-head">
+                    <div class="title"><i data-lucide="palette" size="18"></i> COLOR WHEEL</div>
+                    <button class="section-collapse" data-collapse="colorSection"><i data-lucide="chevron-up" size="18"></i></button>
+                </div>
+                <div class="section-body">
+                    <div class="color-wheel" id="colorWheel">
+                        <div class="color-picker" id="colorPicker"></div>
+                        <div class="wheel-handle" id="wheelHandle"></div>
+                    </div>
+                    <div class="color-under">
+                        <div class="color-square" id="fgColor" style="background:#ff3366"></div>
+                        <div class="swap" id="swapColors">↕</div>
+                        <div class="color-square" id="bgColor" style="background:#ffffff"></div>
+                        <input type="color" id="hiddenColor" value="#ff3366" class="ml-auto w-10 h-10 bg-transparent border-0 rounded cursor-pointer">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Layers -->
+            <section class="section" id="layersSection">
+                <div class="section-head">
+                    <div class="title"><i data-lucide="layers-3" size="18"></i> LAYERS</div>
+                    <button class="section-collapse" data-collapse="layersSection"><i data-lucide="chevron-up" size="18"></i></button>
+                </div>
+                <div class="section-body p-0">
+                    <div class="layers-toolbar">
+                        <button title="Delete"><i data-lucide="eraser" size="16"></i></button>
+                        <button title="New Layer" id="newLayer"><i data-lucide="layers" size="16"></i></button>
+                        <button title="Options"><i data-lucide="chevron-down" size="16"></i></button>
+                        <button title="Back"><i data-lucide="arrow-left-right" size="16"></i></button>
+                        <button title="Move"><i data-lucide="move-vertical" size="16"></i></button>
+                        <button title="Save"><i data-lucide="save" size="16"></i></button>
+                    </div>
+                    <div id="layersList">
+                        <div class="layer">
+                            <div class="layer-thumb"></div>
+                            <div class="layer-number">1</div>
+                            <i class="layer-icon" data-lucide="eye" size="16"></i>
+                            <i class="layer-icon" data-lucide="lock" size="16"></i>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </aside>
+
+        <!-- ===== CANVAS AREA ===== -->
+        <main class="flex-1 h-full bg-[#2a2a2e] flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-2xl overflow-hidden w-full h-full">
+                <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+            </div>
+        </main>
     </div>
 
-    <!-- RIGHT SIDEBAR (exact replica from reference) -->
-    <aside class="sidebar" id="sidebar">
-
-      <!-- User list -->
-      <section class="section users" id="usersSection">
-        <div class="section-head">
-          <div class="title"><i data-lucide="users" size="22"></i> СПИСОК ПОЛЬЗОВАТЕЛЕЙ</div>
-          <button class="section-collapse" data-collapse="usersSection"><i data-lucide="chevron-up"></i></button>
-        </div>
-        <div class="section-body">
-          <div class="user-tabs"><span>Вы</span><span>Anonymous</span></div>
-          <div class="user-area"></div>
-          <div class="drag-bar"></div>
-        </div>
-      </section>
-
-      <!-- Brush settings -->
-      <section class="section" id="brushSettings">
-        <div class="section-head">
-          <div class="title"><i data-lucide="paintbrush" size="21"></i> <span id="settingsTitle">НАСТРОЙКИ ИНСТРУМЕНТА</span></div>
-          <button class="section-collapse" data-collapse="brushSettings"><i data-lucide="chevron-up"></i></button>
-        </div>
-        <div class="section-body">
-
-          <div id="brushControls">
-            <div class="number-row">
-              <label>Размер</label>
-              <div class="control">
-                <input id="sizeRange" type="range" min="1" max="100" value="8">
-                <span class="value" id="sizeValue">8</span>
-              </div>
-            </div>
-
-            <div class="number-row">
-              <label>Непрозрачность</label>
-              <div class="control">
-                <input id="opacityRange" type="range" min="0" max="100" value="100">
-                <span class="value right" id="opacityValue">100</span>
-              </div>
-            </div>
-
-            <div class="number-row" id="blurRow">
-              <label>Размытие</label>
-              <div class="control">
-                <input id="blurRange" type="range" min="0" max="100" value="0">
-                <span class="value" id="blurValue">0</span>
-              </div>
-            </div>
-
-            <div class="number-row" id="smoothRow">
-              <label>Сглаживание</label>
-              <div class="control">
-                <input id="smoothRange" type="range" min="0" max="100" value="0">
-                <span class="value" id="smoothValue">0</span>
-              </div>
-            </div>
-
-            <div class="number-row" id="spacingRow">
-              <label>Промежуток</label>
-              <div class="control">
-                <input id="spacingRange" type="range" min="0" max="100" value="0">
-                <span class="value" id="spacingValue">0</span>
-              </div>
-            </div>
-
-            <div class="number-row" id="pressureRow">
-              <label class="opacity-60">Давление</label>
-              <div class="control opacity-40">
-                <input type="checkbox" checked style="width:24px;height:24px;margin-left:9px;accent-color:#aaa;">
-                <span class="value right">100</span>
-              </div>
-            </div>
-          </div>
-
-          <div id="textControls" class="hidden">
-            <div class="number-row">
-              <label>Размер</label>
-              <div class="control">
-                <input id="textSizeRange" type="range" min="1" max="100" value="8">
-                <span class="value" id="textSizeValue">8</span>
-              </div>
-            </div>
-            <div class="number-row">
-              <label>Непрозрачность</label>
-              <div class="control">
-                <input id="textOpacityRange" type="range" min="0" max="100" value="100">
-                <span class="value right" id="textOpacityValue">100</span>
-              </div>
-            </div>
-            <div class="number-row">
-              <label>Шрифт</label>
-              <div class="select-wrap">
-                <select id="fontSelect">
-                  <option>Rubik</option>
-                  <option>Arial</option>
-                  <option>Inter</option>
-                  <option>Roboto</option>
-                  <option>Georgia</option>
-                </select>
-                <i data-lucide="chevron-down" size="20"></i>
-              </div>
-            </div>
-            <div class="number-row">
-              <label>Правый клик</label>
-              <div class="select-wrap">
-                <select id="rightClickSelect">
-                  <option>Следующий шрифт</option>
-                  <option>Предыдущий шрифт</option>
-                  <option>Нет действия</option>
-                </select>
-                <i data-lucide="chevron-down" size="20"></i>
-              </div>
-            </div>
-          </div>
-
-          <div id="genericControls" class="hidden">
-            <div class="number-row">
-              <label>Размер</label>
-              <div class="control">
-                <input id="genericSizeRange" type="range" min="1" max="100" value="8">
-                <span class="value" id="genericSizeValue">8</span>
-              </div>
-            </div>
-            <div class="number-row">
-              <label>Непрозрачность</label>
-              <div class="control">
-                <input id="genericOpacityRange" type="range" min="0" max="100" value="100">
-                <span class="value right" id="genericOpacityValue">100</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="drag-bar"></div>
-        </div>
-      </section>
-
-      <!-- Presets -->
-      <section class="section" id="presetsSection">
-        <div class="section-head">
-          <div class="title"><i data-lucide="cloud" size="22"></i> ПРЕДУСТАНОВКИ</div>
-          <button class="section-collapse" data-collapse="presetsSection"><i data-lucide="chevron-up"></i></button>
-        </div>
-        <div class="section-body">
-          <div class="preset-grid" id="presetGrid"></div>
-          <p class="preset-help">Удерживайте для установки. Нажмите,<br>чтобы загрузить.</p>
-        </div>
-      </section>
-
-      <!-- Color wheel -->
-      <section class="section" id="colorSection">
-        <div class="section-head">
-          <div class="title"><i data-lucide="palette" size="22"></i> ЦВЕТОВОЕ КОЛЕСО</div>
-          <button class="section-collapse" data-collapse="colorSection"><i data-lucide="chevron-up"></i></button>
-        </div>
-        <div class="section-body">
-          <div class="flex items-center gap-3 mb-2">
-            <button id="colorMode" class="p-1" title="Настройки цвета"><i data-lucide="sliders-horizontal"></i></button>
-          </div>
-
-          <div class="color-wheel" id="colorWheel">
-            <div class="color-picker" id="colorPicker"></div>
-            <div class="wheel-handle" id="wheelHandle"></div>
-          </div>
-
-          <div class="color-under">
-            <div class="color-square" id="fgColor" style="background:#000"></div>
-            <div class="swap" id="swapColors">↕</div>
-            <div class="color-square" id="bgColor" style="background:#fff"></div>
-            <input type="color" id="hiddenColor" value="#ff3000" class="ml-auto w-12 h-12 bg-transparent border-0">
-          </div>
-        </div>
-      </section>
-
-      <!-- Layers -->
-      <section class="section" id="layersSection">
-        <div class="section-head">
-          <div class="title"><i data-lucide="layers-3" size="22"></i> СЛОИ</div>
-          <button class="section-collapse" data-collapse="layersSection"><i data-lucide="chevron-up"></i></button>
-        </div>
-        <div class="section-body p-0">
-          <div class="layers-toolbar">
-            <button title="Удалить"><i data-lucide="eraser"></i></button>
-            <button title="Новый слой" id="newLayer"><i data-lucide="layers"></i></button>
-            <button title="Опции"><i data-lucide="chevron-down"></i></button>
-            <button title="Назад"><i data-lucide="arrow-left-right"></i></button>
-            <button title="Переместить"><i data-lucide="move-vertical"></i></button>
-            <button title="Сохранить"><i data-lucide="save"></i></button>
-          </div>
-          <div id="layersList">
-            <div class="layer">
-              <div class="layer-thumb"></div>
-              <div class="layer-number">3</div>
-              <i class="layer-icon" data-lucide="eye"></i>
-              <i class="layer-icon" data-lucide="lock"></i>
-            </div>
-          </div>
-        </div>
-      </section>
-
-    </aside>
-  </main>
-
-  <script src="app.js"></script>
+    <script src="app.js"></script>
 </body>
-</html>
+                          </html>
