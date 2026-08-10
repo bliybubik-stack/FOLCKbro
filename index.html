@@ -8,134 +8,164 @@
     <link href="style.css" rel="stylesheet" />
 </head>
 <body>
-    <!-- main container -->
     <div class="flex h-screen w-screen overflow-hidden bg-[#1a1a1e] text-gray-200 select-none">
 
-        <!-- ===== CANVAS (left) ===== -->
-        <main class="flex-1 h-full flex flex-col items-center justify-center bg-[#2a2a2e] p-8">
-            <div class="bg-white rounded-lg shadow-2xl overflow-hidden" style="width: 90%; height: 85%;">
-                <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
-            </div>
-        </main>
-
-        <!-- ===== SIDEBAR (right) – COMPLETE OVERHAUL ===== -->
-        <aside class="w-[320px] min-w-[320px] h-full bg-[#1e1e24] border-l border-[#33333c] flex flex-col overflow-y-auto p-3 space-y-3 text-sm">
-
-            <!-- header -->
-            <div class="flex items-center justify-between border-b border-[#33333c] pb-2">
-                <span class="text-xs font-mono tracking-wider text-gray-400">#fallback · FlockMod</span>
-                <span class="text-[10px] text-gray-500">flockmod.com</span>
-            </div>
-
-            <!-- user list -->
-            <div class="bg-[#16161c] rounded-md p-2 border border-[#2a2a32]">
-                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Список пользователей</div>
-                <div class="flex items-center gap-2">
-                    <span class="w-2 h-2 rounded-full bg-green-400"></span>
-                    <span class="text-gray-200 font-medium">Вы</span>
-                    <span class="text-gray-400 text-xs ml-1">Anonymous</span>
+        <!-- ===== CANVAS AREA (left) ===== -->
+        <div class="flex-1 h-full flex flex-col bg-[#2a2a2e]">
+            <!-- Canvas container with gray background -->
+            <div class="flex-1 flex items-center justify-center p-4">
+                <div class="bg-white rounded-lg shadow-2xl overflow-hidden" style="width: 95%; height: 95%;">
+                    <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
                 </div>
             </div>
-
-            <!-- TOOL SELECTOR -->
-            <div class="bg-[#16161c] rounded-md p-2 border border-[#2a2a32]">
-                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Инструменты</div>
-                <div class="grid grid-cols-4 gap-1.5">
-                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="pen">✏️ Pen</button>
-                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="marker">🖊️ Marker</button>
-                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="text">T Text</button>
-                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="eraser">🧹 Eraser</button>
-                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="fill">🪣 Fill</button>
-                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="select">🔲 Select</button>
-                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="drag">✋ Drag</button>
-                    <button class="tool-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1.5 text-[10px] border border-[#3d3d48] transition active:scale-95" data-tool="transform">🔄 Transform</button>
-                </div>
+            <!-- Layer bar below canvas -->
+            <div class="h-12 bg-[#23232a] border-t border-[#33333c] flex items-center px-4 gap-2">
+                <button id="addLayer" class="text-xs bg-[#3a3a44] px-3 py-1 rounded hover:bg-[#4a4a54]">+ Layer</button>
+                <button id="removeLayer" class="text-xs bg-[#3a3a44] px-3 py-1 rounded hover:bg-[#4a4a54]">−</button>
+                <div id="layerList" class="flex gap-1 overflow-x-auto flex-1"></div>
             </div>
+        </div>
 
-            <!-- НАСТРОЙКИ ИНСТРУМЕНТА (dynamic) -->
-            <div class="bg-[#16161c] rounded-md p-2 border border-[#2a2a32]">
-                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Настройки инструмента</div>
-                <div id="toolSettings" class="space-y-1.5">
-                    <!-- populated by JS -->
+        <!-- ===== SIDEBAR (right) ===== -->
+        <aside class="w-[340px] min-w-[340px] h-full bg-[#23232a] border-l border-[#33333c] flex flex-col overflow-y-auto">
+
+            <!-- Scrollable content -->
+            <div class="flex-1 overflow-y-auto p-3 space-y-3">
+
+                <!-- Header -->
+                <div class="flex items-center justify-between border-b border-[#33333c] pb-2">
+                    <span class="text-xs font-mono tracking-wider text-gray-400">#fallback · FlockMod</span>
+                    <span class="text-[10px] text-gray-500">flockmod.com</span>
+                </div>
+
+                <!-- User list -->
+                <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38]">
+                    <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Список пользователей</div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-green-400"></span>
+                        <span class="text-gray-200 font-medium">Вы</span>
+                        <span class="text-gray-400 text-xs ml-1">Anonymous</span>
+                    </div>
+                </div>
+
+                <!-- Tool selector -->
+                <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38]">
+                    <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Инструменты</div>
+                    <div class="grid grid-cols-4 gap-1">
+                        <button data-tool="pen" class="tool-btn bg-[#2a2a34] p-1.5 rounded text-xs border border-[#3d3d48] hover:bg-[#3a3a44] active:bg-[#4a4a54] text-gray-300">🖊 Pen</button>
+                        <button data-tool="marker" class="tool-btn bg-[#2a2a34] p-1.5 rounded text-xs border border-[#3d3d48] hover:bg-[#3a3a44] active:bg-[#4a4a54] text-gray-300">🖌 Marker</button>
+                        <button data-tool="text" class="tool-btn bg-[#2a2a34] p-1.5 rounded text-xs border border-[#3d3d48] hover:bg-[#3a3a44] active:bg-[#4a4a54] text-gray-300">T Text</button>
+                        <button data-tool="eraser" class="tool-btn bg-[#2a2a34] p-1.5 rounded text-xs border border-[#3d3d48] hover:bg-[#3a3a44] active:bg-[#4a4a54] text-gray-300">🧹 Eraser</button>
+                        <button data-tool="fill" class="tool-btn bg-[#2a2a34] p-1.5 rounded text-xs border border-[#3d3d48] hover:bg-[#3a3a44] active:bg-[#4a4a54] text-gray-300">🪣 Fill</button>
+                        <button data-tool="select" class="tool-btn bg-[#2a2a34] p-1.5 rounded text-xs border border-[#3d3d48] hover:bg-[#3a3a44] active:bg-[#4a4a54] text-gray-300">⬜ Select</button>
+                        <button data-tool="drag" class="tool-btn bg-[#2a2a34] p-1.5 rounded text-xs border border-[#3d3d48] hover:bg-[#3a3a44] active:bg-[#4a4a54] text-gray-300">✋ Drag</button>
+                        <button data-tool="transform" class="tool-btn bg-[#2a2a34] p-1.5 rounded text-xs border border-[#3d3d48] hover:bg-[#3a3a44] active:bg-[#4a4a54] text-gray-300">🔄 Transform</button>
+                    </div>
+                </div>
+
+                <!-- Tool settings -->
+                <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38]">
+                    <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Настройки инструмента</div>
                     <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs">
                         <span class="text-gray-400">Размер</span>
-                        <span class="text-gray-200 text-right" id="sizeDisplay">8</span>
+                        <div class="flex items-center gap-1">
+                            <input type="range" id="sizeSlider" min="1" max="50" value="8" class="flex-1 h-1 bg-[#3a3a44] rounded appearance-none">
+                            <span class="text-gray-200 text-right w-6" id="sizeDisplay">8</span>
+                        </div>
                         <span class="text-gray-400">Непрозрачность</span>
-                        <span class="text-gray-200 text-right" id="opacityDisplay">100</span>
+                        <div class="flex items-center gap-1">
+                            <input type="range" id="opacitySlider" min="5" max="100" value="100" class="flex-1 h-1 bg-[#3a3a44] rounded appearance-none">
+                            <span class="text-gray-200 text-right w-6" id="opacityDisplay">100</span>
+                        </div>
                         <span class="text-gray-400">Размытие</span>
-                        <span class="text-gray-200 text-right" id="blurDisplay">0</span>
-                        <span class="text-gray-400">Сглаживание</span>
-                        <span class="text-gray-200 text-right" id="smoothDisplay">0</span>
-                        <span class="text-gray-400">Промежуток</span>
-                        <span class="text-gray-200 text-right" id="gapDisplay">0</span>
+                        <div class="flex items-center gap-1">
+                            <input type="range" id="blurSlider" min="0" max="20" value="0" class="flex-1 h-1 bg-[#3a3a44] rounded appearance-none">
+                            <span class="text-gray-200 text-right w-6" id="blurDisplay">0</span>
+                        </div>
                         <span class="text-gray-400">Давление</span>
-                        <span class="text-gray-200 text-right" id="pressureDisplay">100</span>
+                        <div class="flex items-center gap-1">
+                            <input type="range" id="pressureSlider" min="0" max="100" value="100" class="flex-1 h-1 bg-[#3a3a44] rounded appearance-none">
+                            <span class="text-gray-200 text-right w-6" id="pressureDisplay">100</span>
+                        </div>
+                        <span class="text-gray-400">Промежуток</span>
+                        <div class="flex items-center gap-1">
+                            <input type="range" id="gapSlider" min="0" max="20" value="0" class="flex-1 h-1 bg-[#3a3a44] rounded appearance-none">
+                            <span class="text-gray-200 text-right w-6" id="gapDisplay">0</span>
+                        </div>
                         <span class="text-gray-400">Правый клик</span>
-                        <span class="text-gray-200 text-right" id="rightClickDisplay">Отменить штрих</span>
-                    </div>
-                    <div class="flex items-center justify-between pt-1 border-t border-[#2a2a32] text-xs">
-                        <span class="text-gray-400">Курсор</span>
-                        <span class="text-gray-200" id="cursorDisplay">Круг</span>
-                    </div>
-                    <!-- pressure sensitivity toggle -->
-                    <div class="flex items-center justify-between pt-1 border-t border-[#2a2a32] text-xs">
-                        <span class="text-gray-400">Чувствительность</span>
-                        <button id="pressureToggle" class="bg-[#282830] px-3 py-0.5 rounded border border-[#3d3d48] text-[10px] hover:bg-[#3a3a46]">Вкл</button>
+                        <span class="text-gray-200 text-right">Отменить штрих</span>
                     </div>
                 </div>
-            </div>
 
-            <!-- templates -->
-            <div class="bg-[#16161c] rounded-md p-2 border border-[#2a2a32]">
-                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Шаблоны</div>
-                <div class="grid grid-cols-4 gap-1">
-                    <button class="template-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1 text-[9px] border border-[#3d3d48]" data-template="sketch">Sketch</button>
-                    <button class="template-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1 text-[9px] border border-[#3d3d48]" data-template="ink">Ink</button>
-                    <button class="template-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1 text-[9px] border border-[#3d3d48]" data-template="watercolor">Water</button>
-                    <button class="template-btn bg-[#282830] hover:bg-[#3a3a46] rounded p-1 text-[9px] border border-[#3d3d48]" data-template="neon">Neon</button>
+                <!-- Color wheel (integrated) -->
+                <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38]">
+                    <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Цветовое колесо</div>
+                    <div class="flex flex-col items-center">
+                        <div class="relative w-full max-w-[280px] aspect-square mx-auto">
+                            <canvas id="colorWheel" class="w-full h-full rounded-full"></canvas>
+                        </div>
+                        <!-- Color preview and hex -->
+                        <div class="flex items-center gap-3 mt-2 w-full">
+                            <div id="colorPreview" class="w-8 h-8 rounded-full border border-gray-600 flex-shrink-0" style="background:#ff3366;"></div>
+                            <input id="hexInput" class="bg-[#2a2a34] border border-[#3d3d48] rounded px-2 py-1 text-xs font-mono w-20 text-gray-200" value="FF3366" maxlength="6">
+                            <button id="copyColorBtn" class="text-xs bg-[#3a3a44] px-2 py-1 rounded hover:bg-[#4a4a54]">Copy</button>
+                        </div>
+                        <!-- Color history -->
+                        <div id="colorHistory" class="flex gap-1 mt-2 flex-wrap justify-center"></div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- ПРЕДУСТАНОВКИ -->
-            <div class="bg-[#16161c] rounded-md p-2 border border-[#2a2a32]">
-                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Предустановки</div>
-                <div class="grid grid-cols-9 gap-1 text-center text-[11px] font-mono">
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">1</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">2</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">3</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">4</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">5</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">6</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">7</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">8</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">9</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">10</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">11</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">12</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">13</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">14</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">15</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">16</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">17</span>
-                    <span class="preset-cell bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">18</span>
+                <!-- Templates/Presets -->
+                <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38]">
+                    <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Шаблоны</div>
+                    <div class="grid grid-cols-4 gap-1 text-center text-[10px]">
+                        <button class="template-btn bg-[#2a2a34] px-1 py-0.5 rounded border border-[#3d3d48] hover:bg-[#3a3a44]">Карандаш</button>
+                        <button class="template-btn bg-[#2a2a34] px-1 py-0.5 rounded border border-[#3d3d48] hover:bg-[#3a3a44]">Акварель</button>
+                        <button class="template-btn bg-[#2a2a34] px-1 py-0.5 rounded border border-[#3d3d48] hover:bg-[#3a3a44]">Масло</button>
+                        <button class="template-btn bg-[#2a2a34] px-1 py-0.5 rounded border border-[#3d3d48] hover:bg-[#3a3a44]">Пастель</button>
+                        <button class="template-btn bg-[#2a2a34] px-1 py-0.5 rounded border border-[#3d3d48] hover:bg-[#3a3a44]">Маркер</button>
+                        <button class="template-btn bg-[#2a2a34] px-1 py-0.5 rounded border border-[#3d3d48] hover:bg-[#3a3a44]">Каллиграфия</button>
+                        <button class="template-btn bg-[#2a2a34] px-1 py-0.5 rounded border border-[#3d3d48] hover:bg-[#3a3a44]">Штриховка</button>
+                        <button class="template-btn bg-[#2a2a34] px-1 py-0.5 rounded border border-[#3d3d48] hover:bg-[#3a3a44]">Аэрограф</button>
+                    </div>
+                    <div class="text-[9px] text-gray-500 mt-1 text-center">Удерживайте для установки. Нажмите, чтобы загрузить.</div>
                 </div>
-                <div class="text-[9px] text-gray-500 mt-1 text-center">Удерживайте для установки. Нажмите, чтобы загрузить.</div>
-            </div>
 
-            <!-- ЦВЕТОВОЕ КОЛЕСО + СЛОЙ -->
-            <div class="bg-[#16161c] rounded-md p-2 border border-[#2a2a32] flex flex-col gap-1">
-                <div class="text-[10px] uppercase tracking-wider text-gray-400">Цветовое колесо</div>
-                <div class="flex items-center gap-3">
-                    <div id="colorWheel" class="w-10 h-10 rounded-full border-2 border-gray-600 cursor-pointer" style="background: conic-gradient(red, yellow, lime, cyan, blue, magenta, red);"></div>
-                    <div id="colorPreview" class="w-8 h-8 rounded-full border-2 border-gray-500" style="background: #000000;"></div>
-                    <input type="color" id="colorPicker" value="#000000" class="w-8 h-8 rounded border-0 cursor-pointer bg-transparent" />
-                    <span class="text-[10px] text-gray-400 ml-auto">СЛОЙ</span>
+                <!-- Presets numbers -->
+                <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38]">
+                    <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Предустановки</div>
+                    <div class="grid grid-cols-9 gap-1 text-center text-[11px] font-mono">
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">1</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">2</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">3</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">4</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">5</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">6</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">7</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">8</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">9</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">10</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">11</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">12</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">13</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">14</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">15</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">16</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">17</span>
+                        <span class="preset-num bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">18</span>
+                    </div>
+                    <div class="text-[9px] text-gray-500 mt-1 text-center">Удерживайте для установки. Нажмите, чтобы загрузить.</div>
                 </div>
-            </div>
 
-            <!-- footer -->
-            <div class="text-[9px] text-gray-600 text-center pt-1 border-t border-[#2a2a32]">https://flockmod.com/r/fallback</div>
+                <!-- Footer -->
+                <div class="text-[9px] text-gray-600 text-center pt-1 border-t border-[#2a2a32]">https://flockmod.com/r/fallback</div>
+            </div>
         </aside>
+    </div>
+
+    <!-- Toast notification -->
+    <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 rounded-xl bg-neutral-900 text-white px-4 py-2.5 text-sm shadow-lg opacity-0 transition-opacity duration-300 pointer-events-none">
+        Copied
     </div>
 
     <script src="app.js"></script>
