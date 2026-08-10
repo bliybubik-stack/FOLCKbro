@@ -1,8 +1,12 @@
-// app.js – Professional drawing app with glassmorphism UI
+// app.js – Professional drawing app with text tool
 
 (function() {
     const canvas = document.getElementById('drawCanvas');
     const ctx = canvas.getContext('2d');
+    const canvasContainer = document.getElementById('canvasContainer');
+    const textOverlay = document.getElementById('textOverlay');
+    const textFrame = document.getElementById('textFrame');
+    const textDisplay = document.getElementById('textDisplay');
 
     // ---- canvas sizing ----
     function resizeCanvas() {
@@ -29,7 +33,7 @@
         pressureSize: 25,
         startWidth: 8,
         endWidth: 8,
-        color: '#ffffff',
+        color: '#000000',
         isEraser: false,
         isText: false
     };
@@ -49,6 +53,15 @@
     const eraserBtn = document.getElementById('eraserBtn');
     const textBtn = document.getElementById('textBtn');
     const brushBtns = document.querySelectorAll('.brush-btn');
+
+    // ---- text tool state ----
+    let textToolActive = false;
+    let textPlaced = false;
+    let textFrameX = 0;
+    let textFrameY = 0;
+    let isDragging = false;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
 
     function updateDisplays() {
         // all values are read directly from sliders
@@ -89,6 +102,7 @@
             settings.isText = false;
             eraserBtn.style.background = 'rgba(255,255,255,0.05)';
             textBtn.style.background = 'rgba(255,255,255,0.05)';
+            deactivateTextTool();
             readSettings();
         });
     });
@@ -98,12 +112,12 @@
         settings.isEraser = !settings.isEraser;
         settings.isText = false;
         textBtn.style.background = 'rgba(255,255,255,0.05)';
+        deactivateTextTool();
         if (settings.isEraser) {
             this.style.background = 'rgba(255,255,255,0.2)';
             brushBtns.forEach(b => b.classList.remove('active'));
         } else {
             this.style.background = 'rgba(255,255,255,0.05)';
-            // re-activate last brush
             document.querySelector('.brush-btn.active')?.classList.remove('active');
             document.querySelector('.brush-btn[data-brush="pen"]')?.classList.add('active');
             settings.brush = 'pen';
@@ -112,38 +126,217 @@
     });
 
     // ---- text tool ----
+    function activateTextTool() {
+        textToolActive = true;
+        textPlaced = false;
+        textOverlay.classList.remove('hidden');
+        textFrame.style.display = 'block';
+        textFrame.style.left = '50%';
+        textFrame.style.top = '50%';
+        textFrame.style.transform = 'translate(-50%, -50%)';
+        textDisplay.textContent = 'Type something';
+        textDisplay.contentEditable = false;
+        textDisplay.style.color = settings.color;
+        textDisplay.style.fontSize = Math.max(12, settings.size * 2) + 'px';
+        canvas.style.cursor = 'text';
+        textFrame.style.cursor = 'move';
+        // remove pointer-events-none from overlay so we can detect clicks
+        textOverlay.style.pointerEvents = 'auto';
+        textFrame.style.pointerEvents = 'auto';
+        textDisplay.style.pointerEvents = 'none';
+        // store position for later
+        textFrameX = window.innerWidth / 2 - 100;
+        textFrameY = window.innerHeight / 2 - 30;
+    }
+
+    function deactivateTextTool() {
+        textToolActive = false;
+        textPlaced = false;
+        textOverlay.classList.add('hidden');
+        textFrame.style.display = 'none';
+        canvas.style.cursor = 'crosshair';
+        textOverlay.style.pointerEvents = 'none';
+        textFrame.style.pointerEvents = 'none';
+        textDisplay.contentEditable = false;
+        settings.isText = false;
+    }
+
+    // ---- text button click ----
     textBtn.addEventListener('click', function() {
-        settings.isText = !settings.isText;
-        settings.isEraser = false;
-        eraserBtn.style.background = 'rgba(255,255,255,0.05)';
         if (settings.isText) {
-            this.style.background = 'rgba(255,255,255,0.2)';
-            brushBtns.forEach(b => b.classList.remove('active'));
-            // prompt for text
-            const text = prompt('Enter text:', 'Hello Art!');
-            if (text) {
-                const rect = canvas.getBoundingClientRect();
-                const x = rect.width / 2 - 50;
-                const y = rect.height / 2;
-                ctx.save();
-                ctx.globalAlpha = settings.opacity / 100;
-                ctx.shadowBlur = settings.blur;
-                ctx.shadowColor = settings.color;
-                ctx.fillStyle = settings.color;
-                ctx.font = `${settings.size * 4}px system-ui, sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(text, x, y);
-                ctx.restore();
-                saveStroke();
-            }
+            // if already in text mode, deactivate
             settings.isText = false;
             this.style.background = 'rgba(255,255,255,0.05)';
+            deactivateTextTool();
+            brushBtns.forEach(b => b.classList.remove('active'));
+            document.querySelector('.brush-btn[data-brush="pen"]')?.classList.add('active');
+            settings.brush = 'pen';
+            return;
+        }
+        settings.isText = true;
+        settings.isEraser = false;
+        eraserBtn.style.background = 'rgba(255,255,255,0.05)';
+        this.style.background = 'rgba(255,255,255,0.2)';
+        brushBtns.forEach(b => b.classList.remove('active'));
+        activateTextTool();
+        readSettings();
+    });
+
+    // ---- text overlay click to place ----
+    textOverlay.addEventListener('mousedown', function(e) {
+        if (!textToolActive || textPlaced) return;
+        if (e.target === textOverlay || e.target === canvas) {
+            // place text at click position
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            textFrame.style.left = x + 'px';
+            textFrame.style.top = y + 'px';
+            textFrame.style.transform = 'none';
+            textFrameX = x;
+            textFrameY = y;
+            textPlaced = true;
+            textFrame.style.cursor = 'move';
+            textDisplay.contentEditable = true;
+            textDisplay.focus();
+            textDisplay.select();
+            // make overlay click-through except on frame
+            textOverlay.style.pointerEvents = 'none';
+            textFrame.style.pointerEvents = 'auto';
+            textDisplay.style.pointerEvents = 'auto';
+            
+            // add drag functionality
+            textFrame.addEventListener('mousedown', startDrag);
+            textFrame.addEventListener('touchstart', startDragTouch, { passive: false });
+        }
+    });
+
+    // ---- drag functions ----
+    function startDrag(e) {
+        if (!textPlaced) return;
+        isDragging = true;
+        const rect = textFrame.getBoundingClientRect();
+        dragOffsetX = e.clientX - rect.left;
+        dragOffsetY = e.clientY - rect.top;
+        document.addEventListener('mousemove', onDrag);
+        document.addEventListener('mouseup', stopDrag);
+        e.preventDefault();
+    }
+
+    function startDragTouch(e) {
+        if (!textPlaced) return;
+        const touch = e.touches[0];
+        const rect = textFrame.getBoundingClientRect();
+        dragOffsetX = touch.clientX - rect.left;
+        dragOffsetY = touch.clientY - rect.top;
+        document.addEventListener('touchmove', onDragTouch, { passive: false });
+        document.addEventListener('touchend', stopDragTouch);
+        e.preventDefault();
+    }
+
+    function onDrag(e) {
+        if (!isDragging) return;
+        const containerRect = canvasContainer.getBoundingClientRect();
+        let x = e.clientX - containerRect.left - dragOffsetX;
+        let y = e.clientY - containerRect.top - dragOffsetY;
+        x = Math.max(0, Math.min(x, containerRect.width - textFrame.offsetWidth));
+        y = Math.max(0, Math.min(y, containerRect.height - textFrame.offsetHeight));
+        textFrame.style.left = x + 'px';
+        textFrame.style.top = y + 'px';
+        textFrame.style.transform = 'none';
+        textFrameX = x;
+        textFrameY = y;
+    }
+
+    function onDragTouch(e) {
+        if (!isDragging) return;
+        const touch = e.touches[0];
+        const containerRect = canvasContainer.getBoundingClientRect();
+        let x = touch.clientX - containerRect.left - dragOffsetX;
+        let y = touch.clientY - containerRect.top - dragOffsetY;
+        x = Math.max(0, Math.min(x, containerRect.width - textFrame.offsetWidth));
+        y = Math.max(0, Math.min(y, containerRect.height - textFrame.offsetHeight));
+        textFrame.style.left = x + 'px';
+        textFrame.style.top = y + 'px';
+        textFrame.style.transform = 'none';
+        textFrameX = x;
+        textFrameY = y;
+        e.preventDefault();
+    }
+
+    function stopDrag() {
+        isDragging = false;
+        document.removeEventListener('mousemove', onDrag);
+        document.removeEventListener('mouseup', stopDrag);
+    }
+
+    function stopDragTouch() {
+        isDragging = false;
+        document.removeEventListener('touchmove', onDragTouch);
+        document.removeEventListener('touchend', stopDragTouch);
+    }
+
+    // ---- text display ----
+    textDisplay.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            // finalize text and draw to canvas
+            finalizeText();
+        }
+        if (e.key === 'Escape') {
+            deactivateTextTool();
+            settings.isText = false;
+            textBtn.style.background = 'rgba(255,255,255,0.05)';
+            brushBtns.forEach(b => b.classList.remove('active'));
             document.querySelector('.brush-btn[data-brush="pen"]')?.classList.add('active');
             settings.brush = 'pen';
         }
-        readSettings();
     });
+
+    textDisplay.addEventListener('blur', function() {
+        // if text is placed and content is not empty, finalize
+        if (textPlaced && textDisplay.textContent.trim() !== '') {
+            finalizeText();
+        }
+    });
+
+    function finalizeText() {
+        if (!textPlaced) return;
+        const text = textDisplay.textContent.trim();
+        if (text === '' || text === 'Type something') {
+            deactivateTextTool();
+            settings.isText = false;
+            textBtn.style.background = 'rgba(255,255,255,0.05)';
+            return;
+        }
+        
+        // draw text on canvas
+        const rect = canvas.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        const x = (textFrameX + 10) * dpr;
+        const y = (textFrameY + 20) * dpr;
+        const fontSize = Math.max(12, settings.size * 2) * dpr;
+        
+        ctx.save();
+        ctx.globalAlpha = settings.opacity / 100;
+        ctx.shadowBlur = settings.blur * dpr;
+        ctx.shadowColor = settings.color;
+        ctx.fillStyle = settings.color;
+        ctx.font = `${fontSize}px system-ui, -apple-system, sans-serif`;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'top';
+        ctx.fillText(text, x, y);
+        ctx.restore();
+        
+        saveStroke();
+        deactivateTextTool();
+        settings.isText = false;
+        textBtn.style.background = 'rgba(255,255,255,0.05)';
+        brushBtns.forEach(b => b.classList.remove('active'));
+        document.querySelector('.brush-btn[data-brush="pen"]')?.classList.add('active');
+        settings.brush = 'pen';
+    }
 
     // ---- color wheel click ----
     colorWheel.addEventListener('click', function(e) {
@@ -154,7 +347,6 @@
         const cy = rect.height / 2;
         const angle = Math.atan2(y - cy, x - cx);
         const deg = ((angle * 180 / Math.PI) + 360) % 360;
-        // simple hue mapping
         const hue = deg;
         const sat = 80;
         const lig = 55;
@@ -162,10 +354,10 @@
         colorPicker.value = hslToHex(hue, sat, lig);
         settings.color = colorPicker.value;
         colorSwatch.style.background = settings.color;
+        textDisplay.style.color = settings.color;
         applySettings();
     });
 
-    // helper: hsl to hex
     function hslToHex(h, s, l) {
         h /= 360;
         s /= 100;
@@ -216,7 +408,7 @@
 
     // ---- drawing ----
     function startDrawing(e) {
-        if (settings.isText) return;
+        if (settings.isText || textToolActive) return;
         e.preventDefault();
         isDrawing = true;
         const { x, y } = getCoords(e);
@@ -224,12 +416,10 @@
         lastY = y;
         currentPressure = getPressure(e) * 2 || 1;
 
-        // start stroke
         ctx.beginPath();
         ctx.moveTo(x, y);
         applySettings();
         
-        // dot for single tap
         const size = settings.size * (0.5 + currentPressure * 0.5);
         ctx.arc(x, y, size / 2, 0, Math.PI * 2);
         ctx.fill();
@@ -238,15 +428,13 @@
     }
 
     function draw(e) {
-        if (!isDrawing || settings.isText) return;
+        if (!isDrawing || settings.isText || textToolActive) return;
         e.preventDefault();
         const { x, y } = getCoords(e);
         const pressure = getPressure(e) * 2 || 1;
         currentPressure = pressure;
 
-        // apply start/end width
         let width = settings.size;
-        // simulate start/end width by adjusting size based on distance from start
         const dx = x - lastX;
         const dy = y - lastY;
         const dist = Math.sqrt(dx*dx + dy*dy);
@@ -258,7 +446,6 @@
             width = settings.size * (currentW / 8);
         }
 
-        // pressure
         if (settings.pressure) {
             width *= (0.5 + pressure * 0.5);
         }
@@ -321,17 +508,18 @@
     colorPicker.addEventListener('input', function() {
         settings.color = this.value;
         colorSwatch.style.background = settings.color;
+        textDisplay.style.color = settings.color;
         applySettings();
     });
 
     // ---- init ----
     function init() {
         resizeCanvas();
-        // set default brush active
         document.querySelector('.brush-btn[data-brush="pen"]')?.classList.add('active');
         settings.color = '#000000';
         colorPicker.value = '#000000';
         colorSwatch.style.background = '#000000';
+        textDisplay.style.color = '#000000';
         readSettings();
         applySettings();
 
@@ -342,11 +530,43 @@
             applySettings();
         });
 
-        // keyboard shortcut: Ctrl+Z for undo
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey && e.key === 'z') {
                 e.preventDefault();
                 undoLastStroke();
+            }
+            if (e.key === 'Escape' && textToolActive) {
+                deactivateTextTool();
+                settings.isText = false;
+                textBtn.style.background = 'rgba(255,255,255,0.05)';
+                brushBtns.forEach(b => b.classList.remove('active'));
+                document.querySelector('.brush-btn[data-brush="pen"]')?.classList.add('active');
+                settings.brush = 'pen';
+            }
+        });
+
+        // click on canvas to place text
+        canvas.addEventListener('click', function(e) {
+            if (textToolActive && !textPlaced) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                textFrame.style.left = x + 'px';
+                textFrame.style.top = y + 'px';
+                textFrame.style.transform = 'none';
+                textFrameX = x;
+                textFrameY = y;
+                textPlaced = true;
+                textFrame.style.cursor = 'move';
+                textDisplay.contentEditable = true;
+                textDisplay.focus();
+                textDisplay.select();
+                textOverlay.style.pointerEvents = 'none';
+                textFrame.style.pointerEvents = 'auto';
+                textDisplay.style.pointerEvents = 'auto';
+                
+                textFrame.addEventListener('mousedown', startDrag);
+                textFrame.addEventListener('touchstart', startDragTouch, { passive: false });
             }
         });
     }
