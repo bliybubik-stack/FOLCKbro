@@ -1,194 +1,73 @@
+/* style.css – custom overrides & FlockMod flavour */
+
+/* reset / base */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  box-sizing: border-box;
 }
 
 body {
-    font-family: 'Rubik', sans-serif;
-    background: #1a1a2e;
-    color: #ffffff;
-    overflow: hidden;
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  background: #1a1a1e;
+  color: #e5e5e8;
 }
 
+/* scrollbar (match dark theme) */
 ::-webkit-scrollbar {
-    width: 6px;
+  width: 4px;
+  height: 4px;
 }
-
 ::-webkit-scrollbar-track {
-    background: #0f1633;
+  background: #1e1e24;
 }
-
 ::-webkit-scrollbar-thumb {
-    background: #2a2a4a;
-    border-radius: 3px;
+  background: #3d3d47;
+  border-radius: 8px;
 }
-
 ::-webkit-scrollbar-thumb:hover {
-    background: #3a3a5a;
+  background: #5a5a68;
 }
 
-#canvas {
-    display: block;
-    background: white !important;
-    width: 100%;
-    height: 100%;
-    cursor: crosshair;
-}
-
+/* sidebar tweaks */
 #sidebar {
-    scrollbar-width: thin;
-    scrollbar-color: #2a2a4a #0f1633;
+  scrollbar-width: thin;
+  scrollbar-color: #3d3d47 #1e1e24;
 }
 
-/* Tool buttons */
-.tool-btn {
-    font-size: 11px;
-    font-weight: 500;
-    min-width: 44px;
-    text-align: center;
-    border: 1px solid transparent;
+/* presets grid cells – mimic screenshot style */
+#sidebar .grid span {
+  transition: background 0.1s ease;
+  cursor: default;
+  font-size: 11px;
+  line-height: 1.6;
+  background: #25252e;
+  border-color: #3a3a44;
+}
+#sidebar .grid span:hover {
+  background: #32323e;
+  border-color: #5a5a6a;
 }
 
-.tool-btn.active {
-    background: #2a2a4a !important;
-    color: white !important;
-    border-color: #4a4a8a;
+/* make canvas fill its container */
+#drawCanvas {
+  background: #111113;
+  image-rendering: crisp-edges; /* keep crisp */
 }
 
-.tool-btn:hover:not(.active) {
-    background: #22223a !important;
-    color: #ddd !important;
+/* color wheel mock */
+.color-wheel-mock {
+  background: conic-gradient(from 0deg, 
+    #ff3b30, #ff9500, #ffcc00, #34c759, 
+    #00c7be, #007aff, #5856d6, #af52de, #ff3b30);
 }
 
-/* Preset buttons */
-.preset-btn {
-    aspect-ratio: 1;
-    font-size: 11px;
-    min-width: 28px;
-    min-height: 28px;
-    font-weight: 500;
-    border: 1px solid transparent;
+/* small text / details */
+.text-xxs {
+  font-size: 0.6rem;
+  line-height: 1rem;
 }
 
-.preset-btn:hover {
-    background: #3a3a5a !important;
-    transform: scale(1.05);
-    border-color: #4a4a8a;
-}
-
-.preset-btn:active {
-    transform: scale(0.95);
-}
-
-#colorWheel {
-    cursor: pointer;
-}
-
-.user-label {
-    position: absolute;
-    pointer-events: none;
-    color: white;
-    font-size: 11px;
-    background: rgba(0, 0, 0, 0.85);
-    padding: 3px 10px;
-    border-radius: 12px;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    transform: translate(-50%, -120%);
-    white-space: nowrap;
-    font-weight: 500;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
-    z-index: 10;
-    backdrop-filter: blur(4px);
-    animation: fadeIn 0.15s ease-out;
-}
-
-@keyframes fadeIn {
-    from { opacity: 0; transform: translate(-50%, -130%); }
-    to { opacity: 1; transform: translate(-50%, -120%); }
-}
-
-/* Range inputs */
-input[type="range"] {
-    -webkit-appearance: none;
-    background: transparent;
-    height: 6px;
-}
-
-input[type="range"]::-webkit-slider-runnable-track {
-    height: 4px;
-    background: #2a2a4a;
-    border-radius: 2px;
-}
-
-input[type="range"]::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    height: 14px;
-    width: 14px;
-    border-radius: 50%;
-    background: #4a4a8a;
-    margin-top: -5px;
-    cursor: pointer;
-    transition: background 0.15s;
-}
-
-input[type="range"]::-webkit-slider-thumb:hover {
-    background: #5a5a9a;
-}
-
-input[type="range"]::-moz-range-track {
-    height: 4px;
-    background: #2a2a4a;
-    border-radius: 2px;
-    border: none;
-}
-
-input[type="range"]::-moz-range-thumb {
-    height: 14px;
-    width: 14px;
-    border-radius: 50%;
-    background: #4a4a8a;
-    border: none;
-    cursor: pointer;
-}
-
-/* Color picker */
-input[type="color"]::-webkit-color-swatch-wrapper {
-    padding: 2px;
-}
-
-input[type="color"]::-webkit-color-swatch {
-    border: 1px solid #2a2a4a;
-    border-radius: 4px;
-}
-
-/* Select dropdown */
-select {
-    cursor: pointer;
-    background: #0f1633;
-    outline: none;
-}
-
-select:focus {
-    border-color: #4a4a8a;
-}
-
-select option {
-    background: #0f1633;
-}
-
-/* Login transitions */
-#loginScreen {
-    transition: opacity 0.3s ease;
-}
-
-#mainApp {
-    transition: opacity 0.3s ease;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-    #sidebar {
-        width: 280px;
-    }
+/* tool settings grid – right align numbers */
+#sidebar .grid div:last-child {
+  font-variant-numeric: tabular-nums;
 }
