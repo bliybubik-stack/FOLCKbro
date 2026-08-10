@@ -1,4 +1,4 @@
-/* style.css – FlockMod exact sidebar style */
+/* style.css – FlockMod glassmorphism */
 
 * {
   box-sizing: border-box;
@@ -6,74 +6,59 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: #1a1a1e;
   color: #e5e5e8;
+  overflow: hidden;
 }
 
-/* custom scrollbar */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 3px;
+  height: 3px;
 }
 ::-webkit-scrollbar-track {
-  background: #1b1b21;
+  background: rgba(255,255,255,0.03);
 }
 ::-webkit-scrollbar-thumb {
-  background: #3d3d48;
+  background: rgba(255,255,255,0.15);
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #5a5a68;
+  background: rgba(255,255,255,0.25);
 }
 
-#sidebar {
-  scrollbar-width: thin;
-  scrollbar-color: #3d3d48 #1b1b21;
-}
-
-/* presets grid – interactive */
-#sidebar .grid span {
-  transition: background 0.1s ease, border-color 0.15s ease;
-  cursor: default;
-  font-size: 11px;
-  line-height: 1.6;
-  background: #282830;
-  border-color: #3d3d48;
-  color: #c0c0c8;
-  font-variant-numeric: tabular-nums;
-}
-#sidebar .grid span:hover {
-  background: #353540;
-  border-color: #5a5a6a;
-}
-#sidebar .grid span:active {
-  background: #424250;
-}
-
-/* canvas */
 #drawCanvas {
   background: #ffffff;
   image-rendering: crisp-edges;
 }
 
-/* tool settings: right-align numbers */
-#sidebar .grid div:last-child,
-#sidebar .grid span:last-child {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
+/* glassmorphism base */
+.glass {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-/* text tool overlay */
-#textFrame {
-  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
-  transition: none;
+/* active tool button */
+.tool-btn.active {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.05);
 }
-#textFrame:focus-within {
-  border-color: rgba(255,255,255,0.8);
+
+/* presets hover */
+#sidebar .grid span {
+  transition: all 0.15s ease;
+  cursor: default;
 }
-#textDisplay:focus {
-  outline: none;
+#sidebar .grid span:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+#sidebar .grid span:active {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(0.95);
 }
 
 /* color wheel */
@@ -87,7 +72,6 @@ body {
   transform: scale(0.95);
 }
 
-/* color picker hidden but functional */
 input[type="color"] {
   padding: 0;
   border: none;
@@ -97,6 +81,31 @@ input[type="color"]::-webkit-color-swatch-wrapper {
   padding: 0;
 }
 input[type="color"]::-webkit-color-swatch {
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 4px;
+}
+
+/* text frame */
+#textFrame {
+  transition: none;
+  pointer-events: auto;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+}
+#textFrame:hover {
+  border-color: rgba(255,255,255,0.6);
+}
+#textContent {
+  outline: none;
+  display: inline-block;
+  min-width: 80px;
+  min-height: 24px;
+}
+#textContent:focus {
+  outline: none;
+}
+
+/* sidebar smoothness */
+aside {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
 }
