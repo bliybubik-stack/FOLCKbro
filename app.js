@@ -1,4 +1,4 @@
-// app.js – professional drawing app with pressure, start/end width
+// app.js – Professional drawing app with glassmorphism UI
 
 (function() {
     const canvas = document.getElementById('drawCanvas');
@@ -20,74 +20,182 @@
 
     // ---- settings ----
     const settings = {
+        brush: 'pen',
         size: 8,
-        thickness: 100,
+        thickness: 8,
         opacity: 100,
         blur: 0,
-        pressure: false,
-        pressureSize: 100,
-        startWidth: 100,
-        endWidth: 100,
-        color: '#000000',
-        brush: 'round', // 'round', 'marker', 'pencil'
-        tool: 'pen', // 'pen', 'eraser', 'text'
+        pressure: true,
+        pressureSize: 25,
+        startWidth: 8,
+        endWidth: 8,
+        color: '#ffffff',
+        isEraser: false,
+        isText: false
     };
 
     // ---- DOM refs ----
-    const sizeDisplay = document.getElementById('sizeDisplay');
-    const thicknessDisplay = document.getElementById('thicknessDisplay');
-    const opacityDisplay = document.getElementById('opacityDisplay');
-    const blurDisplay = document.getElementById('blurDisplay');
-    const pressureSizeDisplay = document.getElementById('pressureSizeDisplay');
-    const startWidthDisplay = document.getElementById('startWidthDisplay');
-    const endWidthDisplay = document.getElementById('endWidthDisplay');
+    const sizeSlider = document.getElementById('sizeSlider');
+    const thicknessSlider = document.getElementById('thicknessSlider');
+    const opacitySlider = document.getElementById('opacitySlider');
+    const blurSlider = document.getElementById('blurSlider');
     const pressureToggle = document.getElementById('pressureToggle');
-    const pressureStatus = document.getElementById('pressureStatus');
+    const pressureSizeSlider = document.getElementById('pressureSizeSlider');
+    const startWidthSlider = document.getElementById('startWidthSlider');
+    const endWidthSlider = document.getElementById('endWidthSlider');
     const colorPicker = document.getElementById('colorPicker');
+    const colorSwatch = document.getElementById('colorSwatch');
+    const colorWheel = document.getElementById('colorWheel');
+    const eraserBtn = document.getElementById('eraserBtn');
+    const textBtn = document.getElementById('textBtn');
+    const brushBtns = document.querySelectorAll('.brush-btn');
 
     function updateDisplays() {
-        if (sizeDisplay) sizeDisplay.textContent = settings.size;
-        if (thicknessDisplay) thicknessDisplay.textContent = settings.thickness;
-        if (opacityDisplay) opacityDisplay.textContent = settings.opacity;
-        if (blurDisplay) blurDisplay.textContent = settings.blur;
-        if (pressureSizeDisplay) pressureSizeDisplay.textContent = settings.pressureSize;
-        if (startWidthDisplay) startWidthDisplay.textContent = settings.startWidth;
-        if (endWidthDisplay) endWidthDisplay.textContent = settings.endWidth;
+        // all values are read directly from sliders
     }
 
     function applySettings() {
         ctx.globalAlpha = settings.opacity / 100;
+        ctx.lineWidth = settings.size;
         ctx.shadowBlur = settings.blur;
         ctx.shadowColor = settings.color;
-        if (settings.tool === 'eraser') {
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.strokeStyle = 'rgba(0,0,0,1)';
-            ctx.fillStyle = 'rgba(0,0,0,1)';
-        } else {
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.strokeStyle = settings.color;
-            ctx.fillStyle = settings.color;
-        }
+        ctx.strokeStyle = settings.isEraser ? '#ffffff' : settings.color;
+        ctx.fillStyle = settings.isEraser ? '#ffffff' : settings.color;
+        ctx.globalCompositeOperation = settings.isEraser ? 'destination-out' : 'source-over';
     }
 
-    // ---- brush textures ----
-    function getBrushTexture(brush) {
-        // different line styles based on brush
-        switch(brush) {
-            case 'marker':
-                return 'marker';
-            case 'pencil':
-                return 'pencil';
-            default:
-                return 'round';
+    // ---- read sliders ----
+    function readSettings() {
+        settings.size = parseInt(sizeSlider.value);
+        settings.thickness = parseInt(thicknessSlider.value);
+        settings.opacity = parseInt(opacitySlider.value);
+        settings.blur = parseInt(blurSlider.value);
+        settings.pressure = pressureToggle.checked;
+        settings.pressureSize = parseInt(pressureSizeSlider.value);
+        settings.startWidth = parseInt(startWidthSlider.value);
+        settings.endWidth = parseInt(endWidthSlider.value);
+        settings.color = colorPicker.value;
+        colorSwatch.style.background = settings.color;
+        applySettings();
+    }
+
+    // ---- brush selection ----
+    brushBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            brushBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            settings.brush = this.dataset.brush;
+            settings.isEraser = false;
+            settings.isText = false;
+            eraserBtn.style.background = 'rgba(255,255,255,0.05)';
+            textBtn.style.background = 'rgba(255,255,255,0.05)';
+            readSettings();
+        });
+    });
+
+    // ---- eraser ----
+    eraserBtn.addEventListener('click', function() {
+        settings.isEraser = !settings.isEraser;
+        settings.isText = false;
+        textBtn.style.background = 'rgba(255,255,255,0.05)';
+        if (settings.isEraser) {
+            this.style.background = 'rgba(255,255,255,0.2)';
+            brushBtns.forEach(b => b.classList.remove('active'));
+        } else {
+            this.style.background = 'rgba(255,255,255,0.05)';
+            // re-activate last brush
+            document.querySelector('.brush-btn.active')?.classList.remove('active');
+            document.querySelector('.brush-btn[data-brush="pen"]')?.classList.add('active');
+            settings.brush = 'pen';
         }
+        readSettings();
+    });
+
+    // ---- text tool ----
+    textBtn.addEventListener('click', function() {
+        settings.isText = !settings.isText;
+        settings.isEraser = false;
+        eraserBtn.style.background = 'rgba(255,255,255,0.05)';
+        if (settings.isText) {
+            this.style.background = 'rgba(255,255,255,0.2)';
+            brushBtns.forEach(b => b.classList.remove('active'));
+            // prompt for text
+            const text = prompt('Enter text:', 'Hello Art!');
+            if (text) {
+                const rect = canvas.getBoundingClientRect();
+                const x = rect.width / 2 - 50;
+                const y = rect.height / 2;
+                ctx.save();
+                ctx.globalAlpha = settings.opacity / 100;
+                ctx.shadowBlur = settings.blur;
+                ctx.shadowColor = settings.color;
+                ctx.fillStyle = settings.color;
+                ctx.font = `${settings.size * 4}px system-ui, sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(text, x, y);
+                ctx.restore();
+                saveStroke();
+            }
+            settings.isText = false;
+            this.style.background = 'rgba(255,255,255,0.05)';
+            document.querySelector('.brush-btn[data-brush="pen"]')?.classList.add('active');
+            settings.brush = 'pen';
+        }
+        readSettings();
+    });
+
+    // ---- color wheel click ----
+    colorWheel.addEventListener('click', function(e) {
+        const rect = this.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+        const angle = Math.atan2(y - cy, x - cx);
+        const deg = ((angle * 180 / Math.PI) + 360) % 360;
+        // simple hue mapping
+        const hue = deg;
+        const sat = 80;
+        const lig = 55;
+        const color = `hsl(${hue}, ${sat}%, ${lig}%)`;
+        colorPicker.value = hslToHex(hue, sat, lig);
+        settings.color = colorPicker.value;
+        colorSwatch.style.background = settings.color;
+        applySettings();
+    });
+
+    // helper: hsl to hex
+    function hslToHex(h, s, l) {
+        h /= 360;
+        s /= 100;
+        l /= 100;
+        let r, g, b;
+        if (s === 0) {
+            r = g = b = l;
+        } else {
+            const hue2rgb = (p, q, t) => {
+                if (t < 0) t += 1;
+                if (t > 1) t -= 1;
+                if (t < 1/6) return p + (q - p) * 6 * t;
+                if (t < 1/2) return q;
+                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                return p;
+            };
+            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+            const p = 2 * l - q;
+            r = hue2rgb(p, q, h + 1/3);
+            g = hue2rgb(p, q, h);
+            b = hue2rgb(p, q, h - 1/3);
+        }
+        const toHex = (c) => Math.round(c * 255).toString(16).padStart(2, '0');
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
     }
 
     // ---- drawing state ----
     let isDrawing = false;
     let lastX = 0, lastY = 0;
     let currentPressure = 1;
-    let points = [];
 
     function getCoords(e) {
         const rect = canvas.getBoundingClientRect();
@@ -95,110 +203,80 @@
         const clientY = e.clientY || e.touches?.[0]?.clientY || 0;
         return {
             x: clientX - rect.left,
-            y: clientY - rect.top,
-            pressure: e.pressure || e.touches?.[0]?.force || 0.5
+            y: clientY - rect.top
         };
     }
 
-    // ---- get line width based on pressure and start/end ----
-    function getLineWidth(pressure, progress) {
-        let baseSize = settings.size;
-        let thicknessFactor = settings.thickness / 100;
-        
-        // pressure modifier
-        let pressureMod = 1;
-        if (settings.pressure) {
-            pressureMod = 0.5 + (pressure * 1.5);
-            // pressure size scaling
-            pressureMod = pressureMod * (settings.pressureSize / 100);
+    function getPressure(e) {
+        if (settings.pressure && e.pointerType === 'pen') {
+            return e.pressure || 0.5;
         }
-        
-        // start/end width modifier
-        let startEndMod = 1;
-        if (settings.startWidth !== 100 || settings.endWidth !== 100) {
-            const startFactor = settings.startWidth / 100;
-            const endFactor = settings.endWidth / 100;
-            // interpolate between start and end based on progress (0-1)
-            startEndMod = startFactor + (endFactor - startFactor) * progress;
-        }
-        
-        let finalWidth = baseSize * thicknessFactor * pressureMod * startEndMod;
-        return Math.max(0.5, finalWidth);
+        return 0.5;
     }
 
     // ---- drawing ----
     function startDrawing(e) {
+        if (settings.isText) return;
         e.preventDefault();
         isDrawing = true;
-        const { x, y, pressure } = getCoords(e);
+        const { x, y } = getCoords(e);
         lastX = x;
         lastY = y;
-        currentPressure = pressure || 0.5;
-        points = [{x, y, p: currentPressure}];
-        
-        // draw dot
-        const width = getLineWidth(currentPressure, 0);
+        currentPressure = getPressure(e) * 2 || 1;
+
+        // start stroke
         ctx.beginPath();
-        ctx.arc(x, y, width / 2, 0, Math.PI * 2);
+        ctx.moveTo(x, y);
         applySettings();
+        
+        // dot for single tap
+        const size = settings.size * (0.5 + currentPressure * 0.5);
+        ctx.arc(x, y, size / 2, 0, Math.PI * 2);
         ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(x, y);
     }
 
     function draw(e) {
-        if (!isDrawing) return;
+        if (!isDrawing || settings.isText) return;
         e.preventDefault();
-        const { x, y, pressure } = getCoords(e);
-        currentPressure = pressure || 0.5;
-        
-        // store point
-        points.push({x, y, p: currentPressure});
-        
-        // calculate progress for start/end
-        const totalPoints = points.length;
-        const progress = Math.min(1, totalPoints / 50); // normalize
-        
-        // get width for this point
-        const width = getLineWidth(currentPressure, progress);
-        
-        // apply brush texture
-        const brush = settings.brush;
-        applySettings();
-        ctx.lineWidth = width;
-        
-        // different brush effects
-        if (brush === 'pencil') {
-            // pencil: slight opacity variation + noise
-            ctx.globalAlpha = (settings.opacity / 100) * (0.8 + Math.random() * 0.2);
-        } else if (brush === 'marker') {
-            // marker: slight edge bleed
-            ctx.shadowBlur = settings.blur + 2;
-        } else {
-            // round: clean
-            ctx.shadowBlur = settings.blur;
+        const { x, y } = getCoords(e);
+        const pressure = getPressure(e) * 2 || 1;
+        currentPressure = pressure;
+
+        // apply start/end width
+        let width = settings.size;
+        // simulate start/end width by adjusting size based on distance from start
+        const dx = x - lastX;
+        const dy = y - lastY;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist > 0) {
+            const progress = Math.min(dist / 50, 1);
+            const startW = settings.startWidth;
+            const endW = settings.endWidth;
+            const currentW = startW + (endW - startW) * progress;
+            width = settings.size * (currentW / 8);
         }
-        
-        // draw line from last point to current
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
+
+        // pressure
+        if (settings.pressure) {
+            width *= (0.5 + pressure * 0.5);
+        }
+
+        ctx.lineWidth = Math.max(1, width);
         ctx.lineTo(x, y);
         ctx.stroke();
-        
-        // for pencil: add extra texture dots
-        if (brush === 'pencil' && Math.random() > 0.7) {
-            ctx.beginPath();
-            ctx.arc(x + (Math.random()-0.5)*2, y + (Math.random()-0.5)*2, 0.5, 0, Math.PI*2);
-            ctx.fill();
-        }
-        
         lastX = x;
         lastY = y;
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        applySettings();
     }
 
     function stopDrawing(e) {
         if (isDrawing) {
             isDrawing = false;
-            points = [];
-            applySettings();
+            ctx.closePath();
             saveStroke();
         }
     }
@@ -209,7 +287,7 @@
     function saveStroke() {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         strokeHistory.push(imageData);
-        if (strokeHistory.length > 20) strokeHistory.shift();
+        if (strokeHistory.length > 30) strokeHistory.shift();
     }
 
     function undoLastStroke() {
@@ -218,6 +296,7 @@
         ctx.putImageData(prev, 0, 0);
         applySettings();
         isDrawing = false;
+        ctx.beginPath();
     }
 
     // ---- events ----
@@ -234,136 +313,41 @@
         undoLastStroke();
     });
 
-    // ---- brush selection ----
-    document.querySelectorAll('.brush-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            settings.brush = this.dataset.brush;
-        });
+    // ---- slider events ----
+    [sizeSlider, thicknessSlider, opacitySlider, blurSlider, pressureSizeSlider, startWidthSlider, endWidthSlider].forEach(slider => {
+        slider.addEventListener('input', readSettings);
     });
-
-    // ---- tool selection ----
-    document.querySelectorAll('.tool-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-            document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            settings.tool = this.dataset.tool;
-            if (settings.tool === 'eraser') {
-                canvas.style.cursor = 'not-allowed';
-            } else {
-                canvas.style.cursor = 'crosshair';
-            }
-            applySettings();
-        });
-    });
-
-    // ---- sliders ----
-    document.getElementById('sizeSlider').addEventListener('input', function() {
-        settings.size = parseInt(this.value);
-        updateDisplays();
-    });
-    document.getElementById('thicknessSlider').addEventListener('input', function() {
-        settings.thickness = parseInt(this.value);
-        updateDisplays();
-    });
-    document.getElementById('opacitySlider').addEventListener('input', function() {
-        settings.opacity = parseInt(this.value);
-        applySettings();
-        updateDisplays();
-    });
-    document.getElementById('blurSlider').addEventListener('input', function() {
-        settings.blur = parseInt(this.value);
-        applySettings();
-        updateDisplays();
-    });
-    document.getElementById('startWidthSlider').addEventListener('input', function() {
-        settings.startWidth = parseInt(this.value);
-        updateDisplays();
-    });
-    document.getElementById('endWidthSlider').addEventListener('input', function() {
-        settings.endWidth = parseInt(this.value);
-        updateDisplays();
-    });
-
-    // ---- pressure toggle ----
-    pressureToggle.addEventListener('click', function() {
-        settings.pressure = !settings.pressure;
-        this.classList.toggle('active');
-        pressureStatus.textContent = settings.pressure ? 'ON' : 'OFF';
-    });
-
-    // ---- pressure size slider ----
-    document.getElementById('pressureSizeSlider')?.addEventListener('input', function() {
-        settings.pressureSize = parseInt(this.value);
-        updateDisplays();
-    });
-
-    // ---- color picker ----
+    pressureToggle.addEventListener('change', readSettings);
     colorPicker.addEventListener('input', function() {
         settings.color = this.value;
+        colorSwatch.style.background = settings.color;
         applySettings();
-    });
-
-    // ---- color wheel click ----
-    document.getElementById('colorWheel').addEventListener('click', function() {
-        const hue = Math.floor(Math.random() * 360);
-        settings.color = `hsl(${hue}, 80%, 60%)`;
-        colorPicker.value = settings.color;
-        applySettings();
-    });
-
-    // ---- presets ----
-    document.querySelectorAll('#sidebar .grid span').forEach((cell, index) => {
-        const num = index + 1;
-        cell.addEventListener('click', function() {
-            const size = 3 + (num % 8);
-            const hue = (num * 20) % 360;
-            settings.size = Math.min(40, Math.max(1, size));
-            settings.color = `hsl(${hue}, 80%, 60%)`;
-            colorPicker.value = settings.color;
-            updateDisplays();
-            applySettings();
-            document.querySelectorAll('#sidebar .grid span').forEach(s => s.classList.remove('active-preset'));
-            this.classList.add('active-preset');
-        });
-        
-        // hold to set
-        let holdTimer = null;
-        cell.addEventListener('mousedown', function(e) {
-            if (e.button === 0) {
-                holdTimer = setTimeout(() => {
-                    const size = 3 + (num % 8);
-                    const hue = (num * 20) % 360;
-                    settings.size = Math.min(40, Math.max(1, size));
-                    settings.color = `hsl(${hue}, 80%, 60%)`;
-                    colorPicker.value = settings.color;
-                    updateDisplays();
-                    applySettings();
-                    this.style.borderColor = '#ffaa44';
-                    setTimeout(() => { this.style.borderColor = '#4a4a58'; }, 400);
-                }, 600);
-            }
-        });
-        cell.addEventListener('mouseup', () => { clearTimeout(holdTimer); holdTimer = null; });
-        cell.addEventListener('mouseleave', () => { clearTimeout(holdTimer); holdTimer = null; });
     });
 
     // ---- init ----
     function init() {
         resizeCanvas();
-        applySettings();
-        updateDisplays();
-        // set default color
+        // set default brush active
+        document.querySelector('.brush-btn[data-brush="pen"]')?.classList.add('active');
         settings.color = '#000000';
         colorPicker.value = '#000000';
+        colorSwatch.style.background = '#000000';
+        readSettings();
         applySettings();
-        
+
         window.addEventListener('resize', () => {
             const oldData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             resizeCanvas();
             ctx.putImageData(oldData, 0, 0);
             applySettings();
+        });
+
+        // keyboard shortcut: Ctrl+Z for undo
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'z') {
+                e.preventDefault();
+                undoLastStroke();
+            }
         });
     }
 
