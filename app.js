@@ -1,537 +1,375 @@
-// ===== СОСТОЯНИЕ ПРИЛОЖЕНИЯ =====
-const state = {
-    currentTool: 'pen', // pen, eraser, text
-    currentColor: '#000000',
-    secondaryColor: '#ffffff',
-    brushSize: 8,
-    opacity: 100,
-    blur: 0,
-    smoothing: 0,
-    pressure: false,
-    font: 'Rubik',
-    isDrawing: false,
-    lastX: 0,
-    lastY: 0,
-    currentLayer: 0,
-    layers: [],
-    history: [],
-    historyIndex: -1,
-    maxHistory: 30,
-    isTextMode: false,
-    textPosition: null
-};
+// app.js – full drawing app logic
 
-// ===== DOM ЭЛЕМЕНТЫ =====
-const canvas = document.getElementById('drawingCanvas');
-const ctx = canvas.getContext('2d');
-const sizeInput = document.getElementById('size-setting');
-const opacityInput = document.getElementById('opacity-setting');
-const blurInput = document.getElementById('blur-setting');
-const smoothingInput = document.getElementById('smoothing-setting');
-const fontSelect = document.getElementById('font-setting');
+(function() {
+    "use strict";
 
-// ===== ИНИЦИАЛИЗАЦИЯ =====
-function init() {
-    setupCanvas();
-    setupTools();
-    setupPresets();
-    setupLayers();
-    setupColorWheel();
-    setupEventListeners();
-    loadPresetColors();
-    updateToolSettings();
-}
+    // ----- DOM refs -----
+    const canvas = document.getElementById('drawCanvas');
+    const ctx = canvas.getContext('2d');
 
-// ===== НАСТРОЙКА ХОЛСТА =====
-function setupCanvas() {
-    const container = canvas.parentElement;
-    const rect = container.getBoundingClientRect();
-    const padding = 40;
-    
-    canvas.width = rect.width - padding;
-    canvas.height = rect.height - padding;
-    
-    // Белый фон
-    ctx.fillStyle = '#ffffff';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Настройки кисти по умолчанию
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-}
+    // toolbar buttons
+    const toolBtns = document.querySelectorAll('.tool-btn');
+    const clearBtn = document.getElementById('clearCanvas');
 
-// ===== ИНСТРУМЕНТЫ =====
-function setupTools() {
-    const toolButtons = document.querySelectorAll('.tool-button');
-    
-    toolButtons.forEach(btn => {
-        btn.addEventListener('click', function() {
-            // Убираем активный класс со всех кнопок
-            toolButtons.forEach(b => b.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Определяем инструмент по ID
-            const id = this.id;
-            if (id.includes('pen')) {
-                state.currentTool = 'pen';
-                state.isTextMode = false;
-                canvas.style.cursor = 'crosshair';
-            } else if (id.includes('text')) {
-                state.currentTool = 'text';
-                state.isTextMode = true;
-                canvas.style.cursor = 'text';
-            } else if (id.includes('eraser')) {
-                state.currentTool = 'eraser';
-                state.isTextMode = false;
-                canvas.style.cursor = 'crosshair';
-            } else {
-                state.currentTool = 'pen';
-                state.isTextMode = false;
-                canvas.style.cursor = 'crosshair';
-            }
-            
-            updateToolSettings();
-        });
-    });
-}
+    // settings
+    const sizeSlider = document.getElementById('brushSize');
+    const sizeSpan = document.getElementById('sizeValue');
+    const opacitySlider = document.getElementById('brushOpacity');
+    const opacitySpan = document.getElementById('opacityValue');
+    const colorPicker = document.getElementById('brushColor');
+    const smoothSlider = document.getElementById('smoothness');
+    const smoothSpan = document.getElementById('smoothValue');
+    const hardnessSlider = document.getElementById('hardness');
+    const hardnessSpan = document.getElementById('hardnessValue');
+    const spacingSlider = document.getElementById('spacing');
+    const spacingSpan = document.getElementById('spacingValue');
+    const flowSlider = document.getElementById('flow');
+    const flowSpan = document.getElementById('flowValue');
 
-// ===== ПРЕСЕТЫ ЦВЕТОВ =====
-function setupPresets() {
-    const presetsGrid = document.getElementById('presets-grid');
-    const presetColors = [
-        '#000000', '#ffffff', '#ff0000', '#ff6b00', '#ffd700',
-        '#00ff00', '#00bfff', '#0000ff', '#8b00ff',
-        '#ff1493', '#ff6348', '#ffa502', '#2ed573',
-        '#1e90ff', '#a29bfe', '#fd79a8', '#fdcb6e', '#00cec9'
-    ];
-    
-    presetsGrid.innerHTML = '';
-    presetColors.forEach((color, index) => {
-        const div = document.createElement('div');
-        div.className = 'preset-circle';
-        div.style.background = color;
-        div.dataset.color = color;
-        div.dataset.index = index + 1;
-        
-        const numberSpan = document.createElement('span');
-        numberSpan.className = 'preset-number';
-        numberSpan.textContent = index + 1;
-        div.appendChild(numberSpan);
-        
-        if (index === 0) div.classList.add('active');
-        
-        div.addEventListener('click', function() {
-            document.querySelectorAll('.preset-circle').forEach(c => c.classList.remove('active'));
-            this.classList.add('active');
-            state.currentColor = this.dataset.color;
-            document.getElementById('primary-color').style.background = state.currentColor;
-            updateToolSettings();
-        });
-        
-        presetsGrid.appendChild(div);
-    });
-}
+    // ----- state -----
+    let isDrawing = false;
+    let lastX = 0, lastY = 0;
+    let currentTool = 'pen';       // 'pen' , 'eraser', 'text'
+    let textInputActive = false;
 
-// ===== СЛОИ =====
-function setupLayers() {
-    const layersList = document.getElementById('layers-list');
-    state.layers = [
-        { id: 1, name: 'Слой 1', visible: true, locked: false },
-        { id: 2, name: 'Слой 2', visible: true, locked: false },
-        { id: 3, name: 'Слой 3', visible: true, locked: false }
-    ];
-    state.currentLayer = 0;
-    renderLayers();
-}
-
-function renderLayers() {
-    const layersList = document.getElementById('layers-list');
-    layersList.innerHTML = '';
-    
-    state.layers.forEach((layer, index) => {
-        const div = document.createElement('div');
-        div.className = `layer-item${index === state.currentLayer ? ' active' : ''}`;
-        
-        const thumb = document.createElement('div');
-        thumb.className = 'layer-thumb';
-        
-        const name = document.createElement('span');
-        name.className = 'layer-name';
-        name.textContent = layer.name;
-        
-        const actions = document.createElement('div');
-        actions.className = 'layer-actions';
-        
-        const eyeIcon = document.createElement('i');
-        eyeIcon.className = layer.visible ? 'fas fa-eye' : 'fas fa-eye-slash';
-        eyeIcon.addEventListener('click', (e) => {
-            e.stopPropagation();
-            layer.visible = !layer.visible;
-            renderLayers();
-        });
-        
-        const lockIcon = document.createElement('i');
-        lockIcon.className = layer.locked ? 'fas fa-lock' : 'fas fa-unlock';
-        lockIcon.addEventListener('click', (e) => {
-            e.stopPropagation();
-            layer.locked = !layer.locked;
-            renderLayers();
-        });
-        
-        actions.appendChild(eyeIcon);
-        actions.appendChild(lockIcon);
-        
-        div.appendChild(thumb);
-        div.appendChild(name);
-        div.appendChild(actions);
-        
-        div.addEventListener('click', function() {
-            state.currentLayer = index;
-            renderLayers();
-        });
-        
-        layersList.appendChild(div);
-    });
-}
-
-// ===== ЦВЕТОВОЕ КОЛЕСО =====
-function setupColorWheel() {
-    const wheel = document.getElementById('colorWheel');
-    let isDragging = false;
-    
-    // Рисуем цветовое колесо
-    function drawWheel() {
-        const rect = wheel.getBoundingClientRect();
-        const size = Math.min(rect.width, rect.height);
-        const cx = size / 2;
-        const cy = size / 2;
-        const radius = size / 2 - 4;
-        
-        // Создаем canvas для колеса
-        const tempCanvas = document.createElement('canvas');
-        tempCanvas.width = size;
-        tempCanvas.height = size;
-        const tempCtx = tempCanvas.getContext('2d');
-        
-        // Рисуем радужный круг
-        for (let i = 0; i < 360; i++) {
-            const angle = (i * Math.PI) / 180;
-            const x = cx + radius * Math.cos(angle);
-            const y = cy + radius * Math.sin(angle);
-            const gradient = tempCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
-            gradient.addColorStop(0, `hsl(${i}, 100%, 50%)`);
-            gradient.addColorStop(1, `hsl(${i}, 100%, 50%)`);
-            tempCtx.beginPath();
-            tempCtx.arc(x, y, 2, 0, Math.PI * 2);
-            tempCtx.fillStyle = `hsl(${i}, 100%, 50%)`;
-            tempCtx.fill();
-        }
-        
-        // Рисуем внутренний квадрат с градиентом
-        const innerSize = size * 0.6;
-        const innerX = (size - innerSize) / 2;
-        const innerY = (size - innerSize) / 2;
-        
-        const grad = tempCtx.createLinearGradient(innerX, innerY, innerX + innerSize, innerY + innerSize);
-        grad.addColorStop(0, 'rgba(255,255,255,0.8)');
-        grad.addColorStop(0.5, 'rgba(255,255,255,0)');
-        grad.addColorStop(1, 'rgba(0,0,0,0.8)');
-        tempCtx.fillStyle = grad;
-        tempCtx.fillRect(innerX, innerY, innerSize, innerSize);
-        
-        // Вставляем в DOM
-        wheel.style.backgroundImage = `url(${tempCanvas.toDataURL()})`;
-        wheel.style.backgroundSize = 'cover';
-    }
-    
-    // Обновляем при ресайзе
-    setTimeout(drawWheel, 100);
-    window.addEventListener('resize', drawWheel);
-    
-    // Выбор цвета
-    function getColorFromWheel(e) {
-        const rect = wheel.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const size = Math.min(rect.width, rect.height);
-        const cx = size / 2;
-        const cy = size / 2;
-        const dx = x - cx;
-        const dy = y - cy;
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const radius = size / 2 - 4;
-        
-        if (distance <= radius) {
-            let angle = Math.atan2(dy, dx) * 180 / Math.PI;
-            if (angle < 0) angle += 360;
-            
-            const saturation = distance / radius * 100;
-            const lightness = 50 + (1 - distance / radius) * 20;
-            
-            state.currentColor = `hsl(${angle}, ${saturation}%, ${lightness}%)`;
-            document.getElementById('primary-color').style.background = state.currentColor;
-            updateToolSettings();
-        }
-    }
-    
-    wheel.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        getColorFromWheel(e);
-    });
-    
-    window.addEventListener('mousemove', (e) => {
-        if (isDragging) {
-            getColorFromWheel(e);
-        }
-    });
-    
-    window.addEventListener('mouseup', () => {
-        isDragging = false;
-    });
-}
-
-// ===== СОБЫТИЯ ХОЛСТА =====
-function setupEventListeners() {
-    // Рисование
-    canvas.addEventListener('mousedown', startDrawing);
-    canvas.addEventListener('mousemove', draw);
-    canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mouseout', stopDrawing);
-    
-    // Touch события для мобильных
-    canvas.addEventListener('touchstart', handleTouchStart);
-    canvas.addEventListener('touchmove', handleTouchMove);
-    canvas.addEventListener('touchend', stopDrawing);
-    
-    // Изменение настроек
-    sizeInput.addEventListener('change', updateToolSettings);
-    opacityInput.addEventListener('change', updateToolSettings);
-    blurInput.addEventListener('change', updateToolSettings);
-    smoothingInput.addEventListener('change', updateToolSettings);
-    fontSelect.addEventListener('change', (e) => {
-        state.font = e.target.value;
-    });
-    
-    // Окно
-    window.addEventListener('resize', resizeCanvas);
-}
-
-// ===== ФУНКЦИИ РИСОВАНИЯ =====
-function startDrawing(e) {
-    if (state.isTextMode) {
-        const pos = getMousePosition(e);
-        state.textPosition = pos;
-        showTextInput(pos);
-        return;
-    }
-    
-    const pos = getMousePosition(e);
-    state.isDrawing = true;
-    state.lastX = pos.x;
-    state.lastY = pos.y;
-    
-    // Сохраняем состояние для undo
-    saveHistory();
-}
-
-function draw(e) {
-    if (!state.isDrawing || state.isTextMode) return;
-    
-    const pos = getMousePosition(e);
-    const size = parseInt(sizeInput.value) || 8;
-    const opacity = (parseInt(opacityInput.value) || 100) / 100;
-    const blur = parseInt(blurInput.value) || 0;
-    
-    ctx.save();
-    ctx.globalAlpha = opacity;
-    ctx.shadowColor = 'rgba(0,0,0,0)';
-    ctx.shadowBlur = blur;
-    ctx.lineWidth = size;
-    ctx.strokeStyle = state.currentColor;
-    
-    if (state.currentTool === 'eraser') {
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.strokeStyle = 'rgba(0,0,0,1)';
-    } else {
-        ctx.globalCompositeOperation = 'source-over';
-    }
-    
-    ctx.beginPath();
-    ctx.moveTo(state.lastX, state.lastY);
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke();
-    ctx.restore();
-    
-    state.lastX = pos.x;
-    state.lastY = pos.y;
-}
-
-function stopDrawing() {
-    if (state.isDrawing) {
-        state.isDrawing = false;
-        saveHistory();
-    }
-}
-
-// ===== ОБРАБОТКА TOUCH =====
-function handleTouchStart(e) {
-    e.preventDefault();
-    const touch = e.touches[0];
-    const mouseEvent = new MouseEvent('mousedown', {
-        clientX: touch.clientX,
-        clientY: touch.clientY
-    });
-    startDrawing(mouseEvent);
-}
-
-function handleTouchMove(e) {
-    e.preventDefault();
-    const touch = e.touches[0];
-    const mouseEvent = new MouseEvent('mousemove', {
-        clientX: touch.clientX,
-        clientY: touch.clientY
-    });
-    draw(mouseEvent);
-}
-
-// ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
-function getMousePosition(e) {
-    const rect = canvas.getBoundingClientRect();
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-    
-    return {
-        x: (e.clientX - rect.left) * scaleX,
-        y: (e.clientY - rect.top) * scaleY
+    // brush settings (mirror UI)
+    let brush = {
+        size: 8,
+        opacity: 1.0,      // 0..1
+        color: '#1a1a2e',
+        smooth: 4,         // 0..10
+        hardness: 0.8,     // 0..1
+        spacing: 4,
+        flow: 0.9          // 0..1
     };
-}
 
-function updateToolSettings() {
-    // Обновляем UI в соответствии с текущим инструментом
-    const isPen = state.currentTool === 'pen';
-    const isEraser = state.currentTool === 'eraser';
-    const isText = state.currentTool === 'text';
-    
-    // Показываем/скрываем соответствующие настройки
-    document.querySelectorAll('.setting-item').forEach(item => {
-        const label = item.querySelector('label');
-        if (label) {
-            const text = label.textContent.trim();
-            if (isText && text === 'Шрифт') {
-                item.style.display = 'flex';
-            } else if (isText && text === 'Правый клик') {
-                item.style.display = 'flex';
-            } else if (isText && text === 'Размер') {
-                item.style.display = 'flex';
-            } else if (isText && text === 'Непрозрачность') {
-                item.style.display = 'flex';
-            } else if (isText && (text === 'Размытие' || text === 'Сглаживание')) {
-                item.style.display = 'none';
-            } else if (isPen || isEraser) {
-                item.style.display = 'flex';
+    // for smoothing (simple averaging)
+    let smoothPoints = [];
+
+    // ----- helpers: sync UI to brush object -----
+    function updateBrushFromUI() {
+        brush.size = parseInt(sizeSlider.value, 10);
+        brush.opacity = parseInt(opacitySlider.value, 10) / 100;
+        brush.color = colorPicker.value;
+        brush.smooth = parseInt(smoothSlider.value, 10);
+        brush.hardness = parseInt(hardnessSlider.value, 10) / 100;
+        brush.spacing = parseInt(spacingSlider.value, 10);
+        brush.flow = parseInt(flowSlider.value, 10) / 100;
+
+        // update value displays
+        sizeSpan.textContent = brush.size;
+        opacitySpan.textContent = Math.round(brush.opacity * 100) + '%';
+        smoothSpan.textContent = brush.smooth;
+        hardnessSpan.textContent = Math.round(brush.hardness * 100) + '%';
+        spacingSpan.textContent = brush.spacing;
+        flowSpan.textContent = Math.round(brush.flow * 100) + '%';
+    }
+
+    // update UI sliders from brush (on init)
+    function syncUIFromBrush() {
+        sizeSlider.value = brush.size;
+        opacitySlider.value = brush.opacity * 100;
+        colorPicker.value = brush.color;
+        smoothSlider.value = brush.smooth;
+        hardnessSlider.value = brush.hardness * 100;
+        spacingSlider.value = brush.spacing;
+        flowSlider.value = brush.flow * 100;
+        updateBrushFromUI();
+    }
+
+    // ----- drawing primitives -----
+
+    // draw a single dot (with hardness / flow simulated via radial gradient)
+    function drawDot(x, y, size, color, opacity, hardness, flow) {
+        const radius = size / 2;
+        // flow: modulate opacity (simple)
+        const finalOpacity = opacity * flow;
+
+        // create radial gradient for hardness
+        const grad = ctx.createRadialGradient(x, y, 0, x, y, radius);
+        const alpha = Math.min(1, Math.max(0, finalOpacity));
+        if (hardness >= 0.99) {
+            // hard edge
+            grad.addColorStop(0, color);
+            grad.addColorStop(0.99, color);
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+        } else {
+            const stop = 0.3 + (1 - hardness) * 0.7; // softer = wider falloff
+            grad.addColorStop(0, color);
+            grad.addColorStop(stop, color);
+            grad.addColorStop(1, 'rgba(0,0,0,0)');
+        }
+
+        ctx.save();
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+    }
+
+    // draw a line from (x1,y1) to (x2,y2) with spacing
+    function drawLine(x1, y1, x2, y2, brushSettings) {
+        const { size, color, opacity, hardness, spacing, flow } = brushSettings;
+        const dist = Math.hypot(x2 - x1, y2 - y1);
+        if (dist < 0.01) {
+            drawDot(x1, y1, size, color, opacity, hardness, flow);
+            return;
+        }
+
+        const step = Math.max(1, spacing);
+        const steps = Math.max(1, Math.floor(dist / step));
+        for (let i = 0; i <= steps; i++) {
+            const t = i / steps;
+            const cx = x1 + (x2 - x1) * t;
+            const cy = y1 + (y2 - y1) * t;
+            drawDot(cx, cy, size, color, opacity, hardness, flow);
+        }
+    }
+
+    // smooth: average last N points
+    function getSmoothPoint(x, y) {
+        smoothPoints.push({ x, y });
+        const limit = Math.min(brush.smooth + 1, 12); // cap
+        if (smoothPoints.length > limit) {
+            smoothPoints.shift();
+        }
+        let avgX = 0, avgY = 0;
+        for (const p of smoothPoints) {
+            avgX += p.x;
+            avgY += p.y;
+        }
+        avgX /= smoothPoints.length;
+        avgY /= smoothPoints.length;
+        return { x: avgX, y: avgY };
+    }
+
+    function resetSmooth() {
+        smoothPoints = [];
+    }
+
+    // ----- main drawing event handlers -----
+
+    function getCanvasCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        let clientX, clientY;
+        if (e.touches) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+            e.preventDefault();
+        } else {
+            clientX = e.clientX;
+            clientY = e.clientY;
+        }
+        return {
+            x: (clientX - rect.left) * scaleX,
+            y: (clientY - rect.top) * scaleY
+        };
+    }
+
+    function startDrawing(e) {
+        e.preventDefault();
+        if (textInputActive) return;
+
+        const { x, y } = getCanvasCoords(e);
+        isDrawing = true;
+        lastX = x;
+        lastY = y;
+        resetSmooth();
+
+        // if text tool: place text on click (not drag)
+        if (currentTool === 'text') {
+            isDrawing = false;
+            showTextInput(x, y);
+            return;
+        }
+
+        // pen / eraser: draw a single dot at start
+        if (currentTool === 'pen' || currentTool === 'eraser') {
+            const color = currentTool === 'eraser' ? '#ffffff' : brush.color;
+            drawDot(x, y, brush.size, color, brush.opacity, brush.hardness, brush.flow);
+        }
+    }
+
+    function draw(e) {
+        e.preventDefault();
+        if (!isDrawing) return;
+        if (currentTool === 'text') return;
+
+        const { x, y } = getCanvasCoords(e);
+
+        // smoothing
+        let drawX = x, drawY = y;
+        if (brush.smooth > 0) {
+            const smoothed = getSmoothPoint(x, y);
+            drawX = smoothed.x;
+            drawY = smoothed.y;
+        } else {
+            resetSmooth();
+            drawX = x;
+            drawY = y;
+        }
+
+        const color = currentTool === 'eraser' ? '#ffffff' : brush.color;
+
+        // draw line from last to current
+        drawLine(lastX, lastY, drawX, drawY, {
+            size: brush.size,
+            color: color,
+            opacity: brush.opacity,
+            hardness: brush.hardness,
+            spacing: brush.spacing,
+            flow: brush.flow
+        });
+
+        lastX = drawX;
+        lastY = drawY;
+    }
+
+    function stopDrawing(e) {
+        e.preventDefault();
+        isDrawing = false;
+        resetSmooth();
+    }
+
+    // ----- text tool -----
+    function showTextInput(x, y) {
+        if (textInputActive) return;
+        textInputActive = true;
+
+        // create an off-canvas input
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = 'Type text…';
+        input.style.position = 'fixed';
+        input.style.left = '50%';
+        input.style.top = '50%';
+        input.style.transform = 'translate(-50%, -50%)';
+        input.style.padding = '12px 20px';
+        input.style.fontSize = '1.2rem';
+        input.style.border = '2px solid #3b82f6';
+        input.style.borderRadius = '40px';
+        input.style.background = 'white';
+        input.style.boxShadow = '0 12px 30px rgba(0,0,0,0.2)';
+        input.style.zIndex = '999';
+        input.style.width = '280px';
+        input.style.outline = 'none';
+        input.style.fontFamily = 'system-ui, sans-serif';
+
+        document.body.appendChild(input);
+        input.focus();
+
+        const finishText = () => {
+            const text = input.value.trim();
+            if (text) {
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;
+                const scaleY = canvas.height / rect.height;
+                // convert mouse pos to canvas coords (use stored x,y from click)
+                const canvasX = x;
+                const canvasY = y;
+
+                ctx.save();
+                ctx.font = `${Math.max(16, brush.size * 2.5)}px system-ui, sans-serif`;
+                ctx.fillStyle = brush.color;
+                ctx.globalAlpha = brush.opacity;
+                ctx.textBaseline = 'top';
+                ctx.fillText(text, canvasX, canvasY);
+                ctx.restore();
             }
-        }
-    });
-}
+            input.remove();
+            textInputActive = false;
+        };
 
-function resizeCanvas() {
-    const container = canvas.parentElement;
-    const rect = container.getBoundingClientRect();
-    const padding = 40;
-    
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = canvas.width;
-    tempCanvas.height = canvas.height;
-    const tempCtx = tempCanvas.getContext('2d');
-    tempCtx.drawImage(canvas, 0, 0);
-    
-    canvas.width = rect.width - padding;
-    canvas.height = rect.height - padding;
-    
-    ctx.drawImage(tempCanvas, 0, 0);
-}
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                finishText();
+            }
+            if (e.key === 'Escape') {
+                input.remove();
+                textInputActive = false;
+            }
+        });
 
-// ===== ТЕКСТ =====
-function showTextInput(pos) {
-    // Создаем временный input для текста
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.style.position = 'fixed';
-    input.style.left = pos.x + 'px';
-    input.style.top = pos.y + 'px';
-    input.style.fontSize = '16px';
-    input.style.fontFamily = state.font;
-    input.style.color = state.currentColor;
-    input.style.background = 'rgba(255,255,255,0.9)';
-    input.style.border = '2px solid #333';
-    input.style.padding = '4px 8px';
-    input.style.borderRadius = '3px';
-    input.style.zIndex = '9999';
-    input.style.outline = 'none';
-    input.placeholder = 'Введите текст...';
-    input.autofocus = true;
-    
-    document.body.appendChild(input);
-    
-    input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter') {
-            addTextToCanvas(this.value, pos);
-            document.body.removeChild(this);
-        } else if (e.key === 'Escape') {
-            document.body.removeChild(this);
-        }
-    });
-    
-    input.addEventListener('blur', function() {
-        if (this.value) {
-            addTextToCanvas(this.value, pos);
-        }
-        document.body.removeChild(this);
-    });
-}
-
-function addTextToCanvas(text, pos) {
-    if (!text) return;
-    
-    ctx.save();
-    ctx.font = `24px ${state.font}`;
-    ctx.fillStyle = state.currentColor;
-    ctx.globalAlpha = (parseInt(opacityInput.value) || 100) / 100;
-    ctx.shadowBlur = parseInt(blurInput.value) || 0;
-    ctx.shadowColor = 'rgba(0,0,0,0.3)';
-    
-    // Рисуем текст
-    ctx.fillText(text, pos.x, pos.y);
-    ctx.restore();
-    
-    state.isTextMode = false;
-    canvas.style.cursor = 'crosshair';
-    document.getElementById('text-tool').classList.remove('active');
-}
-
-// ===== ИСТОРИЯ (UNDO) =====
-function saveHistory() {
-    state.history.push(canvas.toDataURL());
-    if (state.history.length > state.maxHistory) {
-        state.history.shift();
+        input.addEventListener('blur', () => {
+            // if not finished yet, finish on blur
+            if (textInputActive) finishText();
+        });
     }
-    state.historyIndex = state.history.length - 1;
-}
 
-// ===== ЗАГРУЗКА ПРЕСЕТОВ =====
-function loadPresetColors() {
-    // Устанавливаем первый пресет как активный
-    const firstPreset = document.querySelector('.preset-circle');
-    if (firstPreset) {
-        state.currentColor = firstPreset.dataset.color;
-        document.getElementById('primary-color').style.background = state.currentColor;
+    // ----- tool switching -----
+    function setTool(tool) {
+        currentTool = tool;
+        toolBtns.forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.tool === tool);
+        });
+        // update cursor
+        if (tool === 'text') {
+            canvas.style.cursor = 'text';
+        } else {
+            canvas.style.cursor = 'crosshair';
+        }
     }
-}
 
-// ===== ЗАПУСК =====
-document.addEventListener('DOMContentLoaded', init);
+    // ----- clear canvas -----
+    function clearCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        // white background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 
-// Экспортируем для использования в других файлах
-window.state = state;
-window.ctx = ctx;
-window.canvas = canvas;
+    // ----- init canvas with white bg -----
+    function initCanvas() {
+        clearCanvas();
+    }
+
+    // ----- event binding -----
+    function bindEvents() {
+        // mouse
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+
+        // touch
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing, { passive: false });
+        canvas.addEventListener('touchcancel', stopDrawing, { passive: false });
+
+        // tool buttons
+        toolBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                setTool(btn.dataset.tool);
+            });
+        });
+
+        // clear
+        clearBtn.addEventListener('click', clearCanvas);
+
+        // settings
+        [sizeSlider, opacitySlider, colorPicker, smoothSlider, hardnessSlider, spacingSlider, flowSlider].forEach(el => {
+            el.addEventListener('input', updateBrushFromUI);
+        });
+
+        // prevent context menu on canvas
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // window resize: keep canvas crisp (no extra action needed)
+    }
+
+    // ----- start -----
+    function init() {
+        initCanvas();
+        syncUIFromBrush();
+        setTool('pen');
+        bindEvents();
+    }
+
+    init();
+})();
