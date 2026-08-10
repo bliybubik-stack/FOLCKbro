@@ -1,404 +1,337 @@
-// ============================================
-// APP STATE
-// ============================================
-const state = {
-    username: '',
-    room: 'fallback',
-    color: '#ff6b6b',
-    brushSize: 8,
-    opacity: 100,
-    font: 'Rubik',
-    rightClick: 'nextFont',
-    tool: 'pen',
-    isDrawing: false,
-    lastX: 0,
-    lastY: 0,
-    users: [],
-    strokes: [],
-    currentStroke: [],
-    isTyping: false,
-};
+// app.js – drawing app with FlockMod style
 
-// ============================================
-// DOM REFS
-// ============================================
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
-const colorWheel = document.getElementById('colorWheel');
-const wheelCtx = colorWheel.getContext('2d');
-const loginScreen = document.getElementById('loginScreen');
-const mainApp = document.getElementById('mainApp');
-const loginForm = document.getElementById('loginForm');
-const usernameInput = document.getElementById('usernameInput');
-const brushSize = document.getElementById('brushSize');
-const sizeValue = document.getElementById('sizeValue');
-const brushOpacity = document.getElementById('brushOpacity');
-const opacityValue = document.getElementById('opacityValue');
-const fontSelect = document.getElementById('fontSelect');
-const rightClickAction = document.getElementById('rightClickAction');
-const colorPicker = document.getElementById('colorPicker');
-const selectedColor = document.getElementById('selectedColor');
-const userLabels = document.getElementById('userLabels');
-const toolBtns = document.querySelectorAll('.tool-btn');
+(function() {
+    const canvas = document.getElementById('drawCanvas');
+    const ctx = canvas.getContext('2d');
 
-// ============================================
-// CANVAS SETUP
-// ============================================
-function resizeCanvas() {
-    const rect = canvas.parentElement.getBoundingClientRect();
-    canvas.width = rect.width;
-    canvas.height = rect.height;
-    redrawAll();
-}
-
-function redrawAll() {
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    state.strokes.forEach(stroke => {
-        if (stroke.type === 'text') {
-            ctx.font = `${stroke.size}px ${stroke.font}`;
-            ctx.fillStyle = stroke.color;
-            ctx.globalAlpha = stroke.opacity / 100;
-            ctx.textBaseline = 'top';
-            ctx.fillText(stroke.text, stroke.x, stroke.y);
-            ctx.globalAlpha = 1;
-        } else if (stroke.type === 'draw') {
-            drawStroke(stroke);
-        }
-    });
-}
-
-function drawStroke(stroke) {
-    if (stroke.points.length < 2) {
-        if (stroke.points.length === 1) {
-            ctx.fillStyle = stroke.color;
-            ctx.globalAlpha = stroke.opacity / 100;
-            ctx.beginPath();
-            ctx.arc(stroke.points[0].x, stroke.points[0].y, stroke.size / 2, 0, Math.PI * 2);
-            ctx.fill();
-        }
-        ctx.globalAlpha = 1;
-        return;
-    }
-
-    ctx.strokeStyle = stroke.color;
-    ctx.globalAlpha = stroke.opacity / 100;
-    ctx.lineWidth = stroke.size;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    ctx.beginPath();
-    ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-    for (let i = 1; i < stroke.points.length; i++) {
-        ctx.lineTo(stroke.points[i].x, stroke.points[i].y);
-    }
-    ctx.stroke();
-    ctx.globalAlpha = 1;
-}
-
-// ============================================
-// TOOL HANDLING
-// ============================================
-toolBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        toolBtns.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        state.tool = btn.textContent.toLowerCase();
-        
-        // Update cursor
-        if (state.tool === 'text') {
-            canvas.style.cursor = 'text';
-        } else if (state.tool === 'eraser') {
-            canvas.style.cursor = 'cell';
-        } else {
-            canvas.style.cursor = 'crosshair';
-        }
-    });
-});
-
-// ============================================
-// DRAWING
-// ============================================
-function getCanvasPos(e) {
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left) * (canvas.width / rect.width);
-    const y = (e.clientY - rect.top) * (canvas.height / rect.height);
-    return { x, y };
-}
-
-canvas.addEventListener('mousedown', (e) => {
-    if (e.button === 2) {
-        e.preventDefault();
-        if (state.rightClick === 'undo') {
-            if (state.strokes.length > 0) {
-                state.strokes.pop();
-                redrawAll();
-            }
-        } else if (state.rightClick === 'nextFont') {
-            const fonts = ['Rubik', 'Arial', 'Courier New', 'Georgia'];
-            const currentIndex = fonts.indexOf(state.font);
-            state.font = fonts[(currentIndex + 1) % fonts.length];
-            fontSelect.value = state.font;
-        } else if (state.rightClick === 'eraser') {
-            state.tool = 'eraser';
-            toolBtns.forEach(b => {
-                b.classList.remove('active');
-                if (b.textContent.toLowerCase() === 'eraser') b.classList.add('active');
-            });
-            canvas.style.cursor = 'cell';
-        }
-        return;
-    }
-
-    if (state.tool === 'text') {
-        handleTextClick(e);
-        return;
-    }
-
-    const pos = getCanvasPos(e);
-    state.isDrawing = true;
-    state.lastX = pos.x;
-    state.lastY = pos.y;
-    state.currentStroke = {
-        points: [{ x: pos.x, y: pos.y }],
-        color: state.tool === 'eraser' ? 'white' : state.color,
-        size: state.tool === 'eraser' ? state.brushSize * 2 : state.brushSize,
-        opacity: state.tool === 'eraser' ? 100 : state.opacity,
-        type: 'draw',
-    };
-});
-
-canvas.addEventListener('mousemove', (e) => {
-    const pos = getCanvasPos(e);
-    updateUserLabel(pos.x, pos.y);
-
-    if (!state.isDrawing) return;
-
-    state.currentStroke.points.push({ x: pos.x, y: pos.y });
-    
-    if (state.tool === 'eraser') {
-        ctx.globalCompositeOperation = 'destination-out';
-        ctx.beginPath();
-        ctx.arc(pos.x, pos.y, state.brushSize * 0.7, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalCompositeOperation = 'source-over';
-    } else {
-        ctx.strokeStyle = state.color;
-        ctx.globalAlpha = state.opacity / 100;
-        ctx.lineWidth = state.brushSize;
+    // ---- canvas sizing ----
+    function resizeCanvas() {
+        const rect = canvas.parentElement.getBoundingClientRect();
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = rect.width * dpr;
+        canvas.height = rect.height * dpr;
+        canvas.style.width = rect.width + 'px';
+        canvas.style.height = rect.height + 'px';
+        ctx.scale(dpr, dpr);
+        // reset drawing style
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
+        // apply current settings
+        applySettings();
+    }
+
+    // ---- tool settings (defaults from screenshot) ----
+    const settings = {
+        size: 8,
+        opacity: 100,
+        blur: 0,
+        smoothing: 0,
+        gap: 0,
+        pressure: 100,
+        color: '#ffffff',
+    };
+
+    // ---- DOM references for display ----
+    const sizeDisplay = document.getElementById('sizeDisplay');
+    const opacityDisplay = document.getElementById('opacityDisplay');
+    const blurDisplay = document.getElementById('blurDisplay');
+    const smoothDisplay = document.getElementById('smoothDisplay');
+    const gapDisplay = document.getElementById('gapDisplay');
+    const pressureDisplay = document.getElementById('pressureDisplay');
+
+    function updateDisplays() {
+        if (sizeDisplay) sizeDisplay.textContent = settings.size;
+        if (opacityDisplay) opacityDisplay.textContent = settings.opacity;
+        if (blurDisplay) blurDisplay.textContent = settings.blur;
+        if (smoothDisplay) smoothDisplay.textContent = settings.smoothing;
+        if (gapDisplay) gapDisplay.textContent = settings.gap;
+        if (pressureDisplay) pressureDisplay.textContent = settings.pressure;
+    }
+
+    function applySettings() {
+        ctx.globalAlpha = settings.opacity / 100;
+        ctx.lineWidth = settings.size;
+        // blur simulation: we use shadowBlur (canvas native)
+        ctx.shadowBlur = settings.blur;
+        ctx.shadowColor = settings.color;
+        // smoothing: canvas does not have direct 'smoothing' for strokes,
+        // but we can set imageSmoothingQuality (affects images, not lines).
+        // We'll ignore smoothing for strokes (just keep as is).
+        // gap is not used in canvas line drawing (it's a brush spacing param)
+        // pressure is also not directly used (we keep for display)
+        ctx.strokeStyle = settings.color;
+        ctx.fillStyle = settings.color;
+    }
+
+    // ---- drawing state ----
+    let isDrawing = false;
+    let lastX = 0, lastY = 0;
+
+    // ---- get canvas coordinates (in CSS pixels) ----
+    function getCoords(e) {
+        const rect = canvas.getBoundingClientRect();
+        const clientX = e.clientX || e.touches?.[0]?.clientX || 0;
+        const clientY = e.clientY || e.touches?.[0]?.clientY || 0;
+        return {
+            x: clientX - rect.left,
+            y: clientY - rect.top
+        };
+    }
+
+    // ---- drawing functions ----
+    function startDrawing(e) {
+        e.preventDefault();
+        isDrawing = true;
+        const { x, y } = getCoords(e);
+        lastX = x;
+        lastY = y;
+        // draw a dot (for single click)
         ctx.beginPath();
-        ctx.moveTo(state.lastX, state.lastY);
-        ctx.lineTo(pos.x, pos.y);
-        ctx.stroke();
-        ctx.globalAlpha = 1;
+        ctx.arc(x, y, settings.size / 2, 0, Math.PI * 2);
+        ctx.fillStyle = settings.color;
+        ctx.globalAlpha = settings.opacity / 100;
+        ctx.shadowBlur = settings.blur;
+        ctx.shadowColor = settings.color;
+        ctx.fill();
+        // reset for stroke
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        // apply stroke settings
+        ctx.strokeStyle = settings.color;
+        ctx.lineWidth = settings.size;
+        ctx.globalAlpha = settings.opacity / 100;
+        ctx.shadowBlur = settings.blur;
+        ctx.shadowColor = settings.color;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
     }
-    state.lastX = pos.x;
-    state.lastY = pos.y;
-});
 
-canvas.addEventListener('mouseup', (e) => {
-    if (state.isDrawing && state.currentStroke.points.length > 0) {
-        state.strokes.push(state.currentStroke);
-        state.currentStroke = [];
-        state.isDrawing = false;
-    }
-});
-
-canvas.addEventListener('mouseleave', () => {
-    if (state.isDrawing && state.currentStroke.points.length > 0) {
-        state.strokes.push(state.currentStroke);
-        state.currentStroke = [];
-        state.isDrawing = false;
-    }
-    hideUserLabel();
-});
-
-// ============================================
-// TEXT HANDLING
-// ============================================
-function handleTextClick(e) {
-    if (state.isTyping) return;
-    const pos = getCanvasPos(e);
-    state.isTyping = true;
-    
-    const input = document.createElement('input');
-    input.type = 'text';
-    input.className = 'fixed bg-[#0f1633] text-white border border-[#4a4a8a] rounded px-2 py-1 text-base outline-none';
-    input.style.fontFamily = state.font;
-    input.style.fontSize = state.brushSize + 6 + 'px';
-    input.style.color = state.color;
-    input.style.zIndex = 20;
-    input.style.minWidth = '100px';
-    input.style.padding = '4px 8px';
-    input.style.background = 'rgba(15, 22, 51, 0.9)';
-    input.style.backdropFilter = 'blur(4px)';
-    input.placeholder = 'Type text...';
-    
-    const rect = canvas.getBoundingClientRect();
-    input.style.left = (rect.left + pos.x) + 'px';
-    input.style.top = (rect.top + pos.y) + 'px';
-    
-    document.body.appendChild(input);
-    input.focus();
-    
-    input.addEventListener('keydown', (ev) => {
-        if (ev.key === 'Enter') {
-            const text = input.value.trim();
-            if (text) {
-                state.strokes.push({
-                    type: 'text',
-                    text: text,
-                    x: pos.x,
-                    y: pos.y,
-                    color: state.color,
-                    size: state.brushSize + 6,
-                    font: state.font,
-                    opacity: state.opacity,
-                });
-                redrawAll();
+    function draw(e) {
+        if (!isDrawing) return;
+        e.preventDefault();
+        const { x, y } = getCoords(e);
+        // apply gap (if gap > 0, skip drawing if distance < gap)
+        if (settings.gap > 0) {
+            const dx = x - lastX;
+            const dy = y - lastY;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if (dist < settings.gap) {
+                // still update last position? We'll keep lastX/Y for continuity
+                // but we don't draw.
+                // Actually we want to skip drawing but keep last point?
+                // Better: don't update lastX/Y so we don't lose the point.
+                return;
             }
-            document.body.removeChild(input);
-            state.isTyping = false;
         }
-    });
-    
-    input.addEventListener('blur', () => {
-        if (document.body.contains(input)) {
-            document.body.removeChild(input);
-            state.isTyping = false;
+        ctx.lineTo(x, y);
+        ctx.stroke();
+        // update last position
+        lastX = x;
+        lastY = y;
+        // for next segment, begin new path to avoid connecting across gaps
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+        // re-apply stroke settings (they persist but just in case)
+        ctx.strokeStyle = settings.color;
+        ctx.lineWidth = settings.size;
+        ctx.globalAlpha = settings.opacity / 100;
+        ctx.shadowBlur = settings.blur;
+        ctx.shadowColor = settings.color;
+    }
+
+    function stopDrawing(e) {
+        if (isDrawing) {
+            isDrawing = false;
+            ctx.closePath();
         }
-    });
-}
-
-// ============================================
-// USER LABELS
-// ============================================
-let userLabelElement = null;
-
-function updateUserLabel(x, y) {
-    if (!userLabelElement) {
-        userLabelElement = document.createElement('div');
-        userLabelElement.className = 'user-label';
-        userLabels.appendChild(userLabelElement);
     }
-    const rect = canvas.getBoundingClientRect();
-    userLabelElement.textContent = state.username || 'You';
-    userLabelElement.style.left = (rect.left + x) + 'px';
-    userLabelElement.style.top = (rect.top + y) + 'px';
-    userLabelElement.style.display = 'block';
-}
 
-function hideUserLabel() {
-    if (userLabelElement) {
-        userLabelElement.style.display = 'none';
+    // ---- event listeners (mouse + touch) ----
+    function attachEvents() {
+        // mouse
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseleave', stopDrawing);
+        // touch
+        canvas.addEventListener('touchstart', startDrawing, { passive: false });
+        canvas.addEventListener('touchmove', draw, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+        canvas.addEventListener('touchcancel', stopDrawing);
+        // prevent context menu on right-click (we want to keep "отменить штрих" in UI)
+        canvas.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            // in FlockMod, right-click "undo stroke" – we implement undo last stroke
+            undoLastStroke();
+        });
     }
-}
 
-// ============================================
-// COLOR WHEEL
-// ============================================
-function drawColorWheel() {
-    const w = colorWheel.width;
-    const h = colorWheel.height;
-    const gradient = wheelCtx.createLinearGradient(0, 0, w, 0);
-    gradient.addColorStop(0, '#ff0000');
-    gradient.addColorStop(0.17, '#ff8800');
-    gradient.addColorStop(0.33, '#ffff00');
-    gradient.addColorStop(0.5, '#00ff00');
-    gradient.addColorStop(0.67, '#0088ff');
-    gradient.addColorStop(0.83, '#8800ff');
-    gradient.addColorStop(1, '#ff0000');
-    wheelCtx.fillStyle = gradient;
-    wheelCtx.fillRect(0, 0, w, h);
-    
-    const gradient2 = wheelCtx.createLinearGradient(0, 0, 0, h);
-    gradient2.addColorStop(0, 'rgba(255,255,255,0)');
-    gradient2.addColorStop(0.5, 'rgba(255,255,255,0)');
-    gradient2.addColorStop(0.5, 'rgba(0,0,0,0)');
-    gradient2.addColorStop(1, 'rgba(0,0,0,1)');
-    wheelCtx.fillStyle = gradient2;
-    wheelCtx.fillRect(0, 0, w, h);
-}
+    // ---- UNDO (right-click "Отменить штрих") ----
+    let strokeHistory = [];
 
-colorWheel.addEventListener('click', (e) => {
-    const rect = colorWheel.getBoundingClientRect();
-    const x = (e.clientX - rect.left) / rect.width * colorWheel.width;
-    const y = (e.clientY - rect.top) / rect.height * colorWheel.height;
-    const pixel = wheelCtx.getImageData(x, y, 1, 1).data;
-    if (pixel[3] > 0) {
-        const hex = `#${pixel[0].toString(16).padStart(2, '0')}${pixel[1].toString(16).padStart(2, '0')}${pixel[2].toString(16).padStart(2, '0')}`;
-        state.color = hex;
-        colorPicker.value = hex;
-        selectedColor.style.background = hex;
+    function saveStroke() {
+        // save the current canvas as an image data
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        strokeHistory.push(imageData);
+        // limit history to 20 strokes (to avoid memory issues)
+        if (strokeHistory.length > 20) {
+            strokeHistory.shift();
+        }
     }
-});
 
-// ============================================
-// UI CONTROLS
-// ============================================
-brushSize.addEventListener('input', () => {
-    state.brushSize = parseInt(brushSize.value);
-    sizeValue.textContent = state.brushSize;
-});
+    function undoLastStroke() {
+        if (strokeHistory.length === 0) return;
+        // restore previous state
+        const prev = strokeHistory.pop();
+        ctx.putImageData(prev, 0, 0);
+        // re-apply settings (since putImageData resets style)
+        applySettings();
+        // also reset drawing state
+        isDrawing = false;
+        ctx.beginPath();
+    }
 
-brushOpacity.addEventListener('input', () => {
-    state.opacity = parseInt(brushOpacity.value);
-    opacityValue.textContent = state.opacity;
-});
+    // ---- override start/stop to save history ----
+    const originalStart = startDrawing;
+    startDrawing = function(e) {
+        // save state before drawing new stroke (if we are not drawing)
+        if (!isDrawing) {
+            // we save the current canvas as a "before stroke" state
+            // but we want to save after the stroke ends, easier: save on stop
+            // we'll use a flag to save once per stroke
+            this._strokeSaved = false;
+        }
+        originalStart.call(this, e);
+    };
 
-fontSelect.addEventListener('change', () => {
-    state.font = fontSelect.value;
-});
+    // override stopDrawing to save stroke
+    const originalStop = stopDrawing;
+    stopDrawing = function(e) {
+        if (isDrawing) {
+            // save the stroke (after drawing)
+            saveStroke();
+            this._strokeSaved = true;
+        }
+        originalStop.call(this, e);
+    };
 
-rightClickAction.addEventListener('change', () => {
-    state.rightClick = rightClickAction.value;
-});
+    // ---- right-click undo (calls undoLastStroke) ----
+    // already attached via contextmenu event
 
-colorPicker.addEventListener('input', () => {
-    state.color = colorPicker.value;
-    selectedColor.style.background = state.color;
-});
+    // ---- preset loading (click on numbers) ----
+    function setupPresets() {
+        const presetCells = document.querySelectorAll('#sidebar .grid span');
+        presetCells.forEach((cell, index) => {
+            const presetNumber = index + 1;
+            cell.addEventListener('click', function(e) {
+                // load preset: just a demo – we change size and color based on number
+                const size = 4 + (presetNumber % 10);
+                const hue = (presetNumber * 25) % 360;
+                settings.size = Math.min(40, Math.max(2, size));
+                settings.color = `hsl(${hue}, 80%, 60%)`;
+                // update displays
+                updateDisplays();
+                applySettings();
+                // visual feedback: flash border
+                this.style.borderColor = '#8888ff';
+                setTimeout(() => { this.style.borderColor = '#3a3a44'; }, 200);
+            });
+            // hold to set (right-click or long press) – we use right-click for undo, so we use "hold" via mousedown + timer
+            let holdTimer = null;
+            cell.addEventListener('mousedown', function(e) {
+                if (e.button === 0) { // left click
+                    holdTimer = setTimeout(() => {
+                        // "Удерживайте для установки" – set current settings to this preset number
+                        const size = 4 + (presetNumber % 10);
+                        const hue = (presetNumber * 25) % 360;
+                        settings.size = Math.min(40, Math.max(2, size));
+                        settings.color = `hsl(${hue}, 80%, 60%)`;
+                        updateDisplays();
+                        applySettings();
+                        this.style.borderColor = '#ffaa44';
+                        setTimeout(() => { this.style.borderColor = '#3a3a44'; }, 400);
+                    }, 600);
+                }
+            });
+            cell.addEventListener('mouseup', function(e) {
+                if (holdTimer) {
+                    clearTimeout(holdTimer);
+                    holdTimer = null;
+                }
+            });
+            cell.addEventListener('mouseleave', function(e) {
+                if (holdTimer) {
+                    clearTimeout(holdTimer);
+                    holdTimer = null;
+                }
+            });
+            // touch support for hold
+            let touchTimer = null;
+            cell.addEventListener('touchstart', function(e) {
+                touchTimer = setTimeout(() => {
+                    const size = 4 + (presetNumber % 10);
+                    const hue = (presetNumber * 25) % 360;
+                    settings.size = Math.min(40, Math.max(2, size));
+                    settings.color = `hsl(${hue}, 80%, 60%)`;
+                    updateDisplays();
+                    applySettings();
+                    this.style.borderColor = '#ffaa44';
+                    setTimeout(() => { this.style.borderColor = '#3a3a44'; }, 400);
+                }, 600);
+            }, { passive: true });
+            cell.addEventListener('touchend', function(e) {
+                if (touchTimer) {
+                    clearTimeout(touchTimer);
+                    touchTimer = null;
+                }
+            });
+            cell.addEventListener('touchcancel', function(e) {
+                if (touchTimer) {
+                    clearTimeout(touchTimer);
+                    touchTimer = null;
+                }
+            });
+        });
+    }
 
-// ============================================
-// PRESETS
-// ============================================
-document.querySelectorAll('.preset-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6bff', '#ff9f43', '#00d2d3', '#a29bfe', '#fd79a8', '#fdcb6e', '#6c5ce7', '#00b894', '#e17055', '#0984e3', '#fdcb6e', '#e84393', '#00cec9', '#fd79a8'];
-        const index = parseInt(btn.textContent) - 1;
-        state.color = colors[index % colors.length];
-        colorPicker.value = state.color;
-        selectedColor.style.background = state.color;
-    });
-});
+    // ---- init ----
+    function init() {
+        resizeCanvas();
+        // set default color
+        settings.color = '#ffffff';
+        applySettings();
+        updateDisplays();
+        attachEvents();
+        setupPresets();
 
-// ============================================
-// LOGIN
-// ============================================
-loginForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const username = usernameInput.value.trim() || 'Anonymous';
-    state.username = username;
-    
-    loginScreen.style.opacity = '0';
-    setTimeout(() => {
-        loginScreen.classList.add('hidden');
-        mainApp.classList.remove('hidden');
-        setTimeout(() => {
-            mainApp.style.opacity = '1';
+        // handle window resize
+        window.addEventListener('resize', () => {
+            // save current drawing before resize?
+            // we save canvas data to restore after resize
+            const oldData = ctx.getImageData(0, 0, canvas.width, canvas.height);
             resizeCanvas();
-        }, 50);
-    }, 300);
-});
+            // restore image data (scaled)
+            ctx.putImageData(oldData, 0, 0);
+            applySettings();
+        });
 
-// ============================================
-// INIT
-// ============================================
-window.addEventListener('resize', resizeCanvas);
-drawColorWheel();
+        // extra: click on color wheel mock – change color (demo)
+        const wheel = document.querySelector('.color-wheel-mock');
+        if (wheel) {
+            wheel.addEventListener('click', function() {
+                const hue = Math.floor(Math.random() * 360);
+                settings.color = `hsl(${hue}, 80%, 60%)`;
+                applySettings();
+                updateDisplays();
+            });
+        }
+    }
 
-console.log('🖌️ #fallback - FlockMod clone loaded!');
-console.log('🎨 Tools: Pen, Pixel, Eraser, Text, Line, Rect, Circle, Fill, Select');
+    // wait for DOM
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+
+})();
