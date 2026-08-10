@@ -1,156 +1,282 @@
-/* style.css – FlockMod enhanced sidebar */
+/* style.css – Full FlockMod overhaul */
 
 * {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 body {
-  margin: 0;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  background: #1a1a1e;
-  color: #e5e5e8;
+    margin: 0;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: #1a1a1e;
+    color: #e5e5e8;
+    overflow: hidden;
 }
 
-/* custom scrollbar */
+/* Scrollbar */
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+    width: 4px;
+    height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #16161c;
+    background: #1b1b21;
 }
 ::-webkit-scrollbar-thumb {
-  background: #3d3d48;
-  border-radius: 8px;
+    background: #3d3d48;
+    border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #5a5a68;
+    background: #5a5a68;
 }
 
-aside {
-  scrollbar-width: thin;
-  scrollbar-color: #3d3d48 #16161c;
+/* Canvas */
+#drawCanvas {
+    background: #ffffff;
+    image-rendering: crisp-edges;
 }
 
-/* tool buttons */
+/* Tool buttons */
 .tool-btn {
-  font-size: 10px;
-  line-height: 1.2;
-  transition: all 0.15s ease;
-  cursor: pointer;
-  user-select: none;
+    transition: all 0.15s ease;
+    font-size: 10px;
+    padding: 4px 6px;
+    cursor: pointer;
 }
 .tool-btn.active {
-  background: #4a4a5a;
-  border-color: #8888cc;
-  box-shadow: 0 0 8px rgba(100, 100, 255, 0.2);
-}
-.tool-btn:hover {
-  background: #3a3a46;
+    background: #4a4a5a;
+    border-color: #6a6a7a;
+    box-shadow: 0 0 0 1px #6a6a7a;
 }
 
-/* preset cells */
-.preset-cell {
-  transition: background 0.1s ease, border-color 0.15s ease;
-  cursor: default;
-  font-size: 11px;
-  line-height: 1.6;
-  background: #282830;
-  border-color: #3d3d48;
-  color: #c0c0c8;
-  font-variant-numeric: tabular-nums;
+/* Range inputs */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 4px;
+    border-radius: 2px;
+    background: #3a3a44;
+    outline: none;
 }
-.preset-cell:hover {
-  background: #353540;
-  border-color: #5a5a6a;
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #6a6a7a;
+    cursor: pointer;
+    border: 2px solid #8a8a9a;
 }
-.preset-cell:active {
-  background: #424250;
+input[type="range"]::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: #6a6a7a;
+    cursor: pointer;
+    border: 2px solid #8a8a9a;
+}
+input[type="range"]:hover::-webkit-slider-thumb {
+    background: #8a8a9a;
+}
+input[type="range"]:hover::-moz-range-thumb {
+    background: #8a8a9a;
 }
 
-/* canvas wrapper */
-#drawCanvas {
-  background: #ffffff;
-  image-rendering: crisp-edges;
-  cursor: crosshair;
+/* Preset numbers */
+.preset-num {
+    transition: all 0.15s ease;
+    cursor: default;
+    font-size: 11px;
+    line-height: 1.6;
+    background: #282830;
+    border-color: #3d3d48;
+    color: #c0c0c8;
+    font-variant-numeric: tabular-nums;
+}
+.preset-num:hover {
+    background: #353540;
+    border-color: #5a5a6a;
+}
+.preset-num:active {
+    background: #424250;
 }
 
-/* color wheel */
-#colorWheel {
-  transition: transform 0.2s ease;
-}
-#colorWheel:hover {
-  transform: scale(1.05);
-}
-
-/* template buttons */
+/* Template buttons */
 .template-btn {
-  transition: all 0.15s ease;
-  cursor: pointer;
-  font-size: 9px;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    font-size: 10px;
+    padding: 3px 4px;
 }
 .template-btn:hover {
-  background: #3a3a46;
-  border-color: #6a6a7a;
+    background: #3a3a44;
+    border-color: #5a5a6a;
 }
 .template-btn:active {
-  transform: scale(0.95);
+    background: #4a4a54;
 }
 
-/* settings grid */
-#toolSettings .grid span:last-child {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
+/* Layer items */
+.layer-item {
+    transition: all 0.15s ease;
+    cursor: pointer;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: #2a2a34;
+    border: 1px solid #3d3d48;
+    white-space: nowrap;
+}
+.layer-item:hover {
+    background: #3a3a44;
+}
+.layer-item.active {
+    background: #4a4a5a;
+    border-color: #6a6a7a;
+}
+.layer-item .layer-opacity {
+    width: 40px;
+    height: 3px;
+    -webkit-appearance: none;
+    appearance: none;
+    background: #3a3a44;
+    border-radius: 2px;
+}
+.layer-item .layer-opacity::-webkit-slider-thumb {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #8a8a9a;
+    cursor: pointer;
+    border: none;
+}
+.layer-item .layer-opacity::-moz-range-thumb {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #8a8a9a;
+    cursor: pointer;
+    border: none;
 }
 
-/* pressure toggle */
-#pressureToggle {
-  transition: all 0.15s ease;
-  cursor: pointer;
-  font-size: 10px;
-}
-#pressureToggle:hover {
-  background: #3a3a46;
-}
-#pressureToggle.active {
-  background: #2a4a3a;
-  border-color: #4a8a6a;
-  color: #8affaa;
+/* Color wheel container */
+#colorWheel {
+    cursor: crosshair;
+    touch-action: none;
 }
 
-/* text input overlay for text tool */
-.text-overlay {
-  position: absolute;
-  background: transparent;
-  border: 2px dashed #666;
-  padding: 4px;
-  min-width: 50px;
-  min-height: 30px;
-  outline: none;
-  color: #000;
-  font-size: 16px;
-  font-family: system-ui, sans-serif;
-  resize: both;
-  overflow: hidden;
-  z-index: 10;
+/* Color history items */
+.color-history-item {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    border: 2px solid #3a3a44;
+    cursor: pointer;
+    transition: all 0.15s ease;
 }
-.text-overlay:focus {
-  border-color: #8888ff;
+.color-history-item:hover {
+    transform: scale(1.1);
+    border-color: #6a6a7a;
+}
+.color-history-item:active {
+    transform: scale(0.95);
 }
 
-/* selection rectangle */
-.selection-rect {
-  position: absolute;
-  border: 2px dashed #4488ff;
-  background: rgba(68, 136, 255, 0.1);
-  pointer-events: none;
-  z-index: 5;
+/* Toast notification */
+#toast {
+    z-index: 9999;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+#toast.show {
+    opacity: 1;
+    pointer-events: auto;
 }
 
-/* responsive tweaks */
+/* Select tool overlay */
+.selection-overlay {
+    position: absolute;
+    border: 2px dashed #4a8aff;
+    background: rgba(74, 138, 255, 0.1);
+    pointer-events: none;
+    z-index: 10;
+}
+
+/* Responsive tweaks */
 @media (max-width: 768px) {
-  aside {
-    width: 260px !important;
-    min-width: 260px !important;
-  }
+    aside {
+        width: 280px !important;
+        min-width: 280px !important;
+    }
+}
+
+/* Tool settings grid alignment */
+.tool-setting-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.tool-setting-row label {
+    font-size: 10px;
+    color: #8a8a9a;
+    min-width: 50px;
+}
+.tool-setting-row input[type="range"] {
+    flex: 1;
+}
+.tool-setting-row .value {
+    font-size: 10px;
+    color: #c0c0c8;
+    min-width: 20px;
+    text-align: right;
+}
+
+/* Custom checkbox for pressure */
+.pressure-toggle {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 10px;
+    color: #8a8a9a;
+}
+.pressure-toggle input[type="checkbox"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 4px;
+    background: #2a2a34;
+    border: 2px solid #3d3d48;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.pressure-toggle input[type="checkbox"]:checked {
+    background: #4a8aff;
+    border-color: #4a8aff;
+}
+.pressure-toggle input[type="checkbox"]:checked::after {
+    content: "✓";
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 10px;
+}
+
+/* Text tool input */
+.text-input-overlay {
+    position: absolute;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-size: 16px;
+    color: #000;
+    min-width: 10px;
+    min-height: 20px;
+    z-index: 20;
+    padding: 2px 4px;
+    cursor: text;
+}
+.text-input-overlay:focus {
+    border: 1px dashed #4a8aff;
+    background: rgba(255, 255, 255, 0.9);
 }
