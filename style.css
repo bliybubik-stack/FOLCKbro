@@ -1,4 +1,4 @@
-/* style.css – FlockMod exact sidebar style */
+/* style.css – FlockMod exact sidebar style (right side) */
 
 * {
   box-sizing: border-box;
@@ -51,9 +51,9 @@ body {
   background: #424250;
 }
 
-/* canvas */
+/* canvas – white background */
 #drawCanvas {
-  background: #111113;
+  background: #ffffff;
   image-rendering: crisp-edges;
 }
 
