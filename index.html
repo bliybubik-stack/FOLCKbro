@@ -33,28 +33,40 @@
 
     <!-- Main App -->
     <div id="mainApp" class="hidden h-screen bg-[#1a1a2e] flex overflow-hidden">
-        <!-- Canvas Area - WHITE BACKGROUND -->
+        <!-- Canvas Area -->
         <div class="flex-1 relative bg-white">
-            <canvas id="canvas" class="w-full h-full cursor-crosshair"></canvas>
-            <!-- User labels container -->
+            <canvas id="canvas" class="w-full h-full"></canvas>
             <div id="userLabels" class="absolute inset-0 pointer-events-none"></div>
         </div>
 
-        <!-- Sidebar - EXACT MATCH -->
+        <!-- Sidebar - EXACT 1:1 COPY -->
         <div id="sidebar" class="w-[340px] bg-[#1a1a2e] border-l border-[#2a2a4a] overflow-y-auto flex-shrink-0">
-            <div class="p-5 space-y-6">
-                <!-- Room Header -->
+            <div class="p-5 space-y-5">
+                <!-- Header -->
                 <div class="text-center">
                     <h2 class="text-white text-xl font-bold">#fallback - FlockMod</h2>
                     <p class="text-[#6a6a8a] text-xs mt-1">flockmod.com</p>
-                    <p class="text-[#4a4a6a] text-xs mt-1">https://flockmod.com/r/fallback</p>
-                    <p class="text-[#3a3a5a] text-xs mt-2">test test 123123</p>
+                    <p class="text-[#4a4a6a] text-xs mt-0.5">https://flockmod.com/r/fallback</p>
+                    <p class="text-[#3a3a5a] text-xs mt-1.5">test test 123123</p>
+                </div>
+
+                <!-- Tool Buttons - EXACT MATCH -->
+                <div class="flex gap-1.5 flex-wrap">
+                    <button class="tool-btn active bg-[#2a2a4a] text-white px-3 py-1.5 rounded text-xs hover:bg-[#3a3a5a] transition">Pen</button>
+                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Pixel</button>
+                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Eraser</button>
+                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Text</button>
+                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Line</button>
+                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Rect</button>
+                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Circle</button>
+                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Fill</button>
+                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Select</button>
                 </div>
 
                 <!-- Tool Settings - EXACT MATCH -->
                 <div>
                     <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider mb-3">НАСТРОЙКИ ИНСТРУМЕНТА</div>
-                    <div class="space-y-3 text-sm">
+                    <div class="space-y-2.5 text-sm">
                         <div class="flex justify-between items-center text-gray-300">
                             <span>Размер</span>
                             <div class="flex items-center gap-2">
@@ -85,6 +97,14 @@
                                 <option value="undo">Отменить штрих</option>
                                 <option value="eraser">Ластик</option>
                             </select>
+                        </div>
+                        <div class="flex justify-between items-center text-gray-300">
+                            <span>Размытие</span>
+                            <span class="text-white">0</span>
+                        </div>
+                        <div class="flex justify-between items-center text-gray-300">
+                            <span>Привязка к углу</span>
+                            <span class="text-white">нет</span>
                         </div>
                     </div>
                 </div>
@@ -127,7 +147,7 @@
                     </div>
                 </div>
 
-                <!-- Layer/Cloud - EXACT MATCH -->
+                <!-- Layer - EXACT MATCH -->
                 <div>
                     <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider">СЛОЙ</div>
                     <div class="text-white text-sm mt-1">CLOUD</div>
