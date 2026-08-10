@@ -1,4 +1,4 @@
-// app.js – FlockMod drawing app with exact sidebar
+// app.js – FlockMod drawing app with sidebar on right
 
 (function() {
     const canvas = document.getElementById('drawCanvas');
@@ -16,9 +16,13 @@
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         applySettings();
+        // fill with white background
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = settings.color;
     }
 
-    // ---- tool settings (defaults from screenshot) ----
+    // ---- tool settings ----
     const settings = {
         size: 8,
         opacity: 100,
@@ -26,7 +30,7 @@
         smoothing: 0,
         gap: 0,
         pressure: 100,
-        color: '#ffffff',
+        color: '#000000',
         cursor: 'Круг'
     };
 
@@ -171,13 +175,13 @@
                 const size = 4 + (num % 10);
                 const hue = (num * 25) % 360;
                 settings.size = Math.min(40, Math.max(2, size));
-                settings.color = `hsl(${hue}, 80%, 60%)`;
+                settings.color = `hsl(${hue}, 80%, 50%)`;
                 updateDisplays();
                 applySettings();
                 this.style.borderColor = '#8888ff';
                 setTimeout(() => { this.style.borderColor = '#3d3d48'; }, 200);
             });
-            // hold = set preset (Удерживайте для установки)
+            // hold = set preset
             let holdTimer = null;
             cell.addEventListener('mousedown', function(e) {
                 if (e.button === 0) {
@@ -185,7 +189,7 @@
                         const size = 4 + (num % 10);
                         const hue = (num * 25) % 360;
                         settings.size = Math.min(40, Math.max(2, size));
-                        settings.color = `hsl(${hue}, 80%, 60%)`;
+                        settings.color = `hsl(${hue}, 80%, 50%)`;
                         updateDisplays();
                         applySettings();
                         this.style.borderColor = '#ffaa44';
@@ -202,7 +206,7 @@
                     const size = 4 + (num % 10);
                     const hue = (num * 25) % 360;
                     settings.size = Math.min(40, Math.max(2, size));
-                    settings.color = `hsl(${hue}, 80%, 60%)`;
+                    settings.color = `hsl(${hue}, 80%, 50%)`;
                     updateDisplays();
                     applySettings();
                     this.style.borderColor = '#ffaa44';
@@ -214,13 +218,13 @@
         });
     }
 
-    // ---- color wheel click (demo) ----
+    // ---- color wheel click ----
     function setupColorWheel() {
         const wheel = document.querySelector('.color-wheel-mock');
         if (wheel) {
             wheel.addEventListener('click', function() {
                 const hue = Math.floor(Math.random() * 360);
-                settings.color = `hsl(${hue}, 80%, 60%)`;
+                settings.color = `hsl(${hue}, 80%, 50%)`;
                 applySettings();
                 updateDisplays();
             });
