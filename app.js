@@ -4,13 +4,12 @@
     const canvas = document.getElementById('drawCanvas');
     const ctx = canvas.getContext('2d');
     const canvasContainer = document.getElementById('canvasContainer');
-    const textOverlay = document.getElementById('textOverlay');
     const textFrame = document.getElementById('textFrame');
-    const textDisplay = document.getElementById('textDisplay');
+    const textContent = document.getElementById('textContent');
 
     // ---- canvas sizing ----
     function resizeCanvas() {
-        const rect = canvas.parentElement.getBoundingClientRect();
+        const rect = canvasContainer.getBoundingClientRect();
         const dpr = window.devicePixelRatio || 1;
         canvas.width = rect.width * dpr;
         canvas.height = rect.height * dpr;
@@ -30,8 +29,9 @@
         smoothing: 0,
         gap: 0,
         pressure: 100,
-        color: '#ffffff',
-        cursor: 'Круг'
+        color: '#000000',
+        isEraser: false,
+        isText: false
     };
 
     // ---- DOM refs ----
@@ -41,9 +41,11 @@
     const smoothDisplay = document.getElementById('smoothDisplay');
     const gapDisplay = document.getElementById('gapDisplay');
     const pressureDisplay = document.getElementById('pressureDisplay');
-    const colorWheel = document.getElementById('colorWheel');
-    const colorSwatch = document.getElementById('colorSwatch');
     const colorPicker = document.getElementById('colorPicker');
+    const colorSwatch = document.getElementById('colorSwatch');
+    const colorWheel = document.getElementById('colorWheel');
+    const penBtn = document.getElementById('penBtn');
+    const eraserBtn = document.getElementById('eraserBtn');
     const textBtn = document.getElementById('textBtn');
 
     function updateDisplays() {
@@ -60,258 +62,79 @@
         ctx.lineWidth = settings.size;
         ctx.shadowBlur = settings.blur;
         ctx.shadowColor = settings.color;
-        ctx.strokeStyle = settings.color;
-        ctx.fillStyle = settings.color;
+        ctx.strokeStyle = settings.isEraser ? '#ffffff' : settings.color;
+        ctx.fillStyle = settings.isEraser ? '#ffffff' : settings.color;
+        ctx.globalCompositeOperation = settings.isEraser ? 'destination-out' : 'source-over';
     }
 
-    // ---- text tool state ----
-    let textToolActive = false;
+    // ---- text tool ----
     let textPlaced = false;
-    let textFrameX = 0;
-    let textFrameY = 0;
-    let isDragging = false;
-    let dragOffsetX = 0;
-    let dragOffsetY = 0;
+    let textPosX = 0, textPosY = 0;
 
-    function activateTextTool() {
-        textToolActive = true;
-        textPlaced = false;
-        textOverlay.classList.remove('hidden');
+    function showTextFrame(x, y) {
         textFrame.style.display = 'block';
-        textFrame.style.left = '50%';
-        textFrame.style.top = '50%';
-        textFrame.style.transform = 'translate(-50%, -50%)';
-        textDisplay.textContent = 'Type something';
-        textDisplay.contentEditable = false;
-        textDisplay.style.color = settings.color;
-        textDisplay.style.fontSize = Math.max(12, settings.size * 2) + 'px';
-        canvas.style.cursor = 'text';
-        textFrame.style.cursor = 'move';
-        textOverlay.style.pointerEvents = 'auto';
-        textFrame.style.pointerEvents = 'auto';
-        textDisplay.style.pointerEvents = 'none';
-    }
-
-    function deactivateTextTool() {
-        textToolActive = false;
+        textFrame.style.left = (x - 60) + 'px';
+        textFrame.style.top = (y - 20) + 'px';
+        textPosX = x;
+        textPosY = y;
         textPlaced = false;
-        textOverlay.classList.add('hidden');
-        textFrame.style.display = 'none';
-        canvas.style.cursor = 'crosshair';
-        textOverlay.style.pointerEvents = 'none';
-        textFrame.style.pointerEvents = 'none';
-        textDisplay.contentEditable = false;
+        textContent.textContent = 'type something';
+        textContent.style.color = settings.color;
+        textFrame.style.borderColor = 'rgba(255,255,255,0.4)';
+        textFrame.style.backgroundColor = 'rgba(255,255,255,0.05)';
+        // make it follow cursor initially
+        textFrame.dataset.following = 'true';
     }
 
-    // ---- text button ----
-    textBtn.addEventListener('click', function() {
-        if (textToolActive) {
-            deactivateTextTool();
-            this.style.background = '#1b1b21';
-            return;
+    function placeTextFrame(x, y) {
+        textFrame.dataset.following = 'false';
+        textPlaced = true;
+        textFrame.style.left = (x - 60) + 'px';
+        textFrame.style.top = (y - 20) + 'px';
+        textPosX = x;
+        textPosY = y;
+        textFrame.style.borderColor = 'rgba(255,255,255,0.6)';
+        textFrame.style.backgroundColor = 'rgba(255,255,255,0.1)';
+        // allow editing
+        textContent.contentEditable = true;
+        textContent.focus();
+        // select all text
+        const range = document.createRange();
+        range.selectNodeContents(textContent);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+    }
+
+    function finishText() {
+        if (textContent.textContent.trim() === '' || textContent.textContent === 'type something') {
+            textContent.textContent = 'type something';
         }
-        this.style.background = '#353540';
-        activateTextTool();
-    });
-
-    // ---- text placement ----
-    canvas.addEventListener('click', function(e) {
-        if (textToolActive && !textPlaced) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            textFrame.style.left = x + 'px';
-            textFrame.style.top = y + 'px';
-            textFrame.style.transform = 'none';
-            textFrameX = x;
-            textFrameY = y;
-            textPlaced = true;
-            textFrame.style.cursor = 'move';
-            textDisplay.contentEditable = true;
-            textDisplay.focus();
-            textDisplay.select();
-            textOverlay.style.pointerEvents = 'none';
-            textFrame.style.pointerEvents = 'auto';
-            textDisplay.style.pointerEvents = 'auto';
-            
-            textFrame.addEventListener('mousedown', startDrag);
-            textFrame.addEventListener('touchstart', startDragTouch, { passive: false });
-        }
-    });
-
-    // ---- drag functions ----
-    function startDrag(e) {
-        if (!textPlaced) return;
-        isDragging = true;
-        const rect = textFrame.getBoundingClientRect();
-        dragOffsetX = e.clientX - rect.left;
-        dragOffsetY = e.clientY - rect.top;
-        document.addEventListener('mousemove', onDrag);
-        document.addEventListener('mouseup', stopDrag);
-        e.preventDefault();
-    }
-
-    function startDragTouch(e) {
-        if (!textPlaced) return;
-        const touch = e.touches[0];
-        const rect = textFrame.getBoundingClientRect();
-        dragOffsetX = touch.clientX - rect.left;
-        dragOffsetY = touch.clientY - rect.top;
-        document.addEventListener('touchmove', onDragTouch, { passive: false });
-        document.addEventListener('touchend', stopDragTouch);
-        e.preventDefault();
-    }
-
-    function onDrag(e) {
-        if (!isDragging) return;
-        const containerRect = canvasContainer.getBoundingClientRect();
-        let x = e.clientX - containerRect.left - dragOffsetX;
-        let y = e.clientY - containerRect.top - dragOffsetY;
-        x = Math.max(0, Math.min(x, containerRect.width - textFrame.offsetWidth));
-        y = Math.max(0, Math.min(y, containerRect.height - textFrame.offsetHeight));
-        textFrame.style.left = x + 'px';
-        textFrame.style.top = y + 'px';
-        textFrame.style.transform = 'none';
-        textFrameX = x;
-        textFrameY = y;
-    }
-
-    function onDragTouch(e) {
-        if (!isDragging) return;
-        const touch = e.touches[0];
-        const containerRect = canvasContainer.getBoundingClientRect();
-        let x = touch.clientX - containerRect.left - dragOffsetX;
-        let y = touch.clientY - containerRect.top - dragOffsetY;
-        x = Math.max(0, Math.min(x, containerRect.width - textFrame.offsetWidth));
-        y = Math.max(0, Math.min(y, containerRect.height - textFrame.offsetHeight));
-        textFrame.style.left = x + 'px';
-        textFrame.style.top = y + 'px';
-        textFrame.style.transform = 'none';
-        textFrameX = x;
-        textFrameY = y;
-        e.preventDefault();
-    }
-
-    function stopDrag() {
-        isDragging = false;
-        document.removeEventListener('mousemove', onDrag);
-        document.removeEventListener('mouseup', stopDrag);
-    }
-
-    function stopDragTouch() {
-        isDragging = false;
-        document.removeEventListener('touchmove', onDragTouch);
-        document.removeEventListener('touchend', stopDragTouch);
-    }
-
-    // ---- text finalize ----
-    textDisplay.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            finalizeText();
-        }
-        if (e.key === 'Escape') {
-            deactivateTextTool();
-            textBtn.style.background = '#1b1b21';
-        }
-    });
-
-    textDisplay.addEventListener('blur', function() {
-        if (textPlaced && textDisplay.textContent.trim() !== '') {
-            finalizeText();
-        }
-    });
-
-    function finalizeText() {
-        if (!textPlaced) return;
-        const text = textDisplay.textContent.trim();
-        if (text === '' || text === 'Type something') {
-            deactivateTextTool();
-            textBtn.style.background = '#1b1b21';
-            return;
-        }
-        
+        textContent.contentEditable = false;
+        // draw text on canvas
         const rect = canvas.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
-        const x = (textFrameX + 10) * dpr;
-        const y = (textFrameY + 20) * dpr;
-        const fontSize = Math.max(12, settings.size * 2) * dpr;
-        
+        const x = textPosX;
+        const y = textPosY;
         ctx.save();
         ctx.globalAlpha = settings.opacity / 100;
-        ctx.shadowBlur = settings.blur * dpr;
+        ctx.shadowBlur = settings.blur;
         ctx.shadowColor = settings.color;
         ctx.fillStyle = settings.color;
-        ctx.font = `${fontSize}px system-ui, -apple-system, sans-serif`;
+        ctx.font = `${settings.size * 3}px system-ui, sans-serif`;
         ctx.textAlign = 'left';
         ctx.textBaseline = 'top';
-        ctx.fillText(text, x, y);
+        ctx.fillText(textContent.textContent, x - 60, y - 20);
         ctx.restore();
-        
         saveStroke();
-        deactivateTextTool();
-        textBtn.style.background = '#1b1b21';
+        textFrame.style.display = 'none';
+        settings.isText = false;
+        textBtn.style.background = 'rgba(255,255,255,0.05)';
+        penBtn.style.background = 'rgba(255,255,255,0.2)';
+        penBtn.classList.add('active');
+        textContent.contentEditable = false;
     }
 
-    // ---- color wheel ----
-    colorWheel.addEventListener('click', function(e) {
-        const rect = this.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const cx = rect.width / 2;
-        const cy = rect.height / 2;
-        const angle = Math.atan2(y - cy, x - cx);
-        const deg = ((angle * 180 / Math.PI) + 360) % 360;
-        const hue = deg;
-        const sat = 80;
-        const lig = 55;
-        const color = `hsl(${hue}, ${sat}%, ${lig}%)`;
-        const hex = hslToHex(hue, sat, lig);
-        colorPicker.value = hex;
-        settings.color = hex;
-        colorSwatch.style.background = hex;
-        applySettings();
-        if (textToolActive) {
-            textDisplay.style.color = hex;
-        }
-    });
-
-    function hslToHex(h, s, l) {
-        h /= 360;
-        s /= 100;
-        l /= 100;
-        let r, g, b;
-        if (s === 0) {
-            r = g = b = l;
-        } else {
-            const hue2rgb = (p, q, t) => {
-                if (t < 0) t += 1;
-                if (t > 1) t -= 1;
-                if (t < 1/6) return p + (q - p) * 6 * t;
-                if (t < 1/2) return q;
-                if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-                return p;
-            };
-            const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-            const p = 2 * l - q;
-            r = hue2rgb(p, q, h + 1/3);
-            g = hue2rgb(p, q, h);
-            b = hue2rgb(p, q, h - 1/3);
-        }
-        const toHex = (c) => Math.round(c * 255).toString(16).padStart(2, '0');
-        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-    }
-
-    colorPicker.addEventListener('input', function() {
-        settings.color = this.value;
-        colorSwatch.style.background = settings.color;
-        if (textToolActive) {
-            textDisplay.style.color = settings.color;
-        }
-        applySettings();
-    });
-
-    // ---- drawing ----
+    // ---- drawing state ----
     let isDrawing = false;
     let lastX = 0, lastY = 0;
 
@@ -325,8 +148,22 @@
         };
     }
 
+    // ---- drawing functions ----
     function startDrawing(e) {
-        if (textToolActive) return;
+        if (settings.isText) {
+            // if text frame is following, place it
+            if (textFrame.dataset.following === 'true') {
+                const { x, y } = getCoords(e);
+                placeTextFrame(x, y);
+                return;
+            }
+            // if text is placed and we click elsewhere, finish it
+            if (textPlaced) {
+                finishText();
+                return;
+            }
+            return;
+        }
         e.preventDefault();
         isDrawing = true;
         const { x, y } = getCoords(e);
@@ -335,6 +172,7 @@
         ctx.beginPath();
         ctx.moveTo(x, y);
         applySettings();
+        // draw dot
         ctx.arc(x, y, settings.size / 2, 0, Math.PI * 2);
         ctx.fill();
         ctx.beginPath();
@@ -342,7 +180,18 @@
     }
 
     function draw(e) {
-        if (!isDrawing || textToolActive) return;
+        if (settings.isText) {
+            // update text frame position if following
+            if (textFrame.dataset.following === 'true') {
+                const { x, y } = getCoords(e);
+                textFrame.style.left = (x - 60) + 'px';
+                textFrame.style.top = (y - 20) + 'px';
+                textPosX = x;
+                textPosY = y;
+            }
+            return;
+        }
+        if (!isDrawing) return;
         e.preventDefault();
         const { x, y } = getCoords(e);
         if (settings.gap > 0) {
@@ -374,7 +223,7 @@
     function saveStroke() {
         const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
         strokeHistory.push(imageData);
-        if (strokeHistory.length > 20) strokeHistory.shift();
+        if (strokeHistory.length > 30) strokeHistory.shift();
     }
 
     function undoLastStroke() {
@@ -400,29 +249,160 @@
         undoLastStroke();
     });
 
+    // ---- keyboard for text ----
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && settings.isText && textPlaced) {
+            e.preventDefault();
+            finishText();
+        }
+        if (e.ctrlKey && e.key === 'z') {
+            e.preventDefault();
+            undoLastStroke();
+        }
+        // Escape to cancel text
+        if (e.key === 'Escape' && settings.isText) {
+            textFrame.style.display = 'none';
+            settings.isText = false;
+            textBtn.style.background = 'rgba(255,255,255,0.05)';
+            penBtn.style.background = 'rgba(255,255,255,0.2)';
+            penBtn.classList.add('active');
+            textContent.contentEditable = false;
+        }
+    });
+
+    // ---- tool buttons ----
+    penBtn.addEventListener('click', function() {
+        settings.isEraser = false;
+        settings.isText = false;
+        textFrame.style.display = 'none';
+        this.classList.add('active');
+        eraserBtn.classList.remove('active');
+        textBtn.classList.remove('active');
+        this.style.background = 'rgba(255,255,255,0.2)';
+        eraserBtn.style.background = 'rgba(255,255,255,0.05)';
+        textBtn.style.background = 'rgba(255,255,255,0.05)';
+        settings.color = colorPicker.value;
+        applySettings();
+    });
+
+    eraserBtn.addEventListener('click', function() {
+        settings.isEraser = !settings.isEraser;
+        settings.isText = false;
+        textFrame.style.display = 'none';
+        if (settings.isEraser) {
+            this.classList.add('active');
+            this.style.background = 'rgba(255,255,255,0.2)';
+            penBtn.classList.remove('active');
+            textBtn.classList.remove('active');
+            penBtn.style.background = 'rgba(255,255,255,0.05)';
+            textBtn.style.background = 'rgba(255,255,255,0.05)';
+        } else {
+            this.classList.remove('active');
+            this.style.background = 'rgba(255,255,255,0.05)';
+            penBtn.classList.add('active');
+            penBtn.style.background = 'rgba(255,255,255,0.2)';
+        }
+        applySettings();
+    });
+
+    textBtn.addEventListener('click', function() {
+        if (settings.isText) {
+            // if already in text mode, cancel
+            textFrame.style.display = 'none';
+            settings.isText = false;
+            this.style.background = 'rgba(255,255,255,0.05)';
+            penBtn.style.background = 'rgba(255,255,255,0.2)';
+            penBtn.classList.add('active');
+            textContent.contentEditable = false;
+            return;
+        }
+        settings.isText = true;
+        settings.isEraser = false;
+        eraserBtn.classList.remove('active');
+        eraserBtn.style.background = 'rgba(255,255,255,0.05)';
+        this.classList.add('active');
+        this.style.background = 'rgba(255,255,255,0.2)';
+        penBtn.classList.remove('active');
+        penBtn.style.background = 'rgba(255,255,255,0.05)';
+        textPlaced = false;
+        // show text frame at center initially
+        const rect = canvas.getBoundingClientRect();
+        showTextFrame(rect.width / 2, rect.height / 2);
+        textContent.contentEditable = false;
+        textContent.textContent = 'type something';
+        textContent.style.color = settings.color;
+    });
+
+    // ---- color ----
+    colorPicker.addEventListener('input', function() {
+        settings.color = this.value;
+        colorSwatch.style.background = settings.color;
+        if (textContent) textContent.style.color = settings.color;
+        applySettings();
+    });
+
+    colorWheel.addEventListener('click', function(e) {
+        const rect = this.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+        const angle = Math.atan2(y - cy, x - cx);
+        const deg = ((angle * 180 / Math.PI) + 360) % 360;
+        const hue = deg;
+        const sat = 80;
+        const lig = 55;
+        function hslToHex(h, s, l) {
+            h /= 360;
+            s /= 100;
+            l /= 100;
+            let r, g, b;
+            if (s === 0) { r = g = b = l; }
+            else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+            const toHex = (c) => Math.round(c * 255).toString(16).padStart(2, '0');
+            return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+        }
+        const color = hslToHex(hue, sat, lig);
+        colorPicker.value = color;
+        settings.color = color;
+        colorSwatch.style.background = color;
+        if (textContent) textContent.style.color = color;
+        applySettings();
+    });
+
     // ---- presets ----
     function setupPresets() {
         const cells = document.querySelectorAll('#sidebar .grid span');
         cells.forEach((cell, index) => {
             const num = index + 1;
-            cell.addEventListener('click', function(e) {
+            cell.addEventListener('click', function() {
                 const size = 4 + (num % 10);
                 const hue = (num * 25) % 360;
                 settings.size = Math.min(40, Math.max(2, size));
                 const color = `hsl(${hue}, 80%, 60%)`;
-                const hex = hslToHex(hue, 80, 60);
-                settings.color = hex;
-                colorPicker.value = hex;
-                colorSwatch.style.background = hex;
+                colorPicker.value = color;
+                settings.color = color;
+                colorSwatch.style.background = color;
+                if (textContent) textContent.style.color = color;
                 updateDisplays();
                 applySettings();
-                if (textToolActive) {
-                    textDisplay.style.color = hex;
-                }
-                this.style.borderColor = '#8888ff';
-                setTimeout(() => { this.style.borderColor = '#3d3d48'; }, 200);
+                this.style.borderColor = 'rgba(255,255,255,0.6)';
+                setTimeout(() => { this.style.borderColor = 'rgba(255,255,255,0.1)'; }, 200);
             });
-            // hold
             let holdTimer = null;
             cell.addEventListener('mousedown', function(e) {
                 if (e.button === 0) {
@@ -431,17 +411,14 @@
                         const hue = (num * 25) % 360;
                         settings.size = Math.min(40, Math.max(2, size));
                         const color = `hsl(${hue}, 80%, 60%)`;
-                        const hex = hslToHex(hue, 80, 60);
-                        settings.color = hex;
-                        colorPicker.value = hex;
-                        colorSwatch.style.background = hex;
+                        colorPicker.value = color;
+                        settings.color = color;
+                        colorSwatch.style.background = color;
+                        if (textContent) textContent.style.color = color;
                         updateDisplays();
                         applySettings();
-                        if (textToolActive) {
-                            textDisplay.style.color = hex;
-                        }
-                        this.style.borderColor = '#ffaa44';
-                        setTimeout(() => { this.style.borderColor = '#3d3d48'; }, 400);
+                        this.style.borderColor = 'rgba(255,200,100,0.8)';
+                        setTimeout(() => { this.style.borderColor = 'rgba(255,255,255,0.1)'; }, 400);
                     }, 600);
                 }
             });
@@ -453,11 +430,13 @@
     // ---- init ----
     function init() {
         resizeCanvas();
-        settings.color = '#ffffff';
-        colorPicker.value = '#ffffff';
-        colorSwatch.style.background = '#ffffff';
-        updateDisplays();
+        settings.color = '#000000';
+        colorPicker.value = '#000000';
+        colorSwatch.style.background = '#000000';
+        penBtn.classList.add('active');
+        penBtn.style.background = 'rgba(255,255,255,0.2)';
         applySettings();
+        updateDisplays();
         setupPresets();
 
         window.addEventListener('resize', () => {
@@ -465,17 +444,6 @@
             resizeCanvas();
             ctx.putImageData(oldData, 0, 0);
             applySettings();
-        });
-
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'z') {
-                e.preventDefault();
-                undoLastStroke();
-            }
-            if (e.key === 'Escape' && textToolActive) {
-                deactivateTextTool();
-                textBtn.style.background = '#1b1b21';
-            }
         });
     }
 
