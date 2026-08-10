@@ -1,117 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>FlockMod · fallback</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="style.css" rel="stylesheet" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FlockMod · fallback</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="style.css" rel="stylesheet" />
 </head>
 <body>
+    <!-- main container: sidebar left, canvas right -->
+    <div class="flex h-screen w-screen overflow-hidden bg-[#18181c] text-gray-200 select-none">
 
-<div class="flex h-screen w-screen overflow-hidden bg-[#16161a] text-[#e8e8ec] select-none font-sans">
+        <!-- ===== SIDEBAR (left) – exactly as in screenshots ===== -->
+        <aside class="w-[280px] min-w-[280px] h-full bg-[#23232a] border-r border-[#33333c] flex flex-col p-3 overflow-y-auto space-y-4 text-sm">
 
-  <!-- ========= SIDEBAR · exactly as screenshots ========= -->
-  <aside class="w-[270px] min-w-[270px] h-full bg-[#1f1f26] border-r border-[#2e2e38] flex flex-col p-3 overflow-y-auto space-y-4 text-[13px]">
+            <!-- header -->
+            <div class="flex items-center justify-between border-b border-[#33333c] pb-2">
+                <span class="text-xs font-mono tracking-wider text-gray-400">#fallback · FlockMod</span>
+                <span class="text-[10px] text-gray-500">flockmod.com</span>
+            </div>
 
-    <!-- header -->
-    <div class="flex items-center justify-between border-b border-[#2e2e38] pb-1.5">
-      <span class="text-[10px] font-mono tracking-widest text-[#7f7f8f]">#fallback · FlockMod</span>
-      <span class="text-[9px] text-[#5f5f6f]">flockmod.com</span>
+            <!-- СПИСОК ПОЛЬЗОВАТЕЛЕЙ -->
+            <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38]">
+                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Список пользователей</div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-400"></span>
+                    <span class="text-gray-200 font-medium">Вы</span>
+                    <span class="text-gray-400 text-xs ml-1">Anonymous</span>
+                </div>
+            </div>
+
+            <!-- НАСТРОЙКИ ИНСТРУМЕНТА -->
+            <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38]">
+                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Настройки инструмента</div>
+                <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs">
+                    <span class="text-gray-400">Размер</span>
+                    <span class="text-gray-200 text-right" id="sizeDisplay">8</span>
+                    <span class="text-gray-400">Непрозрачность</span>
+                    <span class="text-gray-200 text-right" id="opacityDisplay">100</span>
+                    <span class="text-gray-400">Размытие</span>
+                    <span class="text-gray-200 text-right" id="blurDisplay">0</span>
+                    <span class="text-gray-400">Сглаживание</span>
+                    <span class="text-gray-200 text-right" id="smoothDisplay">0</span>
+                    <span class="text-gray-400">Промежуток</span>
+                    <span class="text-gray-200 text-right" id="gapDisplay">0</span>
+                    <span class="text-gray-400">Давление</span>
+                    <span class="text-gray-200 text-right" id="pressureDisplay">100</span>
+                    <span class="text-gray-400">Правый клик</span>
+                    <span class="text-gray-200 text-right">Отменить штрих</span>
+                </div>
+                <!-- extra row: Курсор (from second screenshot) -->
+                <div class="flex items-center justify-between mt-1 pt-1 border-t border-[#2e2e38] text-xs">
+                    <span class="text-gray-400">Курсор</span>
+                    <span class="text-gray-200">Круг</span>
+                </div>
+            </div>
+
+            <!-- ПРЕДУСТАНОВКИ -->
+            <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38]">
+                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Предустановки</div>
+                <div class="grid grid-cols-9 gap-1 text-center text-[11px] font-mono">
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">1</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">2</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">3</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">4</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">5</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">6</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">7</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">8</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">9</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">10</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">11</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">12</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">13</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">14</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">15</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">16</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">17</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">18</span>
+                </div>
+                <div class="text-[9px] text-gray-500 mt-1 text-center">Удерживайте для установки. Нажмите, чтобы загрузить.</div>
+            </div>
+
+            <!-- ЦВЕТОВОЕ КОЛЕСО + СЛОЙ -->
+            <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38] flex flex-col gap-1">
+                <div class="text-[10px] uppercase tracking-wider text-gray-400">Цветовое колесо</div>
+                <div class="flex items-center gap-2">
+                    <!-- color wheel mock + white swatch -->
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 via-yellow-300 via-green-400 to-blue-500 border border-gray-600"></div>
+                    <div class="w-6 h-6 rounded-full bg-white border border-gray-500"></div>
+                    <span class="text-[10px] text-gray-400 ml-auto">СЛОЙ</span>
+                </div>
+            </div>
+
+            <!-- footer link -->
+            <div class="text-[9px] text-gray-600 text-center pt-1 border-t border-[#2a2a32]">https://flockmod.com/r/fallback</div>
+        </aside>
+
+        <!-- ===== CANVAS (right) ===== -->
+        <main class="flex-1 h-full bg-[#111113] relative">
+            <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+        </main>
     </div>
 
-    <!-- СПИСОК ПОЛЬЗОВАТЕЛЕЙ -->
-    <div class="bg-[#17171e] rounded-md px-2 py-1.5 border border-[#2a2a34]">
-      <div class="text-[9px] uppercase tracking-[0.08em] text-[#7f7f8f] mb-0.5">Список пользователей</div>
-      <div class="flex items-center gap-1.5">
-        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-        <span class="text-[#d0d0d8] font-medium">Вы</span>
-        <span class="text-[#7f7f8f] text-[11px] ml-0.5">Anonymous</span>
-      </div>
-    </div>
-
-    <!-- НАСТРОЙКИ ИНСТРУМЕНТА (tool settings) -->
-    <div class="bg-[#17171e] rounded-md px-2 py-1.5 border border-[#2a2a34]">
-      <div class="text-[9px] uppercase tracking-[0.08em] text-[#7f7f8f] mb-0.5">Настройки инструмента</div>
-
-      <!-- grid: two columns (label + value) -->
-      <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-[12px] leading-relaxed">
-        <span class="text-[#a0a0b0]">Размер</span>
-        <span class="text-[#e8e8ec] text-right" id="sizeDisplay">8</span>
-
-        <span class="text-[#a0a0b0]">Непрозрачность</span>
-        <span class="text-[#e8e8ec] text-right" id="opacityDisplay">100</span>
-
-        <span class="text-[#a0a0b0]">Размытие</span>
-        <span class="text-[#e8e8ec] text-right" id="blurDisplay">0</span>
-
-        <span class="text-[#a0a0b0]">Сглаживание</span>
-        <span class="text-[#e8e8ec] text-right" id="smoothDisplay">0</span>
-
-        <span class="text-[#a0a0b0]">Промежуток</span>
-        <span class="text-[#e8e8ec] text-right" id="gapDisplay">0</span>
-
-        <span class="text-[#a0a0b0]">Давление</span>
-        <span class="text-[#e8e8ec] text-right" id="pressureDisplay">100</span>
-
-        <!-- extra row: Правый клик (from second screenshot) -->
-        <span class="text-[#a0a0b0]">Правый клик</span>
-        <span class="text-[#e8e8ec] text-right">Отменить штрих</span>
-
-        <!-- Курсор (from second screenshot) -->
-        <span class="text-[#a0a0b0]">Курсор</span>
-        <span class="text-[#e8e8ec] text-right">Круг</span>
-      </div>
-    </div>
-
-    <!-- ПРЕДУСТАНОВКИ (presets) -->
-    <div class="bg-[#17171e] rounded-md px-2 py-1.5 border border-[#2a2a34]">
-      <div class="text-[9px] uppercase tracking-[0.08em] text-[#7f7f8f] mb-0.5">Предустановки</div>
-      <div class="grid grid-cols-9 gap-0.5 text-center text-[11px] font-mono">
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">1</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">2</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">3</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">4</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">5</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">6</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">7</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">8</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">9</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">10</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">11</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">12</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">13</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">14</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">15</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">16</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">17</span>
-        <span class="bg-[#26262f] px-1 py-0.5 rounded border border-[#3a3a44]">18</span>
-      </div>
-      <div class="text-[8px] text-[#5f5f6f] mt-1 text-center tracking-wide">Удерживайте для установки. Нажмите, чтобы загрузить.</div>
-    </div>
-
-    <!-- ЦВЕТОВОЕ КОЛЕСО + СЛОЙ (exactly as screenshot) -->
-    <div class="bg-[#17171e] rounded-md px-2 py-1.5 border border-[#2a2a34] flex items-center justify-between">
-      <span class="text-[9px] uppercase tracking-[0.08em] text-[#7f7f8f]">Цветовое колесо</span>
-      <span class="text-[11px] text-[#b0b0bc] tracking-wide">СЛОЙ</span>
-    </div>
-    <!-- tiny color wheel mock (under the row, like in screenshots) -->
-    <div class="bg-[#17171e] rounded-md px-2 py-1.5 border border-[#2a2a34] flex items-center gap-2 -mt-2">
-      <div class="w-7 h-7 rounded-full bg-gradient-to-br from-red-500 via-yellow-300 via-green-400 to-blue-500 border border-[#4a4a58]"></div>
-      <div class="w-5 h-5 rounded-full bg-white border border-[#4a4a58]"></div>
-      <span class="text-[9px] text-[#5f5f6f] ml-auto">#fallback</span>
-    </div>
-
-    <!-- footer link -->
-    <div class="text-[8px] text-[#4f4f5f] text-center pt-1 border-t border-[#26262f]">https://flockmod.com/r/fallback</div>
-  </aside>
-
-  <!-- ========= CANVAS (right) ========= -->
-  <main class="flex-1 h-full bg-[#111114] relative">
-    <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
-  </main>
-</div>
-
-<script src="app.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
