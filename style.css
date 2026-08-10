@@ -121,3 +121,15 @@ aside {
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.15) transparent;
 }
+
+/* text overlay */
+#textFrame {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  transition: none;
+}
+#textFrame:focus-within {
+  border-color: rgba(255,255,255,0.8);
+}
+#textDisplay:focus {
+  outline: none;
+}
