@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Art Studio · FlockMod</title>
+    <title>FlockMod · fallback</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="style.css" rel="stylesheet" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
@@ -17,90 +17,94 @@
             <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
             <!-- text overlay for text tool -->
             <div id="textOverlay" class="absolute hidden pointer-events-none" style="top:0; left:0; width:100%; height:100%;">
-                <div id="textFrame" class="absolute border-2 border-gray-400/60 bg-white/5 backdrop-blur-sm rounded-lg p-2 pointer-events-auto cursor-move" style="display:none; min-width:120px; min-height:40px;">
+                <div id="textFrame" class="absolute border-2 border-gray-400/60 bg-white/5 backdrop-blur-sm rounded-lg p-2 pointer-events-auto" style="display:none; min-width:120px; min-height:40px;">
                     <div id="textDisplay" class="text-black/80 text-base outline-none" contenteditable="false" style="min-width:80px; min-height:24px;">Type something</div>
                 </div>
             </div>
         </main>
 
-        <!-- ===== SIDEBAR (right) – glassmorphism ===== -->
-        <aside class="w-[300px] min-w-[300px] h-full bg-white/10 backdrop-blur-xl border-l border-white/20 flex flex-col p-4 overflow-y-auto space-y-5 text-sm shadow-2xl">
+        <!-- ===== SIDEBAR (right) – exact replica of screenshots ===== -->
+        <aside class="w-[280px] min-w-[280px] h-full bg-[#23232a] border-l border-[#33333c] flex flex-col p-3 overflow-y-auto space-y-4 text-sm">
 
             <!-- header -->
-            <div class="flex items-center justify-between border-b border-white/10 pb-3">
-                <span class="text-xs font-mono tracking-wider text-white/70">#fallback · FlockMod</span>
-                <span class="text-[10px] text-white/40">flockmod.com</span>
+            <div class="flex items-center justify-between border-b border-[#33333c] pb-2">
+                <span class="text-xs font-mono tracking-wider text-gray-400">#fallback · FlockMod</span>
+                <span class="text-[10px] text-gray-500">flockmod.com</span>
             </div>
 
-            <!-- brushes row (3 brushes) -->
-            <div class="flex gap-2">
-                <button class="brush-btn flex-1 py-2 px-1 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs font-medium hover:bg-white/20 transition-all" data-brush="pen">
-                    <i class="fas fa-pen-fancy block text-lg mb-0.5"></i> Pen
-                </button>
-                <button class="brush-btn flex-1 py-2 px-1 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs font-medium hover:bg-white/20 transition-all" data-brush="pencil">
-                    <i class="fas fa-pencil-alt block text-lg mb-0.5"></i> Pencil
-                </button>
-                <button class="brush-btn flex-1 py-2 px-1 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs font-medium hover:bg-white/20 transition-all" data-brush="marker">
-                    <i class="fas fa-highlighter block text-lg mb-0.5"></i> Marker
-                </button>
-            </div>
-
-            <!-- tool buttons: eraser & text -->
-            <div class="flex gap-2">
-                <button id="eraserBtn" class="flex-1 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs font-medium hover:bg-white/20 transition-all">
-                    <i class="fas fa-eraser block text-lg mb-0.5"></i> Eraser
-                </button>
-                <button id="textBtn" class="flex-1 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs font-medium hover:bg-white/20 transition-all">
-                    <i class="fas fa-font block text-lg mb-0.5"></i> Text
-                </button>
-            </div>
-
-            <!-- pen settings -->
-            <div class="bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/10 space-y-2">
-                <div class="text-[10px] uppercase tracking-wider text-white/50">Pen settings</div>
-                <div class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
-                    <span class="text-white/60">Size</span>
-                    <input type="range" id="sizeSlider" min="1" max="50" value="8" class="w-full accent-white/70 bg-white/20 rounded-full h-1" />
-                    <span class="text-white/60">Thickness</span>
-                    <input type="range" id="thicknessSlider" min="1" max="30" value="8" class="w-full accent-white/70 bg-white/20 rounded-full h-1" />
-                    <span class="text-white/60">Opacity</span>
-                    <input type="range" id="opacitySlider" min="5" max="100" value="100" class="w-full accent-white/70 bg-white/20 rounded-full h-1" />
-                    <span class="text-white/60">Blur</span>
-                    <input type="range" id="blurSlider" min="0" max="20" value="0" class="w-full accent-white/70 bg-white/20 rounded-full h-1" />
-                    <span class="text-white/60">Pressure</span>
-                    <div class="flex items-center gap-2">
-                        <span class="text-[10px] text-white/40">OFF</span>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="pressureToggle" class="sr-only peer" checked />
-                            <div class="w-8 h-4 bg-white/20 rounded-full peer peer-checked:bg-white/40 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-white/30 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-4"></div>
-                        </label>
-                        <span class="text-[10px] text-white/40">ON</span>
-                    </div>
-                    <span class="text-white/60">Pressure size</span>
-                    <input type="range" id="pressureSizeSlider" min="1" max="50" value="25" class="w-full accent-white/70 bg-white/20 rounded-full h-1" />
-                    <span class="text-white/60">Start width</span>
-                    <input type="range" id="startWidthSlider" min="0" max="30" value="8" class="w-full accent-white/70 bg-white/20 rounded-full h-1" />
-                    <span class="text-white/60">End width</span>
-                    <input type="range" id="endWidthSlider" min="0" max="30" value="8" class="w-full accent-white/70 bg-white/20 rounded-full h-1" />
+            <!-- СПИСОК ПОЛЬЗОВАТЕЛЕЙ -->
+            <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38]">
+                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Список пользователей</div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-400"></span>
+                    <span class="text-gray-200 font-medium">Вы</span>
+                    <span class="text-gray-400 text-xs ml-1">Anonymous</span>
                 </div>
             </div>
 
-            <!-- color wheel + swatch (exactly from reference) -->
-            <div class="bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/10">
-                <div class="text-[10px] uppercase tracking-wider text-white/50 mb-2">Color wheel</div>
-                <div class="flex items-center gap-3">
-                    <div id="colorWheel" class="w-12 h-12 rounded-full border-2 border-white/30 cursor-pointer" style="background: conic-gradient(from 0deg, #ff3b30, #ff9500, #ffcc00, #34c759, #00c7be, #007aff, #5856d6, #af52de, #ff3b30);"></div>
-                    <div class="flex flex-col gap-1 flex-1">
-                        <div id="colorSwatch" class="w-full h-8 rounded-lg border border-white/20" style="background: #ffffff;"></div>
-                        <div class="flex gap-1">
-                            <input type="color" id="colorPicker" value="#ffffff" class="w-full h-6 rounded border-0 bg-transparent cursor-pointer" />
-                        </div>
-                    </div>
+            <!-- НАСТРОЙКИ ИНСТРУМЕНТА -->
+            <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38]">
+                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Настройки инструмента</div>
+                <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs">
+                    <span class="text-gray-400">Размер</span>
+                    <span class="text-gray-200 text-right" id="sizeDisplay">8</span>
+                    <span class="text-gray-400">Непрозрачность</span>
+                    <span class="text-gray-200 text-right" id="opacityDisplay">100</span>
+                    <span class="text-gray-400">Размытие</span>
+                    <span class="text-gray-200 text-right" id="blurDisplay">0</span>
+                    <span class="text-gray-400">Сглаживание</span>
+                    <span class="text-gray-200 text-right" id="smoothDisplay">0</span>
+                    <span class="text-gray-400">Промежуток</span>
+                    <span class="text-gray-200 text-right" id="gapDisplay">0</span>
+                    <span class="text-gray-400">Давление</span>
+                    <span class="text-gray-200 text-right" id="pressureDisplay">100</span>
+                    <span class="text-gray-400">Правый клик</span>
+                    <span class="text-gray-200 text-right">Отменить штрих</span>
+                </div>
+                <div class="flex items-center justify-between mt-1 pt-1 border-t border-[#2e2e38] text-xs">
+                    <span class="text-gray-400">Курсор</span>
+                    <span class="text-gray-200">Круг</span>
                 </div>
             </div>
 
-            <!-- footer -->
-            <div class="text-[9px] text-white/30 text-center pt-2 border-t border-white/10 mt-auto">https://flockmod.com/r/fallback</div>
+            <!-- ПРЕДУСТАНОВКИ -->
+            <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38]">
+                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Предустановки</div>
+                <div class="grid grid-cols-9 gap-1 text-center text-[11px] font-mono">
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">1</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">2</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">3</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">4</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">5</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">6</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">7</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">8</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">9</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">10</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">11</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">12</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">13</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">14</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">15</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">16</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">17</span>
+                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">18</span>
+                </div>
+                <div class="text-[9px] text-gray-500 mt-1 text-center">Удерживайте для установки. Нажмите, чтобы загрузить.</div>
+            </div>
+
+            <!-- ЦВЕТОВОЕ КОЛЕСО + СЛОЙ -->
+            <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38] flex flex-col gap-1">
+                <div class="text-[10px] uppercase tracking-wider text-gray-400">Цветовое колесо</div>
+                <div class="flex items-center gap-2">
+                    <div id="colorWheel" class="w-8 h-8 rounded-full cursor-pointer border border-gray-600" style="background: conic-gradient(from 0deg, #ff3b30, #ff9500, #ffcc00, #34c759, #00c7be, #007aff, #5856d6, #af52de, #ff3b30);"></div>
+                    <div id="colorSwatch" class="w-6 h-6 rounded-full border border-gray-500" style="background: #ffffff;"></div>
+                    <span class="text-[10px] text-gray-400 ml-auto">СЛОЙ</span>
+                </div>
+            </div>
+
+            <!-- footer link -->
+            <div class="text-[9px] text-gray-600 text-center pt-1 border-t border-[#2a2a32]">https://flockmod.com/r/fallback</div>
         </aside>
     </div>
 
