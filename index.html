@@ -9,24 +9,24 @@
 </head>
 <body>
     <!-- main container: canvas left, sidebar right -->
-    <div class="flex h-screen w-screen overflow-hidden bg-[#18181c] text-gray-200 select-none">
+    <div class="flex h-screen w-screen overflow-hidden bg-[#1a1a1e] text-gray-200 select-none">
 
         <!-- ===== CANVAS (left) ===== -->
         <main class="flex-1 h-full bg-white relative">
             <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
         </main>
 
-        <!-- ===== SIDEBAR (right) ===== -->
-        <aside class="w-[280px] min-w-[280px] h-full bg-[#23232a] border-l border-[#33333c] flex flex-col p-3 overflow-y-auto space-y-4 text-sm">
+        <!-- ===== SIDEBAR (right) - EXACT MATCH ===== -->
+        <aside class="w-[280px] min-w-[280px] h-full bg-[#25252b] border-l border-[#3a3a42] flex flex-col p-3 overflow-y-auto space-y-4 text-sm">
 
             <!-- header -->
-            <div class="flex items-center justify-between border-b border-[#33333c] pb-2">
+            <div class="flex items-center justify-between border-b border-[#3a3a42] pb-2">
                 <span class="text-xs font-mono tracking-wider text-gray-400">#fallback · FlockMod</span>
                 <span class="text-[10px] text-gray-500">flockmod.com</span>
             </div>
 
             <!-- СПИСОК ПОЛЬЗОВАТЕЛЕЙ -->
-            <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38]">
+            <div class="bg-[#1e1e24] rounded-md p-2 border border-[#33333c]">
                 <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Список пользователей</div>
                 <div class="flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-green-400"></span>
@@ -36,7 +36,7 @@
             </div>
 
             <!-- НАСТРОЙКИ ИНСТРУМЕНТА -->
-            <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38]">
+            <div class="bg-[#1e1e24] rounded-md p-2 border border-[#33333c]">
                 <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Настройки инструмента</div>
                 <div class="grid grid-cols-2 gap-x-2 gap-y-0.5 text-xs">
                     <span class="text-gray-400">Размер</span>
@@ -54,41 +54,41 @@
                     <span class="text-gray-400">Правый клик</span>
                     <span class="text-gray-200 text-right">Отменить штрих</span>
                 </div>
-                <!-- Курсор -->
-                <div class="flex items-center justify-between mt-1 pt-1 border-t border-[#2e2e38] text-xs">
+                <!-- Курсор row -->
+                <div class="flex items-center justify-between mt-1 pt-1 border-t border-[#33333c] text-xs">
                     <span class="text-gray-400">Курсор</span>
                     <span class="text-gray-200">Круг</span>
                 </div>
             </div>
 
             <!-- ПРЕДУСТАНОВКИ -->
-            <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38]">
+            <div class="bg-[#1e1e24] rounded-md p-2 border border-[#33333c]">
                 <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Предустановки</div>
                 <div class="grid grid-cols-9 gap-1 text-center text-[11px] font-mono">
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">1</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">2</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">3</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">4</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">5</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">6</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">7</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">8</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">9</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">10</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">11</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">12</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">13</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">14</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">15</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">16</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">17</span>
-                    <span class="bg-[#282830] px-1 py-0.5 rounded border border-[#3d3d48]">18</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">1</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">2</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">3</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">4</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">5</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">6</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">7</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">8</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">9</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">10</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">11</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">12</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">13</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">14</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">15</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">16</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">17</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">18</span>
                 </div>
                 <div class="text-[9px] text-gray-500 mt-1 text-center">Удерживайте для установки. Нажмите, чтобы загрузить.</div>
             </div>
 
             <!-- ЦВЕТОВОЕ КОЛЕСО + СЛОЙ -->
-            <div class="bg-[#1b1b21] rounded-md p-2 border border-[#2e2e38] flex flex-col gap-1">
+            <div class="bg-[#1e1e24] rounded-md p-2 border border-[#33333c] flex flex-col gap-1">
                 <div class="text-[10px] uppercase tracking-wider text-gray-400">Цветовое колесо</div>
                 <div class="flex items-center gap-2">
                     <div class="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 via-yellow-300 via-green-400 to-blue-500 border border-gray-600"></div>
