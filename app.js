@@ -1,456 +1,537 @@
-// app.js – FlockMod drawing app with text tool
+// ===== СОСТОЯНИЕ ПРИЛОЖЕНИЯ =====
+const state = {
+    currentTool: 'pen', // pen, eraser, text
+    currentColor: '#000000',
+    secondaryColor: '#ffffff',
+    brushSize: 8,
+    opacity: 100,
+    blur: 0,
+    smoothing: 0,
+    pressure: false,
+    font: 'Rubik',
+    isDrawing: false,
+    lastX: 0,
+    lastY: 0,
+    currentLayer: 0,
+    layers: [],
+    history: [],
+    historyIndex: -1,
+    maxHistory: 30,
+    isTextMode: false,
+    textPosition: null
+};
 
-(function() {
-    const canvas = document.getElementById('drawCanvas');
-    const ctx = canvas.getContext('2d');
-    const canvasContainer = document.getElementById('canvasContainer');
-    const textFrame = document.getElementById('textFrame');
-    const textContent = document.getElementById('textContent');
+// ===== DOM ЭЛЕМЕНТЫ =====
+const canvas = document.getElementById('drawingCanvas');
+const ctx = canvas.getContext('2d');
+const sizeInput = document.getElementById('size-setting');
+const opacityInput = document.getElementById('opacity-setting');
+const blurInput = document.getElementById('blur-setting');
+const smoothingInput = document.getElementById('smoothing-setting');
+const fontSelect = document.getElementById('font-setting');
 
-    // ---- canvas sizing ----
-    function resizeCanvas() {
-        const rect = canvasContainer.getBoundingClientRect();
-        const dpr = window.devicePixelRatio || 1;
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        canvas.style.width = rect.width + 'px';
-        canvas.style.height = rect.height + 'px';
-        ctx.scale(dpr, dpr);
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        applySettings();
-    }
+// ===== ИНИЦИАЛИЗАЦИЯ =====
+function init() {
+    setupCanvas();
+    setupTools();
+    setupPresets();
+    setupLayers();
+    setupColorWheel();
+    setupEventListeners();
+    loadPresetColors();
+    updateToolSettings();
+}
 
-    // ---- settings ----
-    const settings = {
-        size: 8,
-        opacity: 100,
-        blur: 0,
-        smoothing: 0,
-        gap: 0,
-        pressure: 100,
-        color: '#000000',
-        isEraser: false,
-        isText: false
-    };
+// ===== НАСТРОЙКА ХОЛСТА =====
+function setupCanvas() {
+    const container = canvas.parentElement;
+    const rect = container.getBoundingClientRect();
+    const padding = 40;
+    
+    canvas.width = rect.width - padding;
+    canvas.height = rect.height - padding;
+    
+    // Белый фон
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Настройки кисти по умолчанию
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+}
 
-    // ---- DOM refs ----
-    const sizeDisplay = document.getElementById('sizeDisplay');
-    const opacityDisplay = document.getElementById('opacityDisplay');
-    const blurDisplay = document.getElementById('blurDisplay');
-    const smoothDisplay = document.getElementById('smoothDisplay');
-    const gapDisplay = document.getElementById('gapDisplay');
-    const pressureDisplay = document.getElementById('pressureDisplay');
-    const colorPicker = document.getElementById('colorPicker');
-    const colorSwatch = document.getElementById('colorSwatch');
-    const colorWheel = document.getElementById('colorWheel');
-    const penBtn = document.getElementById('penBtn');
-    const eraserBtn = document.getElementById('eraserBtn');
-    const textBtn = document.getElementById('textBtn');
-
-    function updateDisplays() {
-        if (sizeDisplay) sizeDisplay.textContent = settings.size;
-        if (opacityDisplay) opacityDisplay.textContent = settings.opacity;
-        if (blurDisplay) blurDisplay.textContent = settings.blur;
-        if (smoothDisplay) smoothDisplay.textContent = settings.smoothing;
-        if (gapDisplay) gapDisplay.textContent = settings.gap;
-        if (pressureDisplay) pressureDisplay.textContent = settings.pressure;
-    }
-
-    function applySettings() {
-        ctx.globalAlpha = settings.opacity / 100;
-        ctx.lineWidth = settings.size;
-        ctx.shadowBlur = settings.blur;
-        ctx.shadowColor = settings.color;
-        ctx.strokeStyle = settings.isEraser ? '#ffffff' : settings.color;
-        ctx.fillStyle = settings.isEraser ? '#ffffff' : settings.color;
-        ctx.globalCompositeOperation = settings.isEraser ? 'destination-out' : 'source-over';
-    }
-
-    // ---- text tool ----
-    let textPlaced = false;
-    let textPosX = 0, textPosY = 0;
-
-    function showTextFrame(x, y) {
-        textFrame.style.display = 'block';
-        textFrame.style.left = (x - 60) + 'px';
-        textFrame.style.top = (y - 20) + 'px';
-        textPosX = x;
-        textPosY = y;
-        textPlaced = false;
-        textContent.textContent = 'type something';
-        textContent.style.color = settings.color;
-        textFrame.style.borderColor = 'rgba(255,255,255,0.4)';
-        textFrame.style.backgroundColor = 'rgba(255,255,255,0.05)';
-        // make it follow cursor initially
-        textFrame.dataset.following = 'true';
-    }
-
-    function placeTextFrame(x, y) {
-        textFrame.dataset.following = 'false';
-        textPlaced = true;
-        textFrame.style.left = (x - 60) + 'px';
-        textFrame.style.top = (y - 20) + 'px';
-        textPosX = x;
-        textPosY = y;
-        textFrame.style.borderColor = 'rgba(255,255,255,0.6)';
-        textFrame.style.backgroundColor = 'rgba(255,255,255,0.1)';
-        // allow editing
-        textContent.contentEditable = true;
-        textContent.focus();
-        // select all text
-        const range = document.createRange();
-        range.selectNodeContents(textContent);
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-    }
-
-    function finishText() {
-        if (textContent.textContent.trim() === '' || textContent.textContent === 'type something') {
-            textContent.textContent = 'type something';
-        }
-        textContent.contentEditable = false;
-        // draw text on canvas
-        const rect = canvas.getBoundingClientRect();
-        const x = textPosX;
-        const y = textPosY;
-        ctx.save();
-        ctx.globalAlpha = settings.opacity / 100;
-        ctx.shadowBlur = settings.blur;
-        ctx.shadowColor = settings.color;
-        ctx.fillStyle = settings.color;
-        ctx.font = `${settings.size * 3}px system-ui, sans-serif`;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'top';
-        ctx.fillText(textContent.textContent, x - 60, y - 20);
-        ctx.restore();
-        saveStroke();
-        textFrame.style.display = 'none';
-        settings.isText = false;
-        textBtn.style.background = 'rgba(255,255,255,0.05)';
-        penBtn.style.background = 'rgba(255,255,255,0.2)';
-        penBtn.classList.add('active');
-        textContent.contentEditable = false;
-    }
-
-    // ---- drawing state ----
-    let isDrawing = false;
-    let lastX = 0, lastY = 0;
-
-    function getCoords(e) {
-        const rect = canvas.getBoundingClientRect();
-        const clientX = e.clientX || e.touches?.[0]?.clientX || 0;
-        const clientY = e.clientY || e.touches?.[0]?.clientY || 0;
-        return {
-            x: clientX - rect.left,
-            y: clientY - rect.top
-        };
-    }
-
-    // ---- drawing functions ----
-    function startDrawing(e) {
-        if (settings.isText) {
-            // if text frame is following, place it
-            if (textFrame.dataset.following === 'true') {
-                const { x, y } = getCoords(e);
-                placeTextFrame(x, y);
-                return;
+// ===== ИНСТРУМЕНТЫ =====
+function setupTools() {
+    const toolButtons = document.querySelectorAll('.tool-button');
+    
+    toolButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            // Убираем активный класс со всех кнопок
+            toolButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Определяем инструмент по ID
+            const id = this.id;
+            if (id.includes('pen')) {
+                state.currentTool = 'pen';
+                state.isTextMode = false;
+                canvas.style.cursor = 'crosshair';
+            } else if (id.includes('text')) {
+                state.currentTool = 'text';
+                state.isTextMode = true;
+                canvas.style.cursor = 'text';
+            } else if (id.includes('eraser')) {
+                state.currentTool = 'eraser';
+                state.isTextMode = false;
+                canvas.style.cursor = 'crosshair';
+            } else {
+                state.currentTool = 'pen';
+                state.isTextMode = false;
+                canvas.style.cursor = 'crosshair';
             }
-            // if text is placed and we click elsewhere, finish it
-            if (textPlaced) {
-                finishText();
-                return;
-            }
-            return;
+            
+            updateToolSettings();
+        });
+    });
+}
+
+// ===== ПРЕСЕТЫ ЦВЕТОВ =====
+function setupPresets() {
+    const presetsGrid = document.getElementById('presets-grid');
+    const presetColors = [
+        '#000000', '#ffffff', '#ff0000', '#ff6b00', '#ffd700',
+        '#00ff00', '#00bfff', '#0000ff', '#8b00ff',
+        '#ff1493', '#ff6348', '#ffa502', '#2ed573',
+        '#1e90ff', '#a29bfe', '#fd79a8', '#fdcb6e', '#00cec9'
+    ];
+    
+    presetsGrid.innerHTML = '';
+    presetColors.forEach((color, index) => {
+        const div = document.createElement('div');
+        div.className = 'preset-circle';
+        div.style.background = color;
+        div.dataset.color = color;
+        div.dataset.index = index + 1;
+        
+        const numberSpan = document.createElement('span');
+        numberSpan.className = 'preset-number';
+        numberSpan.textContent = index + 1;
+        div.appendChild(numberSpan);
+        
+        if (index === 0) div.classList.add('active');
+        
+        div.addEventListener('click', function() {
+            document.querySelectorAll('.preset-circle').forEach(c => c.classList.remove('active'));
+            this.classList.add('active');
+            state.currentColor = this.dataset.color;
+            document.getElementById('primary-color').style.background = state.currentColor;
+            updateToolSettings();
+        });
+        
+        presetsGrid.appendChild(div);
+    });
+}
+
+// ===== СЛОИ =====
+function setupLayers() {
+    const layersList = document.getElementById('layers-list');
+    state.layers = [
+        { id: 1, name: 'Слой 1', visible: true, locked: false },
+        { id: 2, name: 'Слой 2', visible: true, locked: false },
+        { id: 3, name: 'Слой 3', visible: true, locked: false }
+    ];
+    state.currentLayer = 0;
+    renderLayers();
+}
+
+function renderLayers() {
+    const layersList = document.getElementById('layers-list');
+    layersList.innerHTML = '';
+    
+    state.layers.forEach((layer, index) => {
+        const div = document.createElement('div');
+        div.className = `layer-item${index === state.currentLayer ? ' active' : ''}`;
+        
+        const thumb = document.createElement('div');
+        thumb.className = 'layer-thumb';
+        
+        const name = document.createElement('span');
+        name.className = 'layer-name';
+        name.textContent = layer.name;
+        
+        const actions = document.createElement('div');
+        actions.className = 'layer-actions';
+        
+        const eyeIcon = document.createElement('i');
+        eyeIcon.className = layer.visible ? 'fas fa-eye' : 'fas fa-eye-slash';
+        eyeIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            layer.visible = !layer.visible;
+            renderLayers();
+        });
+        
+        const lockIcon = document.createElement('i');
+        lockIcon.className = layer.locked ? 'fas fa-lock' : 'fas fa-unlock';
+        lockIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            layer.locked = !layer.locked;
+            renderLayers();
+        });
+        
+        actions.appendChild(eyeIcon);
+        actions.appendChild(lockIcon);
+        
+        div.appendChild(thumb);
+        div.appendChild(name);
+        div.appendChild(actions);
+        
+        div.addEventListener('click', function() {
+            state.currentLayer = index;
+            renderLayers();
+        });
+        
+        layersList.appendChild(div);
+    });
+}
+
+// ===== ЦВЕТОВОЕ КОЛЕСО =====
+function setupColorWheel() {
+    const wheel = document.getElementById('colorWheel');
+    let isDragging = false;
+    
+    // Рисуем цветовое колесо
+    function drawWheel() {
+        const rect = wheel.getBoundingClientRect();
+        const size = Math.min(rect.width, rect.height);
+        const cx = size / 2;
+        const cy = size / 2;
+        const radius = size / 2 - 4;
+        
+        // Создаем canvas для колеса
+        const tempCanvas = document.createElement('canvas');
+        tempCanvas.width = size;
+        tempCanvas.height = size;
+        const tempCtx = tempCanvas.getContext('2d');
+        
+        // Рисуем радужный круг
+        for (let i = 0; i < 360; i++) {
+            const angle = (i * Math.PI) / 180;
+            const x = cx + radius * Math.cos(angle);
+            const y = cy + radius * Math.sin(angle);
+            const gradient = tempCtx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+            gradient.addColorStop(0, `hsl(${i}, 100%, 50%)`);
+            gradient.addColorStop(1, `hsl(${i}, 100%, 50%)`);
+            tempCtx.beginPath();
+            tempCtx.arc(x, y, 2, 0, Math.PI * 2);
+            tempCtx.fillStyle = `hsl(${i}, 100%, 50%)`;
+            tempCtx.fill();
         }
-        e.preventDefault();
-        isDrawing = true;
-        const { x, y } = getCoords(e);
-        lastX = x;
-        lastY = y;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        applySettings();
-        // draw dot
-        ctx.arc(x, y, settings.size / 2, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(x, y);
+        
+        // Рисуем внутренний квадрат с градиентом
+        const innerSize = size * 0.6;
+        const innerX = (size - innerSize) / 2;
+        const innerY = (size - innerSize) / 2;
+        
+        const grad = tempCtx.createLinearGradient(innerX, innerY, innerX + innerSize, innerY + innerSize);
+        grad.addColorStop(0, 'rgba(255,255,255,0.8)');
+        grad.addColorStop(0.5, 'rgba(255,255,255,0)');
+        grad.addColorStop(1, 'rgba(0,0,0,0.8)');
+        tempCtx.fillStyle = grad;
+        tempCtx.fillRect(innerX, innerY, innerSize, innerSize);
+        
+        // Вставляем в DOM
+        wheel.style.backgroundImage = `url(${tempCanvas.toDataURL()})`;
+        wheel.style.backgroundSize = 'cover';
     }
-
-    function draw(e) {
-        if (settings.isText) {
-            // update text frame position if following
-            if (textFrame.dataset.following === 'true') {
-                const { x, y } = getCoords(e);
-                textFrame.style.left = (x - 60) + 'px';
-                textFrame.style.top = (y - 20) + 'px';
-                textPosX = x;
-                textPosY = y;
-            }
-            return;
-        }
-        if (!isDrawing) return;
-        e.preventDefault();
-        const { x, y } = getCoords(e);
-        if (settings.gap > 0) {
-            const dx = x - lastX;
-            const dy = y - lastY;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            if (dist < settings.gap) return;
-        }
-        ctx.lineTo(x, y);
-        ctx.stroke();
-        lastX = x;
-        lastY = y;
-        ctx.beginPath();
-        ctx.moveTo(x, y);
-        applySettings();
-    }
-
-    function stopDrawing(e) {
-        if (isDrawing) {
-            isDrawing = false;
-            ctx.closePath();
-            saveStroke();
+    
+    // Обновляем при ресайзе
+    setTimeout(drawWheel, 100);
+    window.addEventListener('resize', drawWheel);
+    
+    // Выбор цвета
+    function getColorFromWheel(e) {
+        const rect = wheel.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const size = Math.min(rect.width, rect.height);
+        const cx = size / 2;
+        const cy = size / 2;
+        const dx = x - cx;
+        const dy = y - cy;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const radius = size / 2 - 4;
+        
+        if (distance <= radius) {
+            let angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            if (angle < 0) angle += 360;
+            
+            const saturation = distance / radius * 100;
+            const lightness = 50 + (1 - distance / radius) * 20;
+            
+            state.currentColor = `hsl(${angle}, ${saturation}%, ${lightness}%)`;
+            document.getElementById('primary-color').style.background = state.currentColor;
+            updateToolSettings();
         }
     }
+    
+    wheel.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        getColorFromWheel(e);
+    });
+    
+    window.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            getColorFromWheel(e);
+        }
+    });
+    
+    window.addEventListener('mouseup', () => {
+        isDragging = false;
+    });
+}
 
-    // ---- undo ----
-    let strokeHistory = [];
-
-    function saveStroke() {
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        strokeHistory.push(imageData);
-        if (strokeHistory.length > 30) strokeHistory.shift();
-    }
-
-    function undoLastStroke() {
-        if (strokeHistory.length === 0) return;
-        const prev = strokeHistory.pop();
-        ctx.putImageData(prev, 0, 0);
-        applySettings();
-        isDrawing = false;
-        ctx.beginPath();
-    }
-
-    // ---- events ----
+// ===== СОБЫТИЯ ХОЛСТА =====
+function setupEventListeners() {
+    // Рисование
     canvas.addEventListener('mousedown', startDrawing);
     canvas.addEventListener('mousemove', draw);
     canvas.addEventListener('mouseup', stopDrawing);
-    canvas.addEventListener('mouseleave', stopDrawing);
-    canvas.addEventListener('touchstart', startDrawing, { passive: false });
-    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('mouseout', stopDrawing);
+    
+    // Touch события для мобильных
+    canvas.addEventListener('touchstart', handleTouchStart);
+    canvas.addEventListener('touchmove', handleTouchMove);
     canvas.addEventListener('touchend', stopDrawing);
-    canvas.addEventListener('touchcancel', stopDrawing);
-    canvas.addEventListener('contextmenu', (e) => {
-        e.preventDefault();
-        undoLastStroke();
+    
+    // Изменение настроек
+    sizeInput.addEventListener('change', updateToolSettings);
+    opacityInput.addEventListener('change', updateToolSettings);
+    blurInput.addEventListener('change', updateToolSettings);
+    smoothingInput.addEventListener('change', updateToolSettings);
+    fontSelect.addEventListener('change', (e) => {
+        state.font = e.target.value;
     });
+    
+    // Окно
+    window.addEventListener('resize', resizeCanvas);
+}
 
-    // ---- keyboard for text ----
-    document.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && settings.isText && textPlaced) {
-            e.preventDefault();
-            finishText();
-        }
-        if (e.ctrlKey && e.key === 'z') {
-            e.preventDefault();
-            undoLastStroke();
-        }
-        // Escape to cancel text
-        if (e.key === 'Escape' && settings.isText) {
-            textFrame.style.display = 'none';
-            settings.isText = false;
-            textBtn.style.background = 'rgba(255,255,255,0.05)';
-            penBtn.style.background = 'rgba(255,255,255,0.2)';
-            penBtn.classList.add('active');
-            textContent.contentEditable = false;
-        }
-    });
-
-    // ---- tool buttons ----
-    penBtn.addEventListener('click', function() {
-        settings.isEraser = false;
-        settings.isText = false;
-        textFrame.style.display = 'none';
-        this.classList.add('active');
-        eraserBtn.classList.remove('active');
-        textBtn.classList.remove('active');
-        this.style.background = 'rgba(255,255,255,0.2)';
-        eraserBtn.style.background = 'rgba(255,255,255,0.05)';
-        textBtn.style.background = 'rgba(255,255,255,0.05)';
-        settings.color = colorPicker.value;
-        applySettings();
-    });
-
-    eraserBtn.addEventListener('click', function() {
-        settings.isEraser = !settings.isEraser;
-        settings.isText = false;
-        textFrame.style.display = 'none';
-        if (settings.isEraser) {
-            this.classList.add('active');
-            this.style.background = 'rgba(255,255,255,0.2)';
-            penBtn.classList.remove('active');
-            textBtn.classList.remove('active');
-            penBtn.style.background = 'rgba(255,255,255,0.05)';
-            textBtn.style.background = 'rgba(255,255,255,0.05)';
-        } else {
-            this.classList.remove('active');
-            this.style.background = 'rgba(255,255,255,0.05)';
-            penBtn.classList.add('active');
-            penBtn.style.background = 'rgba(255,255,255,0.2)';
-        }
-        applySettings();
-    });
-
-    textBtn.addEventListener('click', function() {
-        if (settings.isText) {
-            // if already in text mode, cancel
-            textFrame.style.display = 'none';
-            settings.isText = false;
-            this.style.background = 'rgba(255,255,255,0.05)';
-            penBtn.style.background = 'rgba(255,255,255,0.2)';
-            penBtn.classList.add('active');
-            textContent.contentEditable = false;
-            return;
-        }
-        settings.isText = true;
-        settings.isEraser = false;
-        eraserBtn.classList.remove('active');
-        eraserBtn.style.background = 'rgba(255,255,255,0.05)';
-        this.classList.add('active');
-        this.style.background = 'rgba(255,255,255,0.2)';
-        penBtn.classList.remove('active');
-        penBtn.style.background = 'rgba(255,255,255,0.05)';
-        textPlaced = false;
-        // show text frame at center initially
-        const rect = canvas.getBoundingClientRect();
-        showTextFrame(rect.width / 2, rect.height / 2);
-        textContent.contentEditable = false;
-        textContent.textContent = 'type something';
-        textContent.style.color = settings.color;
-    });
-
-    // ---- color ----
-    colorPicker.addEventListener('input', function() {
-        settings.color = this.value;
-        colorSwatch.style.background = settings.color;
-        if (textContent) textContent.style.color = settings.color;
-        applySettings();
-    });
-
-    colorWheel.addEventListener('click', function(e) {
-        const rect = this.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        const cx = rect.width / 2;
-        const cy = rect.height / 2;
-        const angle = Math.atan2(y - cy, x - cx);
-        const deg = ((angle * 180 / Math.PI) + 360) % 360;
-        const hue = deg;
-        const sat = 80;
-        const lig = 55;
-        function hslToHex(h, s, l) {
-            h /= 360;
-            s /= 100;
-            l /= 100;
-            let r, g, b;
-            if (s === 0) { r = g = b = l; }
-            else {
-                const hue2rgb = (p, q, t) => {
-                    if (t < 0) t += 1;
-                    if (t > 1) t -= 1;
-                    if (t < 1/6) return p + (q - p) * 6 * t;
-                    if (t < 1/2) return q;
-                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-                    return p;
-                };
-                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-                const p = 2 * l - q;
-                r = hue2rgb(p, q, h + 1/3);
-                g = hue2rgb(p, q, h);
-                b = hue2rgb(p, q, h - 1/3);
-            }
-            const toHex = (c) => Math.round(c * 255).toString(16).padStart(2, '0');
-            return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-        }
-        const color = hslToHex(hue, sat, lig);
-        colorPicker.value = color;
-        settings.color = color;
-        colorSwatch.style.background = color;
-        if (textContent) textContent.style.color = color;
-        applySettings();
-    });
-
-    // ---- presets ----
-    function setupPresets() {
-        const cells = document.querySelectorAll('#sidebar .grid span');
-        cells.forEach((cell, index) => {
-            const num = index + 1;
-            cell.addEventListener('click', function() {
-                const size = 4 + (num % 10);
-                const hue = (num * 25) % 360;
-                settings.size = Math.min(40, Math.max(2, size));
-                const color = `hsl(${hue}, 80%, 60%)`;
-                colorPicker.value = color;
-                settings.color = color;
-                colorSwatch.style.background = color;
-                if (textContent) textContent.style.color = color;
-                updateDisplays();
-                applySettings();
-                this.style.borderColor = 'rgba(255,255,255,0.6)';
-                setTimeout(() => { this.style.borderColor = 'rgba(255,255,255,0.1)'; }, 200);
-            });
-            let holdTimer = null;
-            cell.addEventListener('mousedown', function(e) {
-                if (e.button === 0) {
-                    holdTimer = setTimeout(() => {
-                        const size = 4 + (num % 10);
-                        const hue = (num * 25) % 360;
-                        settings.size = Math.min(40, Math.max(2, size));
-                        const color = `hsl(${hue}, 80%, 60%)`;
-                        colorPicker.value = color;
-                        settings.color = color;
-                        colorSwatch.style.background = color;
-                        if (textContent) textContent.style.color = color;
-                        updateDisplays();
-                        applySettings();
-                        this.style.borderColor = 'rgba(255,200,100,0.8)';
-                        setTimeout(() => { this.style.borderColor = 'rgba(255,255,255,0.1)'; }, 400);
-                    }, 600);
-                }
-            });
-            cell.addEventListener('mouseup', () => { clearTimeout(holdTimer); holdTimer = null; });
-            cell.addEventListener('mouseleave', () => { clearTimeout(holdTimer); holdTimer = null; });
-        });
+// ===== ФУНКЦИИ РИСОВАНИЯ =====
+function startDrawing(e) {
+    if (state.isTextMode) {
+        const pos = getMousePosition(e);
+        state.textPosition = pos;
+        showTextInput(pos);
+        return;
     }
+    
+    const pos = getMousePosition(e);
+    state.isDrawing = true;
+    state.lastX = pos.x;
+    state.lastY = pos.y;
+    
+    // Сохраняем состояние для undo
+    saveHistory();
+}
 
-    // ---- init ----
-    function init() {
-        resizeCanvas();
-        settings.color = '#000000';
-        colorPicker.value = '#000000';
-        colorSwatch.style.background = '#000000';
-        penBtn.classList.add('active');
-        penBtn.style.background = 'rgba(255,255,255,0.2)';
-        applySettings();
-        updateDisplays();
-        setupPresets();
-
-        window.addEventListener('resize', () => {
-            const oldData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            resizeCanvas();
-            ctx.putImageData(oldData, 0, 0);
-            applySettings();
-        });
-    }
-
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', init);
+function draw(e) {
+    if (!state.isDrawing || state.isTextMode) return;
+    
+    const pos = getMousePosition(e);
+    const size = parseInt(sizeInput.value) || 8;
+    const opacity = (parseInt(opacityInput.value) || 100) / 100;
+    const blur = parseInt(blurInput.value) || 0;
+    
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.shadowColor = 'rgba(0,0,0,0)';
+    ctx.shadowBlur = blur;
+    ctx.lineWidth = size;
+    ctx.strokeStyle = state.currentColor;
+    
+    if (state.currentTool === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.strokeStyle = 'rgba(0,0,0,1)';
     } else {
-        init();
+        ctx.globalCompositeOperation = 'source-over';
     }
+    
+    ctx.beginPath();
+    ctx.moveTo(state.lastX, state.lastY);
+    ctx.lineTo(pos.x, pos.y);
+    ctx.stroke();
+    ctx.restore();
+    
+    state.lastX = pos.x;
+    state.lastY = pos.y;
+}
 
-})();
+function stopDrawing() {
+    if (state.isDrawing) {
+        state.isDrawing = false;
+        saveHistory();
+    }
+}
+
+// ===== ОБРАБОТКА TOUCH =====
+function handleTouchStart(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent('mousedown', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+    });
+    startDrawing(mouseEvent);
+}
+
+function handleTouchMove(e) {
+    e.preventDefault();
+    const touch = e.touches[0];
+    const mouseEvent = new MouseEvent('mousemove', {
+        clientX: touch.clientX,
+        clientY: touch.clientY
+    });
+    draw(mouseEvent);
+}
+
+// ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
+function getMousePosition(e) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    
+    return {
+        x: (e.clientX - rect.left) * scaleX,
+        y: (e.clientY - rect.top) * scaleY
+    };
+}
+
+function updateToolSettings() {
+    // Обновляем UI в соответствии с текущим инструментом
+    const isPen = state.currentTool === 'pen';
+    const isEraser = state.currentTool === 'eraser';
+    const isText = state.currentTool === 'text';
+    
+    // Показываем/скрываем соответствующие настройки
+    document.querySelectorAll('.setting-item').forEach(item => {
+        const label = item.querySelector('label');
+        if (label) {
+            const text = label.textContent.trim();
+            if (isText && text === 'Шрифт') {
+                item.style.display = 'flex';
+            } else if (isText && text === 'Правый клик') {
+                item.style.display = 'flex';
+            } else if (isText && text === 'Размер') {
+                item.style.display = 'flex';
+            } else if (isText && text === 'Непрозрачность') {
+                item.style.display = 'flex';
+            } else if (isText && (text === 'Размытие' || text === 'Сглаживание')) {
+                item.style.display = 'none';
+            } else if (isPen || isEraser) {
+                item.style.display = 'flex';
+            }
+        }
+    });
+}
+
+function resizeCanvas() {
+    const container = canvas.parentElement;
+    const rect = container.getBoundingClientRect();
+    const padding = 40;
+    
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tempCtx = tempCanvas.getContext('2d');
+    tempCtx.drawImage(canvas, 0, 0);
+    
+    canvas.width = rect.width - padding;
+    canvas.height = rect.height - padding;
+    
+    ctx.drawImage(tempCanvas, 0, 0);
+}
+
+// ===== ТЕКСТ =====
+function showTextInput(pos) {
+    // Создаем временный input для текста
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.style.position = 'fixed';
+    input.style.left = pos.x + 'px';
+    input.style.top = pos.y + 'px';
+    input.style.fontSize = '16px';
+    input.style.fontFamily = state.font;
+    input.style.color = state.currentColor;
+    input.style.background = 'rgba(255,255,255,0.9)';
+    input.style.border = '2px solid #333';
+    input.style.padding = '4px 8px';
+    input.style.borderRadius = '3px';
+    input.style.zIndex = '9999';
+    input.style.outline = 'none';
+    input.placeholder = 'Введите текст...';
+    input.autofocus = true;
+    
+    document.body.appendChild(input);
+    
+    input.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            addTextToCanvas(this.value, pos);
+            document.body.removeChild(this);
+        } else if (e.key === 'Escape') {
+            document.body.removeChild(this);
+        }
+    });
+    
+    input.addEventListener('blur', function() {
+        if (this.value) {
+            addTextToCanvas(this.value, pos);
+        }
+        document.body.removeChild(this);
+    });
+}
+
+function addTextToCanvas(text, pos) {
+    if (!text) return;
+    
+    ctx.save();
+    ctx.font = `24px ${state.font}`;
+    ctx.fillStyle = state.currentColor;
+    ctx.globalAlpha = (parseInt(opacityInput.value) || 100) / 100;
+    ctx.shadowBlur = parseInt(blurInput.value) || 0;
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    
+    // Рисуем текст
+    ctx.fillText(text, pos.x, pos.y);
+    ctx.restore();
+    
+    state.isTextMode = false;
+    canvas.style.cursor = 'crosshair';
+    document.getElementById('text-tool').classList.remove('active');
+}
+
+// ===== ИСТОРИЯ (UNDO) =====
+function saveHistory() {
+    state.history.push(canvas.toDataURL());
+    if (state.history.length > state.maxHistory) {
+        state.history.shift();
+    }
+    state.historyIndex = state.history.length - 1;
+}
+
+// ===== ЗАГРУЗКА ПРЕСЕТОВ =====
+function loadPresetColors() {
+    // Устанавливаем первый пресет как активный
+    const firstPreset = document.querySelector('.preset-circle');
+    if (firstPreset) {
+        state.currentColor = firstPreset.dataset.color;
+        document.getElementById('primary-color').style.background = state.currentColor;
+    }
+}
+
+// ===== ЗАПУСК =====
+document.addEventListener('DOMContentLoaded', init);
+
+// Экспортируем для использования в других файлах
+window.state = state;
+window.ctx = ctx;
+window.canvas = canvas;
