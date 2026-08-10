@@ -1,4 +1,4 @@
-/* style.css – FlockMod exact match */
+/* style.css – FlockMod enhanced sidebar */
 
 * {
   box-sizing: border-box;
@@ -11,62 +11,146 @@ body {
   color: #e5e5e8;
 }
 
-/* scrollbar */
+/* custom scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #1e1e24;
+  background: #16161c;
 }
 ::-webkit-scrollbar-thumb {
-  background: #3d3d47;
+  background: #3d3d48;
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #5a5a68;
 }
 
-#sidebar {
+aside {
   scrollbar-width: thin;
-  scrollbar-color: #3d3d47 #1e1e24;
+  scrollbar-color: #3d3d48 #16161c;
 }
 
-/* presets grid */
-#sidebar .grid span {
+/* tool buttons */
+.tool-btn {
+  font-size: 10px;
+  line-height: 1.2;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  user-select: none;
+}
+.tool-btn.active {
+  background: #4a4a5a;
+  border-color: #8888cc;
+  box-shadow: 0 0 8px rgba(100, 100, 255, 0.2);
+}
+.tool-btn:hover {
+  background: #3a3a46;
+}
+
+/* preset cells */
+.preset-cell {
   transition: background 0.1s ease, border-color 0.15s ease;
   cursor: default;
   font-size: 11px;
   line-height: 1.6;
-  background: #2c2c34;
-  border-color: #444;
-  color: #c8c8d0;
+  background: #282830;
+  border-color: #3d3d48;
+  color: #c0c0c8;
   font-variant-numeric: tabular-nums;
 }
-#sidebar .grid span:hover {
-  background: #383842;
+.preset-cell:hover {
+  background: #353540;
   border-color: #5a5a6a;
 }
-#sidebar .grid span:active {
-  background: #464652;
+.preset-cell:active {
+  background: #424250;
 }
 
-/* canvas white */
+/* canvas wrapper */
 #drawCanvas {
   background: #ffffff;
   image-rendering: crisp-edges;
+  cursor: crosshair;
 }
 
-/* tool settings right-align */
-#sidebar .grid div:last-child,
-#sidebar .grid span:last-child {
+/* color wheel */
+#colorWheel {
+  transition: transform 0.2s ease;
+}
+#colorWheel:hover {
+  transform: scale(1.05);
+}
+
+/* template buttons */
+.template-btn {
+  transition: all 0.15s ease;
+  cursor: pointer;
+  font-size: 9px;
+}
+.template-btn:hover {
+  background: #3a3a46;
+  border-color: #6a6a7a;
+}
+.template-btn:active {
+  transform: scale(0.95);
+}
+
+/* settings grid */
+#toolSettings .grid span:last-child {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-/* color wheel */
-.color-wheel-mock {
-  background: conic-gradient(from 0deg, 
-    #ff3b30, #ff9500, #ffcc00, #34c759, 
-    #00c7be, #007aff, #5856d6, #af52de, #ff3b30);
+/* pressure toggle */
+#pressureToggle {
+  transition: all 0.15s ease;
+  cursor: pointer;
+  font-size: 10px;
+}
+#pressureToggle:hover {
+  background: #3a3a46;
+}
+#pressureToggle.active {
+  background: #2a4a3a;
+  border-color: #4a8a6a;
+  color: #8affaa;
+}
+
+/* text input overlay for text tool */
+.text-overlay {
+  position: absolute;
+  background: transparent;
+  border: 2px dashed #666;
+  padding: 4px;
+  min-width: 50px;
+  min-height: 30px;
+  outline: none;
+  color: #000;
+  font-size: 16px;
+  font-family: system-ui, sans-serif;
+  resize: both;
+  overflow: hidden;
+  z-index: 10;
+}
+.text-overlay:focus {
+  border-color: #8888ff;
+}
+
+/* selection rectangle */
+.selection-rect {
+  position: absolute;
+  border: 2px dashed #4488ff;
+  background: rgba(68, 136, 255, 0.1);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* responsive tweaks */
+@media (max-width: 768px) {
+  aside {
+    width: 260px !important;
+    min-width: 260px !important;
+  }
 }
