@@ -1,4 +1,4 @@
-/* style.css – FlockMod exact sidebar style (right side) */
+/* style.css – FlockMod exact match */
 
 * {
   box-sizing: border-box;
@@ -7,20 +7,20 @@
 body {
   margin: 0;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  background: #18181c;
+  background: #1a1a1e;
   color: #e5e5e8;
 }
 
-/* custom scrollbar */
+/* scrollbar */
 ::-webkit-scrollbar {
   width: 4px;
   height: 4px;
 }
 ::-webkit-scrollbar-track {
-  background: #1b1b21;
+  background: #1e1e24;
 }
 ::-webkit-scrollbar-thumb {
-  background: #3d3d48;
+  background: #3d3d47;
   border-radius: 8px;
 }
 ::-webkit-scrollbar-thumb:hover {
@@ -29,50 +29,44 @@ body {
 
 #sidebar {
   scrollbar-width: thin;
-  scrollbar-color: #3d3d48 #1b1b21;
+  scrollbar-color: #3d3d47 #1e1e24;
 }
 
-/* presets grid – interactive */
+/* presets grid */
 #sidebar .grid span {
   transition: background 0.1s ease, border-color 0.15s ease;
   cursor: default;
   font-size: 11px;
   line-height: 1.6;
-  background: #282830;
-  border-color: #3d3d48;
-  color: #c0c0c8;
+  background: #2c2c34;
+  border-color: #444;
+  color: #c8c8d0;
   font-variant-numeric: tabular-nums;
 }
 #sidebar .grid span:hover {
-  background: #353540;
+  background: #383842;
   border-color: #5a5a6a;
 }
 #sidebar .grid span:active {
-  background: #424250;
+  background: #464652;
 }
 
-/* canvas – white background */
+/* canvas white */
 #drawCanvas {
   background: #ffffff;
   image-rendering: crisp-edges;
 }
 
-/* color wheel mock */
-.color-wheel-mock {
-  background: conic-gradient(from 0deg, 
-    #ff3b30, #ff9500, #ffcc00, #34c759, 
-    #00c7be, #007aff, #5856d6, #af52de, #ff3b30);
-}
-
-/* tool settings: right-align numbers */
+/* tool settings right-align */
 #sidebar .grid div:last-child,
 #sidebar .grid span:last-child {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
 
-/* small row spacing */
-.text-xxs {
-  font-size: 0.6rem;
-  line-height: 1rem;
+/* color wheel */
+.color-wheel-mock {
+  background: conic-gradient(from 0deg, 
+    #ff3b30, #ff9500, #ffcc00, #34c759, 
+    #00c7be, #007aff, #5856d6, #af52de, #ff3b30);
 }
