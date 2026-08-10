@@ -1,131 +1,141 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CollabDraw - Collaborative Drawing</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>#fallback - FlockMod</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet" />
 </head>
 <body>
     <!-- Login Screen -->
-    <div id="loginScreen" class="login-screen">
-        <div class="login-container">
-            <h1>🎨 CollabDraw</h1>
-            <p>Collaborative Drawing Platform</p>
-            <form id="loginForm">
-                <div class="input-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" placeholder="Enter your name" required>
+    <div id="loginScreen" class="min-h-screen flex items-center justify-center bg-[#1a1a2e]">
+        <div class="bg-[#16213e] p-8 rounded-2xl shadow-2xl w-96 border border-[#2a2a4a]">
+            <h1 class="text-3xl font-bold text-center text-white mb-2">#fallback</h1>
+            <p class="text-center text-gray-400 mb-8 text-sm">flockmod.com</p>
+            <form id="loginForm" class="space-y-4">
+                <div>
+                    <label class="block text-gray-300 text-sm font-medium mb-2">Username</label>
+                    <input type="text" id="usernameInput" placeholder="Enter username" class="w-full bg-[#0f1633] text-white border border-[#2a2a4a] rounded-lg px-4 py-2 focus:outline-none focus:border-[#4a4a8a] transition" />
                 </div>
-                <div class="input-group">
-                    <label for="password">Password <span style="color: #888; font-size: 0.8rem;">(optional)</span></label>
-                    <input type="password" id="password" placeholder="Leave empty to skip">
+                <div>
+                    <label class="block text-gray-300 text-sm font-medium mb-2">Password (optional)</label>
+                    <input type="password" id="passwordInput" placeholder="Leave blank to skip" class="w-full bg-[#0f1633] text-white border border-[#2a2a4a] rounded-lg px-4 py-2 focus:outline-none focus:border-[#4a4a8a] transition" />
                 </div>
-                <div class="input-group">
-                    <label for="room">Room Name</label>
-                    <input type="text" id="room" placeholder="Enter room name" value="fallback" required>
-                </div>
-                <button type="submit" class="login-btn">Join Room</button>
-                <div id="connectionStatus" style="margin-top: 10px; text-align: center; font-size: 0.9rem; color: #ff6b6b;"></div>
+                <button type="submit" class="w-full bg-[#4a4a8a] hover:bg-[#5a5a9a] text-white font-semibold py-2 rounded-lg transition duration-200">Join Room</button>
             </form>
+            <div class="mt-4 text-center text-xs text-gray-500">
+                <span>Room: fallback</span>
+            </div>
         </div>
     </div>
 
     <!-- Main App -->
-    <div id="app" class="app" style="display: none;">
+    <div id="mainApp" class="hidden h-screen bg-[#1a1a2e] flex overflow-hidden">
         <!-- Canvas Area -->
-        <div class="canvas-container" id="canvasContainer">
-            <canvas id="canvas"></canvas>
-            <!-- Text input overlay -->
-            <div id="textInputContainer" style="display: none; position: absolute; pointer-events: none;">
-                <input type="text" id="textInput" style="position: absolute; pointer-events: auto; background: transparent; border: 2px solid #ff6b6b; color: white; font-size: 20px; padding: 4px 8px; outline: none; font-family: 'Rubik', sans-serif; min-width: 100px;">
-            </div>
-            <!-- Connection status indicator -->
-            <div id="connectionStatusIndicator" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); padding: 5px 12px; border-radius: 5px; font-size: 12px; color: #4CAF50; pointer-events: none;">
-                ● Connected
-            </div>
+        <div class="flex-1 relative bg-[#0f1633]">
+            <canvas id="canvas" class="w-full h-full cursor-crosshair"></canvas>
+            <!-- User labels container -->
+            <div id="userLabels" class="absolute inset-0 pointer-events-none"></div>
         </div>
 
         <!-- Sidebar -->
-        <div class="sidebar">
-            <!-- Users List -->
-            <div class="sidebar-section">
-                <div class="section-title">👥 USERS</div>
-                <div class="users-list" id="usersList">
-                    <div class="user-item current-user" id="currentUserDisplay">You</div>
+        <div id="sidebar" class="w-[320px] bg-[#16213e] border-l border-[#2a2a4a] overflow-y-auto flex-shrink-0">
+            <div class="p-4 space-y-6">
+                <!-- User List -->
+                <div>
+                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider mb-2">List of users</div>
+                    <div id="userList" class="space-y-1">
+                        <div class="text-white text-sm flex items-center gap-2">
+                            <span class="w-2 h-2 bg-green-400 rounded-full"></span>
+                            <span id="currentUserDisplay">You</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tool Settings -->
+                <div>
+                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider mb-3">Tool settings</div>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between items-center text-gray-300">
+                            <span>Size</span>
+                            <div class="flex items-center gap-2">
+                                <input type="range" id="brushSize" min="1" max="50" value="8" class="w-24 accent-[#4a4a8a]" />
+                                <span id="sizeValue" class="text-white w-6 text-center">8</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-gray-300">
+                            <span>Opacity</span>
+                            <div class="flex items-center gap-2">
+                                <input type="range" id="brushOpacity" min="1" max="100" value="100" class="w-24 accent-[#4a4a8a]" />
+                                <span id="opacityValue" class="text-white w-6 text-center">100</span>
+                            </div>
+                        </div>
+                        <div class="flex justify-between items-center text-gray-300">
+                            <span>Font</span>
+                            <select id="fontSelect" class="bg-[#0f1633] text-white border border-[#2a2a4a] rounded px-2 py-1 text-sm">
+                                <option value="Rubik">Rubik</option>
+                                <option value="Arial">Arial</option>
+                                <option value="Courier New">Courier New</option>
+                                <option value="Georgia">Georgia</option>
+                            </select>
+                        </div>
+                        <div class="flex justify-between items-center text-gray-300">
+                            <span>Right click</span>
+                            <select id="rightClickAction" class="bg-[#0f1633] text-white border border-[#2a2a4a] rounded px-2 py-1 text-sm">
+                                <option value="undo">Undo stroke</option>
+                                <option value="nextFont">Next font</option>
+                                <option value="eraser">Eraser</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Presets -->
+                <div>
+                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider mb-2">Presets</div>
+                    <div class="grid grid-cols-6 gap-1">
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">1</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">2</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">3</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">4</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">5</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">6</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">7</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">8</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">9</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">10</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">11</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">12</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">13</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">14</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">15</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">16</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">17</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">18</button>
+                    </div>
+                    <div class="text-[#6a6a8a] text-xs mt-1 text-center">Hold to set. Click to load.</div>
+                </div>
+
+                <!-- Color Wheel -->
+                <div>
+                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider mb-2">Color Wheel</div>
+                    <div class="relative">
+                        <canvas id="colorWheel" width="200" height="100" class="w-full rounded-lg border border-[#2a2a4a]"></canvas>
+                        <div class="flex gap-2 mt-2 items-center">
+                            <div id="selectedColor" class="w-8 h-8 rounded border border-[#2a2a4a]" style="background: #ff6b6b"></div>
+                            <input type="color" id="colorPicker" value="#ff6b6b" class="flex-1 h-8 bg-[#0f1633] border border-[#2a2a4a] rounded" />
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Layer -->
+                <div>
+                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider">Layer</div>
+                    <div class="text-white text-sm mt-1">Cloud</div>
                 </div>
             </div>
-
-            <!-- Tool Settings -->
-            <div class="sidebar-section">
-                <div class="section-title">🛠️ TOOL SETTINGS</div>
-                
-                <div class="setting-group">
-                    <label>Size</label>
-                    <input type="range" id="brushSize" min="1" max="50" value="8">
-                    <span class="value-display" id="sizeDisplay">8</span>
-                </div>
-                
-                <div class="setting-group">
-                    <label>Opacity</label>
-                    <input type="range" id="opacity" min="1" max="100" value="100">
-                    <span class="value-display" id="opacityDisplay">100%</span>
-                </div>
-                
-                <div class="setting-group">
-                    <label>Font</label>
-                    <select id="fontSelect">
-                        <option value="Rubik">Rubik</option>
-                        <option value="Arial">Arial</option>
-                        <option value="Helvetica">Helvetica</option>
-                        <option value="Georgia">Georgia</option>
-                        <option value="Courier New">Courier New</option>
-                    </select>
-                </div>
-                
-                <div class="setting-group">
-                    <label>Right Click</label>
-                    <select id="rightClickAction">
-                        <option value="nextFont">Next Font</option>
-                        <option value="undoStroke">Undo Stroke</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Presets -->
-            <div class="sidebar-section">
-                <div class="section-title">🎨 PRESETS</div>
-                <div class="presets-grid" id="presetsGrid">
-                    <!-- Will be populated by JS -->
-                </div>
-                <div class="presets-hint">Hold to set. Click to load.</div>
-            </div>
-
-            <!-- Color Wheel -->
-            <div class="sidebar-section">
-                <div class="section-title">🌈 COLOR</div>
-                <div class="color-picker-container">
-                    <input type="color" id="colorPicker" value="#ff6b6b">
-                </div>
-            </div>
-
-            <!-- Tools -->
-            <div class="sidebar-section tools-section">
-                <div class="tool-buttons">
-                    <button class="tool-btn active" data-tool="brush" title="Brush">🖊️</button>
-                    <button class="tool-btn" data-tool="text" title="Text">📝</button>
-                    <button class="tool-btn" data-tool="eraser" title="Eraser">🧹</button>
-                    <button class="tool-btn" data-tool="clear" id="clearCanvas" title="Clear All">🗑️</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Cursor indicator template -->
-    <div id="cursorTemplate" style="display: none;">
-        <div class="cursor-indicator">
-            <div class="cursor-name"></div>
         </div>
     </div>
 
