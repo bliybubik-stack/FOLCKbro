@@ -9,6 +9,7 @@ const state = {
     opacity: 100,
     font: 'Rubik',
     rightClick: 'nextFont',
+    tool: 'pen',
     isDrawing: false,
     lastX: 0,
     lastY: 0,
@@ -16,9 +17,6 @@ const state = {
     strokes: [],
     currentStroke: [],
     isTyping: false,
-    textInput: null,
-    textX: 0,
-    textY: 0,
 };
 
 // ============================================
@@ -32,8 +30,6 @@ const loginScreen = document.getElementById('loginScreen');
 const mainApp = document.getElementById('mainApp');
 const loginForm = document.getElementById('loginForm');
 const usernameInput = document.getElementById('usernameInput');
-const userList = document.getElementById('userList');
-const currentUserDisplay = document.getElementById('currentUserDisplay');
 const brushSize = document.getElementById('brushSize');
 const sizeValue = document.getElementById('sizeValue');
 const brushOpacity = document.getElementById('brushOpacity');
@@ -43,6 +39,7 @@ const rightClickAction = document.getElementById('rightClickAction');
 const colorPicker = document.getElementById('colorPicker');
 const selectedColor = document.getElementById('selectedColor');
 const userLabels = document.getElementById('userLabels');
+const toolBtns = document.querySelectorAll('.tool-btn');
 
 // ============================================
 // CANVAS SETUP
@@ -51,14 +48,10 @@ function resizeCanvas() {
     const rect = canvas.parentElement.getBoundingClientRect();
     canvas.width = rect.width;
     canvas.height = rect.height;
-    // Fill with white background
-    ctx.fillStyle = 'white';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
     redrawAll();
 }
 
 function redrawAll() {
-    // Clear with white background
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
@@ -105,6 +98,26 @@ function drawStroke(stroke) {
 }
 
 // ============================================
+// TOOL HANDLING
+// ============================================
+toolBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        toolBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        state.tool = btn.textContent.toLowerCase();
+        
+        // Update cursor
+        if (state.tool === 'text') {
+            canvas.style.cursor = 'text';
+        } else if (state.tool === 'eraser') {
+            canvas.style.cursor = 'cell';
+        } else {
+            canvas.style.cursor = 'crosshair';
+        }
+    });
+});
+
+// ============================================
 // DRAWING
 // ============================================
 function getCanvasPos(e) {
@@ -116,7 +129,6 @@ function getCanvasPos(e) {
 
 canvas.addEventListener('mousedown', (e) => {
     if (e.button === 2) {
-        // Right click
         e.preventDefault();
         if (state.rightClick === 'undo') {
             if (state.strokes.length > 0) {
@@ -129,22 +141,18 @@ canvas.addEventListener('mousedown', (e) => {
             state.font = fonts[(currentIndex + 1) % fonts.length];
             fontSelect.value = state.font;
         } else if (state.rightClick === 'eraser') {
-            // Simple eraser: draw with white
-            const pos = getCanvasPos(e);
-            ctx.globalCompositeOperation = 'destination-out';
-            ctx.beginPath();
-            ctx.arc(pos.x, pos.y, state.brushSize * 0.7, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.globalCompositeOperation = 'source-over';
-            // Add to strokes as eraser stroke
-            state.strokes.push({
-                type: 'draw',
-                points: [{ x: pos.x, y: pos.y }],
-                color: 'white',
-                size: state.brushSize * 1.4,
-                opacity: 100,
+            state.tool = 'eraser';
+            toolBtns.forEach(b => {
+                b.classList.remove('active');
+                if (b.textContent.toLowerCase() === 'eraser') b.classList.add('active');
             });
+            canvas.style.cursor = 'cell';
         }
+        return;
+    }
+
+    if (state.tool === 'text') {
+        handleTextClick(e);
         return;
     }
 
@@ -154,33 +162,39 @@ canvas.addEventListener('mousedown', (e) => {
     state.lastY = pos.y;
     state.currentStroke = {
         points: [{ x: pos.x, y: pos.y }],
-        color: state.color,
-        size: state.brushSize,
-        opacity: state.opacity,
+        color: state.tool === 'eraser' ? 'white' : state.color,
+        size: state.tool === 'eraser' ? state.brushSize * 2 : state.brushSize,
+        opacity: state.tool === 'eraser' ? 100 : state.opacity,
         type: 'draw',
     };
 });
 
 canvas.addEventListener('mousemove', (e) => {
     const pos = getCanvasPos(e);
-    
-    // Update user label position
     updateUserLabel(pos.x, pos.y);
 
     if (!state.isDrawing) return;
 
     state.currentStroke.points.push({ x: pos.x, y: pos.y });
-    // Draw incrementally
-    ctx.strokeStyle = state.color;
-    ctx.globalAlpha = state.opacity / 100;
-    ctx.lineWidth = state.brushSize;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.beginPath();
-    ctx.moveTo(state.lastX, state.lastY);
-    ctx.lineTo(pos.x, pos.y);
-    ctx.stroke();
-    ctx.globalAlpha = 1;
+    
+    if (state.tool === 'eraser') {
+        ctx.globalCompositeOperation = 'destination-out';
+        ctx.beginPath();
+        ctx.arc(pos.x, pos.y, state.brushSize * 0.7, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.globalCompositeOperation = 'source-over';
+    } else {
+        ctx.strokeStyle = state.color;
+        ctx.globalAlpha = state.opacity / 100;
+        ctx.lineWidth = state.brushSize;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
+        ctx.beginPath();
+        ctx.moveTo(state.lastX, state.lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+    }
     state.lastX = pos.x;
     state.lastY = pos.y;
 });
@@ -203,34 +217,29 @@ canvas.addEventListener('mouseleave', () => {
 });
 
 // ============================================
-// TEXT INPUT
+// TEXT HANDLING
 // ============================================
-canvas.addEventListener('click', (e) => {
+function handleTextClick(e) {
     if (state.isTyping) return;
     const pos = getCanvasPos(e);
-    state.textX = pos.x;
-    state.textY = pos.y;
     state.isTyping = true;
     
-    // Create text input overlay
     const input = document.createElement('input');
     input.type = 'text';
-    input.className = 'absolute bg-transparent text-white border border-[#4a4a8a] rounded px-2 py-1 text-base outline-none';
-    input.style.left = pos.x + 'px';
-    input.style.top = pos.y + 'px';
+    input.className = 'fixed bg-[#0f1633] text-white border border-[#4a4a8a] rounded px-2 py-1 text-base outline-none';
     input.style.fontFamily = state.font;
     input.style.fontSize = state.brushSize + 6 + 'px';
     input.style.color = state.color;
     input.style.zIndex = 20;
     input.style.minWidth = '100px';
-    input.style.background = 'rgba(15, 22, 51, 0.8)';
+    input.style.padding = '4px 8px';
+    input.style.background = 'rgba(15, 22, 51, 0.9)';
     input.style.backdropFilter = 'blur(4px)';
     input.placeholder = 'Type text...';
     
     const rect = canvas.getBoundingClientRect();
     input.style.left = (rect.left + pos.x) + 'px';
     input.style.top = (rect.top + pos.y) + 'px';
-    input.style.position = 'fixed';
     
     document.body.appendChild(input);
     input.focus();
@@ -262,7 +271,7 @@ canvas.addEventListener('click', (e) => {
             state.isTyping = false;
         }
     });
-});
+}
 
 // ============================================
 // USER LABELS
@@ -358,7 +367,6 @@ colorPicker.addEventListener('input', () => {
 // ============================================
 document.querySelectorAll('.preset-btn').forEach(btn => {
     btn.addEventListener('click', () => {
-        // Load preset - different colors for demo
         const colors = ['#ff6b6b', '#ffd93d', '#6bcb77', '#4d96ff', '#ff6bff', '#ff9f43', '#00d2d3', '#a29bfe', '#fd79a8', '#fdcb6e', '#6c5ce7', '#00b894', '#e17055', '#0984e3', '#fdcb6e', '#e84393', '#00cec9', '#fd79a8'];
         const index = parseInt(btn.textContent) - 1;
         state.color = colors[index % colors.length];
@@ -374,11 +382,6 @@ loginForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const username = usernameInput.value.trim() || 'Anonymous';
     state.username = username;
-    currentUserDisplay.textContent = username;
-    
-    // Add user to list
-    state.users = [username, 'Anonymous2', 'User3'];
-    renderUserList();
     
     loginScreen.style.opacity = '0';
     setTimeout(() => {
@@ -391,20 +394,6 @@ loginForm.addEventListener('submit', (e) => {
     }, 300);
 });
 
-function renderUserList() {
-    userList.innerHTML = '';
-    state.users.forEach((user, index) => {
-        const div = document.createElement('div');
-        div.className = 'text-white text-sm flex items-center gap-2';
-        const dot = document.createElement('span');
-        dot.className = `w-2 h-2 rounded-full ${index === 0 ? 'bg-green-400' : 'bg-[#4a4a8a]'}`;
-        div.appendChild(dot);
-        const name = document.createTextNode(user);
-        div.appendChild(name);
-        userList.appendChild(div);
-    });
-}
-
 // ============================================
 // INIT
 // ============================================
@@ -412,5 +401,4 @@ window.addEventListener('resize', resizeCanvas);
 drawColorWheel();
 
 console.log('🖌️ #fallback - FlockMod clone loaded!');
-console.log('👤 Join room: fallback');
-console.log('🎨 Draw, type text, and collaborate!');
+console.log('🎨 Tools: Pen, Pixel, Eraser, Text, Line, Rect, Circle, Fill, Select');
