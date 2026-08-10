@@ -33,48 +33,45 @@
 
     <!-- Main App -->
     <div id="mainApp" class="hidden h-screen bg-[#1a1a2e] flex overflow-hidden">
-        <!-- Canvas Area -->
-        <div class="flex-1 relative bg-[#0f1633]">
+        <!-- Canvas Area - WHITE BACKGROUND -->
+        <div class="flex-1 relative bg-white">
             <canvas id="canvas" class="w-full h-full cursor-crosshair"></canvas>
             <!-- User labels container -->
             <div id="userLabels" class="absolute inset-0 pointer-events-none"></div>
         </div>
 
-        <!-- Sidebar -->
-        <div id="sidebar" class="w-[320px] bg-[#16213e] border-l border-[#2a2a4a] overflow-y-auto flex-shrink-0">
-            <div class="p-4 space-y-6">
-                <!-- User List -->
-                <div>
-                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider mb-2">List of users</div>
-                    <div id="userList" class="space-y-1">
-                        <div class="text-white text-sm flex items-center gap-2">
-                            <span class="w-2 h-2 bg-green-400 rounded-full"></span>
-                            <span id="currentUserDisplay">You</span>
-                        </div>
-                    </div>
+        <!-- Sidebar - EXACT MATCH -->
+        <div id="sidebar" class="w-[340px] bg-[#1a1a2e] border-l border-[#2a2a4a] overflow-y-auto flex-shrink-0">
+            <div class="p-5 space-y-6">
+                <!-- Room Header -->
+                <div class="text-center">
+                    <h2 class="text-white text-xl font-bold">#fallback - FlockMod</h2>
+                    <p class="text-[#6a6a8a] text-xs mt-1">flockmod.com</p>
+                    <p class="text-[#4a4a6a] text-xs mt-1">https://flockmod.com/r/fallback</p>
+                    <p class="text-[#3a3a5a] text-xs mt-2">test test 123123</p>
                 </div>
 
-                <!-- Tool Settings -->
+                <!-- Tool Settings - EXACT MATCH -->
                 <div>
-                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider mb-3">Tool settings</div>
-                    <div class="space-y-2 text-sm">
+                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider mb-3">НАСТРОЙКИ ИНСТРУМЕНТА</div>
+                    <div class="space-y-3 text-sm">
                         <div class="flex justify-between items-center text-gray-300">
-                            <span>Size</span>
+                            <span>Размер</span>
                             <div class="flex items-center gap-2">
                                 <input type="range" id="brushSize" min="1" max="50" value="8" class="w-24 accent-[#4a4a8a]" />
                                 <span id="sizeValue" class="text-white w-6 text-center">8</span>
                             </div>
                         </div>
                         <div class="flex justify-between items-center text-gray-300">
-                            <span>Opacity</span>
+                            <span>Непрозрачность</span>
                             <div class="flex items-center gap-2">
                                 <input type="range" id="brushOpacity" min="1" max="100" value="100" class="w-24 accent-[#4a4a8a]" />
                                 <span id="opacityValue" class="text-white w-6 text-center">100</span>
                             </div>
                         </div>
                         <div class="flex justify-between items-center text-gray-300">
-                            <span>Font</span>
-                            <select id="fontSelect" class="bg-[#0f1633] text-white border border-[#2a2a4a] rounded px-2 py-1 text-sm">
+                            <span>Шрифт</span>
+                            <select id="fontSelect" class="bg-[#0f1633] text-white border border-[#2a2a4a] rounded px-2 py-1 text-sm w-28">
                                 <option value="Rubik">Rubik</option>
                                 <option value="Arial">Arial</option>
                                 <option value="Courier New">Courier New</option>
@@ -82,45 +79,45 @@
                             </select>
                         </div>
                         <div class="flex justify-between items-center text-gray-300">
-                            <span>Right click</span>
-                            <select id="rightClickAction" class="bg-[#0f1633] text-white border border-[#2a2a4a] rounded px-2 py-1 text-sm">
-                                <option value="undo">Undo stroke</option>
-                                <option value="nextFont">Next font</option>
-                                <option value="eraser">Eraser</option>
+                            <span>Правый клик</span>
+                            <select id="rightClickAction" class="bg-[#0f1633] text-white border border-[#2a2a4a] rounded px-2 py-1 text-sm w-28">
+                                <option value="nextFont">Следующий шрифт</option>
+                                <option value="undo">Отменить штрих</option>
+                                <option value="eraser">Ластик</option>
                             </select>
                         </div>
                     </div>
                 </div>
 
-                <!-- Presets -->
+                <!-- Presets - EXACT MATCH -->
                 <div>
-                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider mb-2">Presets</div>
-                    <div class="grid grid-cols-6 gap-1">
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">1</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">2</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">3</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">4</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">5</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">6</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">7</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">8</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">9</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">10</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">11</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">12</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">13</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">14</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">15</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">16</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">17</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1 transition">18</button>
+                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider mb-2">ПРЕДУСТАНОВКИ</div>
+                    <div class="grid grid-cols-6 gap-1.5">
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">1</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">2</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">3</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">4</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">5</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">6</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">7</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">8</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">9</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">10</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">11</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">12</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">13</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">14</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">15</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">16</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">17</button>
+                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">18</button>
                     </div>
-                    <div class="text-[#6a6a8a] text-xs mt-1 text-center">Hold to set. Click to load.</div>
+                    <div class="text-[#6a6a8a] text-xs mt-2 text-center">Удерживайте для установки. Нажмите, чтобы загрузить.</div>
                 </div>
 
-                <!-- Color Wheel -->
+                <!-- Color Wheel - EXACT MATCH -->
                 <div>
-                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider mb-2">Color Wheel</div>
+                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider mb-2">ЦВЕТОВОЕ КОЛЕСО</div>
                     <div class="relative">
                         <canvas id="colorWheel" width="200" height="100" class="w-full rounded-lg border border-[#2a2a4a]"></canvas>
                         <div class="flex gap-2 mt-2 items-center">
@@ -130,10 +127,10 @@
                     </div>
                 </div>
 
-                <!-- Layer -->
+                <!-- Layer/Cloud - EXACT MATCH -->
                 <div>
-                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider">Layer</div>
-                    <div class="text-white text-sm mt-1">Cloud</div>
+                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider">СЛОЙ</div>
+                    <div class="text-white text-sm mt-1">CLOUD</div>
                 </div>
             </div>
         </div>
