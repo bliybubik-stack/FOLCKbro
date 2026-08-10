@@ -1,159 +1,107 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>#fallback - FlockMod</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FlockMod · fallback</title>
+    <!-- Tailwind via CDN + custom style -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="style.css" />
-    <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link href="style.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Login Screen -->
-    <div id="loginScreen" class="min-h-screen flex items-center justify-center bg-[#1a1a2e]">
-        <div class="bg-[#16213e] p-8 rounded-2xl shadow-2xl w-96 border border-[#2a2a4a]">
-            <h1 class="text-3xl font-bold text-center text-white mb-2">#fallback</h1>
-            <p class="text-center text-gray-400 mb-8 text-sm">flockmod.com</p>
-            <form id="loginForm" class="space-y-4">
-                <div>
-                    <label class="block text-gray-300 text-sm font-medium mb-2">Username</label>
-                    <input type="text" id="usernameInput" placeholder="Enter username" class="w-full bg-[#0f1633] text-white border border-[#2a2a4a] rounded-lg px-4 py-2 focus:outline-none focus:border-[#4a4a8a] transition" />
-                </div>
-                <div>
-                    <label class="block text-gray-300 text-sm font-medium mb-2">Password (optional)</label>
-                    <input type="password" id="passwordInput" placeholder="Leave blank to skip" class="w-full bg-[#0f1633] text-white border border-[#2a2a4a] rounded-lg px-4 py-2 focus:outline-none focus:border-[#4a4a8a] transition" />
-                </div>
-                <button type="submit" class="w-full bg-[#4a4a8a] hover:bg-[#5a5a9a] text-white font-semibold py-2 rounded-lg transition duration-200">Join Room</button>
-            </form>
-            <div class="mt-4 text-center text-xs text-gray-500">
-                <span>Room: fallback</span>
+    <!-- main flex container: sidebar (left) + canvas (right) -->
+    <div id="app" class="flex h-screen w-screen overflow-hidden bg-[#1a1a1e] text-gray-200 select-none">
+
+        <!-- ========== SIDEBAR (left) ========== -->
+        <aside id="sidebar" class="w-[280px] min-w-[280px] h-full bg-[#25252b] border-r border-[#3a3a42] flex flex-col p-3 overflow-y-auto space-y-4 text-sm">
+
+            <!-- header / title -->
+            <div class="flex items-center justify-between border-b border-[#3a3a42] pb-2">
+                <span class="text-xs font-mono tracking-wider text-gray-400">#fallback · FlockMod</span>
+                <span class="text-[10px] text-gray-500">flockmod.com</span>
             </div>
-        </div>
-    </div>
 
-    <!-- Main App -->
-    <div id="mainApp" class="hidden h-screen bg-[#1a1a2e] flex overflow-hidden">
-        <!-- Canvas Area -->
-        <div class="flex-1 relative bg-white">
-            <canvas id="canvas" class="w-full h-full"></canvas>
-            <div id="userLabels" class="absolute inset-0 pointer-events-none"></div>
-        </div>
-
-        <!-- Sidebar - EXACT 1:1 COPY -->
-        <div id="sidebar" class="w-[340px] bg-[#1a1a2e] border-l border-[#2a2a4a] overflow-y-auto flex-shrink-0">
-            <div class="p-5 space-y-5">
-                <!-- Header -->
-                <div class="text-center">
-                    <h2 class="text-white text-xl font-bold">#fallback - FlockMod</h2>
-                    <p class="text-[#6a6a8a] text-xs mt-1">flockmod.com</p>
-                    <p class="text-[#4a4a6a] text-xs mt-0.5">https://flockmod.com/r/fallback</p>
-                    <p class="text-[#3a3a5a] text-xs mt-1.5">test test 123123</p>
-                </div>
-
-                <!-- Tool Buttons - EXACT MATCH -->
-                <div class="flex gap-1.5 flex-wrap">
-                    <button class="tool-btn active bg-[#2a2a4a] text-white px-3 py-1.5 rounded text-xs hover:bg-[#3a3a5a] transition">Pen</button>
-                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Pixel</button>
-                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Eraser</button>
-                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Text</button>
-                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Line</button>
-                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Rect</button>
-                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Circle</button>
-                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Fill</button>
-                    <button class="tool-btn bg-[#1a1a2e] text-gray-400 px-3 py-1.5 rounded text-xs hover:bg-[#2a2a4a] transition">Select</button>
-                </div>
-
-                <!-- Tool Settings - EXACT MATCH -->
-                <div>
-                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider mb-3">НАСТРОЙКИ ИНСТРУМЕНТА</div>
-                    <div class="space-y-2.5 text-sm">
-                        <div class="flex justify-between items-center text-gray-300">
-                            <span>Размер</span>
-                            <div class="flex items-center gap-2">
-                                <input type="range" id="brushSize" min="1" max="50" value="8" class="w-24 accent-[#4a4a8a]" />
-                                <span id="sizeValue" class="text-white w-6 text-center">8</span>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center text-gray-300">
-                            <span>Непрозрачность</span>
-                            <div class="flex items-center gap-2">
-                                <input type="range" id="brushOpacity" min="1" max="100" value="100" class="w-24 accent-[#4a4a8a]" />
-                                <span id="opacityValue" class="text-white w-6 text-center">100</span>
-                            </div>
-                        </div>
-                        <div class="flex justify-between items-center text-gray-300">
-                            <span>Шрифт</span>
-                            <select id="fontSelect" class="bg-[#0f1633] text-white border border-[#2a2a4a] rounded px-2 py-1 text-sm w-28">
-                                <option value="Rubik">Rubik</option>
-                                <option value="Arial">Arial</option>
-                                <option value="Courier New">Courier New</option>
-                                <option value="Georgia">Georgia</option>
-                            </select>
-                        </div>
-                        <div class="flex justify-between items-center text-gray-300">
-                            <span>Правый клик</span>
-                            <select id="rightClickAction" class="bg-[#0f1633] text-white border border-[#2a2a4a] rounded px-2 py-1 text-sm w-28">
-                                <option value="nextFont">Следующий шрифт</option>
-                                <option value="undo">Отменить штрих</option>
-                                <option value="eraser">Ластик</option>
-                            </select>
-                        </div>
-                        <div class="flex justify-between items-center text-gray-300">
-                            <span>Размытие</span>
-                            <span class="text-white">0</span>
-                        </div>
-                        <div class="flex justify-between items-center text-gray-300">
-                            <span>Привязка к углу</span>
-                            <span class="text-white">нет</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Presets - EXACT MATCH -->
-                <div>
-                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider mb-2">ПРЕДУСТАНОВКИ</div>
-                    <div class="grid grid-cols-6 gap-1.5">
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">1</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">2</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">3</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">4</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">5</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">6</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">7</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">8</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">9</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">10</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">11</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">12</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">13</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">14</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">15</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">16</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">17</button>
-                        <button class="preset-btn bg-[#2a2a4a] hover:bg-[#3a3a5a] text-white text-xs rounded p-1.5 transition">18</button>
-                    </div>
-                    <div class="text-[#6a6a8a] text-xs mt-2 text-center">Удерживайте для установки. Нажмите, чтобы загрузить.</div>
-                </div>
-
-                <!-- Color Wheel - EXACT MATCH -->
-                <div>
-                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider mb-2">ЦВЕТОВОЕ КОЛЕСО</div>
-                    <div class="relative">
-                        <canvas id="colorWheel" width="200" height="100" class="w-full rounded-lg border border-[#2a2a4a]"></canvas>
-                        <div class="flex gap-2 mt-2 items-center">
-                            <div id="selectedColor" class="w-8 h-8 rounded border border-[#2a2a4a]" style="background: #ff6b6b"></div>
-                            <input type="color" id="colorPicker" value="#ff6b6b" class="flex-1 h-8 bg-[#0f1633] border border-[#2a2a4a] rounded" />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Layer - EXACT MATCH -->
-                <div>
-                    <div class="text-[#8a8aaa] text-xs font-semibold uppercase tracking-wider">СЛОЙ</div>
-                    <div class="text-white text-sm mt-1">CLOUD</div>
+            <!-- user list (exactly like screenshot) -->
+            <div class="bg-[#1e1e24] rounded-md p-2 border border-[#33333c]">
+                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Список пользователей</div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-400"></span>
+                    <span class="text-gray-200 font-medium">Вы</span>
+                    <span class="text-gray-400 text-xs ml-1">Anonymous</span>
                 </div>
             </div>
-        </div>
+
+            <!-- НАСТРОЙКИ ИНСТРУМЕНТА (tool settings) -->
+            <div class="bg-[#1e1e24] rounded-md p-2 border border-[#33333c]">
+                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1.5">Настройки инструмента</div>
+                <div class="grid grid-cols-2 gap-x-2 gap-y-1 text-xs">
+                    <div class="text-gray-400">Размер</div>
+                    <div class="text-gray-200 text-right" id="sizeDisplay">8</div>
+                    <div class="text-gray-400">Непрозрачность</div>
+                    <div class="text-gray-200 text-right" id="opacityDisplay">100</div>
+                    <div class="text-gray-400">Размытие</div>
+                    <div class="text-gray-200 text-right" id="blurDisplay">0</div>
+                    <div class="text-gray-400">Сглаживание</div>
+                    <div class="text-gray-200 text-right" id="smoothDisplay">0</div>
+                    <div class="text-gray-400">Промежуток</div>
+                    <div class="text-gray-200 text-right" id="gapDisplay">0</div>
+                    <div class="text-gray-400">Давление</div>
+                    <div class="text-gray-200 text-right" id="pressureDisplay">100</div>
+                    <div class="text-gray-400">Правый клик</div>
+                    <div class="text-gray-200 text-right">Отменить штрих</div>
+                </div>
+                <!-- extra row: cursor (from second screenshot) -->
+                <div class="flex items-center justify-between mt-1 pt-1 border-t border-[#33333c] text-xs">
+                    <span class="text-gray-400">Курсор</span>
+                    <span class="text-gray-200">Круг</span>
+                </div>
+            </div>
+
+            <!-- ПРЕДУСТАНОВКИ (presets) -->
+            <div class="bg-[#1e1e24] rounded-md p-2 border border-[#33333c]">
+                <div class="text-[10px] uppercase tracking-wider text-gray-400 mb-1">Предустановки</div>
+                <div class="grid grid-cols-9 gap-1 text-center text-[11px] font-mono">
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">1</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">2</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">3</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">4</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">5</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">6</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">7</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">8</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">9</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">10</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">11</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">12</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">13</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">14</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">15</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">16</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">17</span>
+                    <span class="bg-[#2c2c34] px-1 py-0.5 rounded border border-[#444]">18</span>
+                </div>
+                <div class="text-[9px] text-gray-500 mt-1 text-center">Удерживайте для установки. Нажмите, чтобы загрузить.</div>
+            </div>
+
+            <!-- ЦВЕТОВОЕ КОЛЕСО + СЛОЙ (as in screenshots) -->
+            <div class="bg-[#1e1e24] rounded-md p-2 border border-[#33333c] flex flex-col gap-1">
+                <div class="text-[10px] uppercase tracking-wider text-gray-400">Цветовое колесо</div>
+                <div class="flex items-center gap-2">
+                    <!-- simple color wheel (visual only) -->
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-red-500 via-yellow-300 via-green-400 to-blue-500 border border-gray-600"></div>
+                    <div class="w-6 h-6 rounded-full bg-white border border-gray-500"></div>
+                    <span class="text-[10px] text-gray-400 ml-auto">СЛОЙ</span>
+                </div>
+            </div>
+
+            <!-- tiny spacer -->
+            <div class="text-[9px] text-gray-600 text-center pt-1 border-t border-[#2a2a32]">https://flockmod.com/r/fallback</div>
+        </aside>
+
+        <!-- ========== CANVAS (right) ========== -->
+        <main class="flex-1 h-full bg-[#151518] relative">
+            <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+        </main>
     </div>
 
     <script src="app.js"></script>
