@@ -1,4 +1,4 @@
-/* style.css – exact replica of FlockMod sidebar */
+/* style.css – FlockMod exact sidebar style */
 
 * {
   box-sizing: border-box;
@@ -7,9 +7,8 @@
 body {
   margin: 0;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  background: #18181c;
+  background: #1a1a1e;
   color: #e5e5e8;
-  overflow: hidden;
 }
 
 /* custom scrollbar */
@@ -65,13 +64,10 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* text overlay */
+/* text tool overlay */
 #textFrame {
-  box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
   transition: none;
-  background: rgba(255,255,255,0.08);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
 }
 #textFrame:focus-within {
   border-color: rgba(255,255,255,0.8);
@@ -80,7 +76,7 @@ body {
   outline: none;
 }
 
-/* color wheel click */
+/* color wheel */
 #colorWheel {
   transition: transform 0.15s ease;
 }
@@ -89,4 +85,18 @@ body {
 }
 #colorWheel:active {
   transform: scale(0.95);
+}
+
+/* color picker hidden but functional */
+input[type="color"] {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
 }
