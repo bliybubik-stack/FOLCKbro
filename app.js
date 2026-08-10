@@ -1,4 +1,4 @@
-// app.js – drawing app with FlockMod style
+// app.js – FlockMod drawing app · exact replica
 
 (function() {
     const canvas = document.getElementById('drawCanvas');
@@ -13,10 +13,8 @@
         canvas.style.width = rect.width + 'px';
         canvas.style.height = rect.height + 'px';
         ctx.scale(dpr, dpr);
-        // reset drawing style
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
-        // apply current settings
         applySettings();
     }
 
@@ -29,9 +27,12 @@
         gap: 0,
         pressure: 100,
         color: '#ffffff',
+        rightClick: 'Отменить штрих',
+        cursor: 'Круг',
+        font: 'Rubik'
     };
 
-    // ---- DOM references for display ----
+    // ---- DOM references ----
     const sizeDisplay = document.getElementById('sizeDisplay');
     const opacityDisplay = document.getElementById('opacityDisplay');
     const blurDisplay = document.getElementById('blurDisplay');
@@ -51,23 +52,19 @@
     function applySettings() {
         ctx.globalAlpha = settings.opacity / 100;
         ctx.lineWidth = settings.size;
-        // blur simulation: we use shadowBlur (canvas native)
         ctx.shadowBlur = settings.blur;
         ctx.shadowColor = settings.color;
-        // smoothing: canvas does not have direct 'smoothing' for strokes,
-        // but we can set imageSmoothingQuality (affects images, not lines).
-        // We'll ignore smoothing for strokes (just keep as is).
-        // gap is not used in canvas line drawing (it's a brush spacing param)
-        // pressure is also not directly used (we keep for display)
         ctx.strokeStyle = settings.color;
         ctx.fillStyle = settings.color;
+        ctx.lineCap = 'round';
+        ctx.lineJoin = 'round';
     }
 
     // ---- drawing state ----
     let isDrawing = false;
     let lastX = 0, lastY = 0;
 
-    // ---- get canvas coordinates (in CSS pixels) ----
+    // ---- get coords ----
     function getCoords(e) {
         const rect = canvas.getBoundingClientRect();
         const clientX = e.clientX || e.touches?.[0]?.clientX || 0;
@@ -78,6 +75,24 @@
         };
     }
 
+    // ---- stroke history for undo ----
+    let strokeHistory = [];
+
+    function saveState() {
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        strokeHistory.push(imageData);
+        if (strokeHistory.length > 30) strokeHistory.shift();
+    }
+
+    function undoLastStroke() {
+        if (strokeHistory.length === 0) return;
+        const prev = strokeHistory.pop();
+        ctx.putImageData(prev, 0, 0);
+        applySettings();
+        isDrawing = false;
+        ctx.beginPath();
+    }
+
     // ---- drawing functions ----
     function startDrawing(e) {
         e.preventDefault();
@@ -85,7 +100,11 @@
         const { x, y } = getCoords(e);
         lastX = x;
         lastY = y;
-        // draw a dot (for single click)
+        
+        // save state before drawing new stroke
+        saveState();
+        
+        // draw dot
         ctx.beginPath();
         ctx.arc(x, y, settings.size / 2, 0, Math.PI * 2);
         ctx.fillStyle = settings.color;
@@ -93,50 +112,38 @@
         ctx.shadowBlur = settings.blur;
         ctx.shadowColor = settings.color;
         ctx.fill();
-        // reset for stroke
+        
+        // start path for stroke
         ctx.beginPath();
         ctx.moveTo(x, y);
-        // apply stroke settings
         ctx.strokeStyle = settings.color;
         ctx.lineWidth = settings.size;
         ctx.globalAlpha = settings.opacity / 100;
         ctx.shadowBlur = settings.blur;
         ctx.shadowColor = settings.color;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
     }
 
     function draw(e) {
         if (!isDrawing) return;
         e.preventDefault();
         const { x, y } = getCoords(e);
-        // apply gap (if gap > 0, skip drawing if distance < gap)
+        
+        // gap check
         if (settings.gap > 0) {
             const dx = x - lastX;
             const dy = y - lastY;
             const dist = Math.sqrt(dx*dx + dy*dy);
             if (dist < settings.gap) {
-                // still update last position? We'll keep lastX/Y for continuity
-                // but we don't draw.
-                // Actually we want to skip drawing but keep last point?
-                // Better: don't update lastX/Y so we don't lose the point.
                 return;
             }
         }
+        
         ctx.lineTo(x, y);
         ctx.stroke();
-        // update last position
         lastX = x;
         lastY = y;
-        // for next segment, begin new path to avoid connecting across gaps
         ctx.beginPath();
         ctx.moveTo(x, y);
-        // re-apply stroke settings (they persist but just in case)
-        ctx.strokeStyle = settings.color;
-        ctx.lineWidth = settings.size;
-        ctx.globalAlpha = settings.opacity / 100;
-        ctx.shadowBlur = settings.blur;
-        ctx.shadowColor = settings.color;
     }
 
     function stopDrawing(e) {
@@ -146,104 +153,49 @@
         }
     }
 
-    // ---- event listeners (mouse + touch) ----
-    function attachEvents() {
-        // mouse
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('mouseup', stopDrawing);
-        canvas.addEventListener('mouseleave', stopDrawing);
-        // touch
-        canvas.addEventListener('touchstart', startDrawing, { passive: false });
-        canvas.addEventListener('touchmove', draw, { passive: false });
-        canvas.addEventListener('touchend', stopDrawing);
-        canvas.addEventListener('touchcancel', stopDrawing);
-        // prevent context menu on right-click (we want to keep "отменить штрих" in UI)
-        canvas.addEventListener('contextmenu', (e) => {
-            e.preventDefault();
-            // in FlockMod, right-click "undo stroke" – we implement undo last stroke
-            undoLastStroke();
-        });
-    }
+    // ---- right-click: undo ----
+    canvas.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        undoLastStroke();
+    });
 
-    // ---- UNDO (right-click "Отменить штрих") ----
-    let strokeHistory = [];
+    // ---- mouse events ----
+    canvas.addEventListener('mousedown', startDrawing);
+    canvas.addEventListener('mousemove', draw);
+    canvas.addEventListener('mouseup', stopDrawing);
+    canvas.addEventListener('mouseleave', stopDrawing);
 
-    function saveStroke() {
-        // save the current canvas as an image data
-        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        strokeHistory.push(imageData);
-        // limit history to 20 strokes (to avoid memory issues)
-        if (strokeHistory.length > 20) {
-            strokeHistory.shift();
-        }
-    }
+    // ---- touch events ----
+    canvas.addEventListener('touchstart', startDrawing, { passive: false });
+    canvas.addEventListener('touchmove', draw, { passive: false });
+    canvas.addEventListener('touchend', stopDrawing);
+    canvas.addEventListener('touchcancel', stopDrawing);
 
-    function undoLastStroke() {
-        if (strokeHistory.length === 0) return;
-        // restore previous state
-        const prev = strokeHistory.pop();
-        ctx.putImageData(prev, 0, 0);
-        // re-apply settings (since putImageData resets style)
-        applySettings();
-        // also reset drawing state
-        isDrawing = false;
-        ctx.beginPath();
-    }
-
-    // ---- override start/stop to save history ----
-    const originalStart = startDrawing;
-    startDrawing = function(e) {
-        // save state before drawing new stroke (if we are not drawing)
-        if (!isDrawing) {
-            // we save the current canvas as a "before stroke" state
-            // but we want to save after the stroke ends, easier: save on stop
-            // we'll use a flag to save once per stroke
-            this._strokeSaved = false;
-        }
-        originalStart.call(this, e);
-    };
-
-    // override stopDrawing to save stroke
-    const originalStop = stopDrawing;
-    stopDrawing = function(e) {
-        if (isDrawing) {
-            // save the stroke (after drawing)
-            saveStroke();
-            this._strokeSaved = true;
-        }
-        originalStop.call(this, e);
-    };
-
-    // ---- right-click undo (calls undoLastStroke) ----
-    // already attached via contextmenu event
-
-    // ---- preset loading (click on numbers) ----
+    // ---- presets ----
     function setupPresets() {
-        const presetCells = document.querySelectorAll('#sidebar .grid span');
+        const presetCells = document.querySelectorAll('.preset-cell');
         presetCells.forEach((cell, index) => {
-            const presetNumber = index + 1;
+            const num = index + 1;
+            
+            // click: load preset
             cell.addEventListener('click', function(e) {
-                // load preset: just a demo – we change size and color based on number
-                const size = 4 + (presetNumber % 10);
-                const hue = (presetNumber * 25) % 360;
+                const size = 4 + (num % 10);
+                const hue = (num * 25) % 360;
                 settings.size = Math.min(40, Math.max(2, size));
                 settings.color = `hsl(${hue}, 80%, 60%)`;
-                // update displays
                 updateDisplays();
                 applySettings();
-                // visual feedback: flash border
                 this.style.borderColor = '#8888ff';
                 setTimeout(() => { this.style.borderColor = '#3a3a44'; }, 200);
             });
-            // hold to set (right-click or long press) – we use right-click for undo, so we use "hold" via mousedown + timer
+            
+            // hold: set as current (long press)
             let holdTimer = null;
             cell.addEventListener('mousedown', function(e) {
-                if (e.button === 0) { // left click
+                if (e.button === 0) {
                     holdTimer = setTimeout(() => {
-                        // "Удерживайте для установки" – set current settings to this preset number
-                        const size = 4 + (presetNumber % 10);
-                        const hue = (presetNumber * 25) % 360;
+                        const size = 4 + (num % 10);
+                        const hue = (num * 25) % 360;
                         settings.size = Math.min(40, Math.max(2, size));
                         settings.color = `hsl(${hue}, 80%, 60%)`;
                         updateDisplays();
@@ -253,24 +205,25 @@
                     }, 600);
                 }
             });
-            cell.addEventListener('mouseup', function(e) {
+            cell.addEventListener('mouseup', function() {
                 if (holdTimer) {
                     clearTimeout(holdTimer);
                     holdTimer = null;
                 }
             });
-            cell.addEventListener('mouseleave', function(e) {
+            cell.addEventListener('mouseleave', function() {
                 if (holdTimer) {
                     clearTimeout(holdTimer);
                     holdTimer = null;
                 }
             });
-            // touch support for hold
+            
+            // touch hold
             let touchTimer = null;
             cell.addEventListener('touchstart', function(e) {
                 touchTimer = setTimeout(() => {
-                    const size = 4 + (presetNumber % 10);
-                    const hue = (presetNumber * 25) % 360;
+                    const size = 4 + (num % 10);
+                    const hue = (num * 25) % 360;
                     settings.size = Math.min(40, Math.max(2, size));
                     settings.color = `hsl(${hue}, 80%, 60%)`;
                     updateDisplays();
@@ -279,13 +232,13 @@
                     setTimeout(() => { this.style.borderColor = '#3a3a44'; }, 400);
                 }, 600);
             }, { passive: true });
-            cell.addEventListener('touchend', function(e) {
+            cell.addEventListener('touchend', function() {
                 if (touchTimer) {
                     clearTimeout(touchTimer);
                     touchTimer = null;
                 }
             });
-            cell.addEventListener('touchcancel', function(e) {
+            cell.addEventListener('touchcancel', function() {
                 if (touchTimer) {
                     clearTimeout(touchTimer);
                     touchTimer = null;
@@ -294,29 +247,9 @@
         });
     }
 
-    // ---- init ----
-    function init() {
-        resizeCanvas();
-        // set default color
-        settings.color = '#ffffff';
-        applySettings();
-        updateDisplays();
-        attachEvents();
-        setupPresets();
-
-        // handle window resize
-        window.addEventListener('resize', () => {
-            // save current drawing before resize?
-            // we save canvas data to restore after resize
-            const oldData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-            resizeCanvas();
-            // restore image data (scaled)
-            ctx.putImageData(oldData, 0, 0);
-            applySettings();
-        });
-
-        // extra: click on color wheel mock – change color (demo)
-        const wheel = document.querySelector('.color-wheel-mock');
+    // ---- color wheel click ----
+    function setupColorWheel() {
+        const wheel = document.querySelector('.color-wheel');
         if (wheel) {
             wheel.addEventListener('click', function() {
                 const hue = Math.floor(Math.random() * 360);
@@ -327,7 +260,23 @@
         }
     }
 
-    // wait for DOM
+    // ---- init ----
+    function init() {
+        resizeCanvas();
+        applySettings();
+        updateDisplays();
+        setupPresets();
+        setupColorWheel();
+
+        // resize handler
+        window.addEventListener('resize', () => {
+            const oldData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            resizeCanvas();
+            ctx.putImageData(oldData, 0, 0);
+            applySettings();
+        });
+    }
+
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', init);
     } else {
