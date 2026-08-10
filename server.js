@@ -32,6 +32,8 @@ wss.on('connection', (ws) => {
                     username = data.username;
                     currentRoom = data.room;
                     
+                    console.log(`User ${username} joined room ${currentRoom}`);
+                    
                     // Create room if it doesn't exist
                     if (!rooms[currentRoom]) {
                         rooms[currentRoom] = {
@@ -110,9 +112,26 @@ wss.on('connection', (ws) => {
                         }, ws);
                     }
                     break;
+                    
+                case 'sync':
+                    if (currentRoom && rooms[currentRoom]) {
+                        // Send all drawing data to requesting user
+                        ws.send(JSON.stringify({
+                            type: 'init',
+                            drawingData: rooms[currentRoom].drawingData,
+                            textElements: rooms[currentRoom].textElements,
+                            users: Array.from(rooms[currentRoom].users.keys())
+                        }));
+                    }
+                    break;
             }
         } catch (e) {
             console.error('Error processing message:', e);
+            // Send error back to client
+            ws.send(JSON.stringify({
+                type: 'error',
+                message: 'Failed to process message'
+            }));
         }
     });
 
@@ -137,13 +156,18 @@ function broadcastToRoom(room, data, exclude = null) {
     if (rooms[room]) {
         rooms[room].users.forEach((client, username) => {
             if (client !== exclude && client.readyState === WebSocket.OPEN) {
-                client.send(JSON.stringify(data));
+                try {
+                    client.send(JSON.stringify(data));
+                } catch (e) {
+                    console.error('Error broadcasting to user:', username, e);
+                }
             }
         });
     }
 }
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
     console.log(`Server running on http://localhost:${PORT}`);
+    console.log(`Server running on http://127.0.0.1:${PORT}`);
 });
