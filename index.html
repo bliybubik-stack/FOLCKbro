@@ -1,168 +1,103 @@
-/* style.css – professional artist UI */
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Art Studio · FlockMod</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="style.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+    <!-- main container: canvas left, sidebar right -->
+    <div class="flex h-screen w-screen overflow-hidden bg-[#1a1a1e] text-gray-200">
 
-* {
-  box-sizing: border-box;
-}
+        <!-- ===== CANVAS (left) ===== -->
+        <main class="flex-1 h-full bg-white relative">
+            <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+        </main>
 
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  background: #1e1e24;
-  color: #e5e5e8;
-}
+        <!-- ===== SIDEBAR (right) – glassmorphism ===== -->
+        <aside class="w-[300px] min-w-[300px] h-full bg-white/10 backdrop-blur-xl border-l border-white/20 flex flex-col p-4 overflow-y-auto space-y-5 text-sm shadow-2xl">
 
-/* scrollbar */
-::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
-}
-::-webkit-scrollbar-track {
-  background: #23232b;
-}
-::-webkit-scrollbar-thumb {
-  background: #4a4a58;
-  border-radius: 8px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #6c8cff;
-}
+            <!-- header -->
+            <div class="flex items-center justify-between border-b border-white/10 pb-3">
+                <span class="text-xs font-mono tracking-wider text-white/70">#fallback · FlockMod</span>
+                <span class="text-[10px] text-white/40">flockmod.com</span>
+            </div>
 
-/* sidebar scroll */
-aside {
-  scrollbar-width: thin;
-  scrollbar-color: #4a4a58 #23232b;
-}
+            <!-- brushes row (3 brushes) -->
+            <div class="flex gap-2">
+                <button class="brush-btn flex-1 py-2 px-1 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs font-medium hover:bg-white/20 transition-all" data-brush="pen">
+                    <i class="fas fa-pen-fancy block text-lg mb-0.5"></i> Pen
+                </button>
+                <button class="brush-btn flex-1 py-2 px-1 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs font-medium hover:bg-white/20 transition-all" data-brush="pencil">
+                    <i class="fas fa-pencil-alt block text-lg mb-0.5"></i> Pencil
+                </button>
+                <button class="brush-btn flex-1 py-2 px-1 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs font-medium hover:bg-white/20 transition-all" data-brush="marker">
+                    <i class="fas fa-highlighter block text-lg mb-0.5"></i> Marker
+                </button>
+            </div>
 
-/* canvas */
-#drawCanvas {
-  background: white;
-  image-rendering: crisp-edges;
-  cursor: crosshair;
-}
+            <!-- tool buttons: eraser & text -->
+            <div class="flex gap-2">
+                <button id="eraserBtn" class="flex-1 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs font-medium hover:bg-white/20 transition-all">
+                    <i class="fas fa-eraser block text-lg mb-0.5"></i> Eraser
+                </button>
+                <button id="textBtn" class="flex-1 py-2 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white/80 text-xs font-medium hover:bg-white/20 transition-all">
+                    <i class="fas fa-font block text-lg mb-0.5"></i> Text
+                </button>
+            </div>
 
-/* brush buttons */
-.brush-btn {
-  transition: all 0.15s ease;
-}
-.brush-btn.active {
-  border-color: #6c8cff !important;
-  background: #3d3d4a;
-  box-shadow: 0 0 15px rgba(108, 140, 255, 0.2);
-}
-.brush-btn:hover {
-  transform: scale(1.05);
-}
+            <!-- pen settings -->
+            <div class="bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/10 space-y-2">
+                <div class="text-[10px] uppercase tracking-wider text-white/50">Pen settings</div>
+                <div class="grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs">
+                    <span class="text-white/60">Size</span>
+                    <input type="range" id="sizeSlider" min="1" max="50" value="8" class="w-full accent-white/70 bg-white/20 rounded-full h-1" />
+                    <span class="text-white/60">Thickness</span>
+                    <input type="range" id="thicknessSlider" min="1" max="30" value="8" class="w-full accent-white/70 bg-white/20 rounded-full h-1" />
+                    <span class="text-white/60">Opacity</span>
+                    <input type="range" id="opacitySlider" min="5" max="100" value="100" class="w-full accent-white/70 bg-white/20 rounded-full h-1" />
+                    <span class="text-white/60">Blur</span>
+                    <input type="range" id="blurSlider" min="0" max="20" value="0" class="w-full accent-white/70 bg-white/20 rounded-full h-1" />
+                    <span class="text-white/60">Pressure</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-[10px] text-white/40">OFF</span>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="pressureToggle" class="sr-only peer" checked />
+                            <div class="w-8 h-4 bg-white/20 rounded-full peer peer-checked:bg-white/40 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-white/30 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:after:translate-x-4"></div>
+                        </label>
+                        <span class="text-[10px] text-white/40">ON</span>
+                    </div>
+                    <span class="text-white/60">Pressure size</span>
+                    <input type="range" id="pressureSizeSlider" min="1" max="50" value="25" class="w-full accent-white/70 bg-white/20 rounded-full h-1" />
+                    <span class="text-white/60">Start width</span>
+                    <input type="range" id="startWidthSlider" min="0" max="30" value="8" class="w-full accent-white/70 bg-white/20 rounded-full h-1" />
+                    <span class="text-white/60">End width</span>
+                    <input type="range" id="endWidthSlider" min="0" max="30" value="8" class="w-full accent-white/70 bg-white/20 rounded-full h-1" />
+                </div>
+            </div>
 
-/* tool buttons */
-.tool-btn {
-  transition: all 0.15s ease;
-}
-.tool-btn.active {
-  border-color: #6c8cff !important;
-  background: #3d3d4a;
-  box-shadow: 0 0 15px rgba(108, 140, 255, 0.2);
-}
-.tool-btn:hover {
-  transform: scale(1.05);
-}
+            <!-- color wheel + swatch (exactly from reference) -->
+            <div class="bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-white/10">
+                <div class="text-[10px] uppercase tracking-wider text-white/50 mb-2">Color wheel</div>
+                <div class="flex items-center gap-3">
+                    <div id="colorWheel" class="w-12 h-12 rounded-full border-2 border-white/30 cursor-pointer" style="background: conic-gradient(from 0deg, #ff3b30, #ff9500, #ffcc00, #34c759, #00c7be, #007aff, #5856d6, #af52de, #ff3b30);"></div>
+                    <div class="flex flex-col gap-1 flex-1">
+                        <div id="colorSwatch" class="w-full h-8 rounded-lg border border-white/20" style="background: #ffffff;"></div>
+                        <div class="flex gap-1">
+                            <input type="color" id="colorPicker" value="#ffffff" class="w-full h-6 rounded border-0 bg-transparent cursor-pointer" />
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-/* custom range inputs */
-input[type="range"] {
-  -webkit-appearance: none;
-  appearance: none;
-  height: 4px;
-  border-radius: 2px;
-  outline: none;
-  background: #3d3d4a;
-}
-input[type="range"]::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  appearance: none;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #6c8cff;
-  cursor: pointer;
-  border: 2px solid #2c2c34;
-  box-shadow: 0 0 8px rgba(108, 140, 255, 0.3);
-}
-input[type="range"]::-moz-range-thumb {
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: #6c8cff;
-  cursor: pointer;
-  border: 2px solid #2c2c34;
-}
+            <!-- footer -->
+            <div class="text-[9px] text-white/30 text-center pt-2 border-t border-white/10 mt-auto">https://flockmod.com/r/fallback</div>
+        </aside>
+    </div>
 
-/* pressure toggle switch */
-#pressureToggle {
-  transition: background 0.2s ease;
-  cursor: pointer;
-}
-#pressureToggle.active {
-  background: #6c8cff;
-}
-#pressureToggle.active span {
-  transform: translateX(12px);
-  background: white;
-}
-#pressureToggle span {
-  transition: all 0.2s ease;
-}
-
-/* color picker */
-input[type="color"] {
-  -webkit-appearance: none;
-  appearance: none;
-  border: 2px solid #4a4a58;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  padding: 2px;
-  background: transparent;
-}
-input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0;
-}
-input[type="color"]::-webkit-color-swatch {
-  border: none;
-  border-radius: 50%;
-}
-input[type="color"]::-moz-color-swatch {
-  border: none;
-  border-radius: 50%;
-}
-
-/* presets grid */
-#sidebar .grid span {
-  transition: all 0.15s ease;
-  cursor: pointer;
-  color: #c0c0c8;
-  background: #353540;
-  border-color: #4a4a58;
-}
-#sidebar .grid span:hover {
-  border-color: #6c8cff;
-  background: #3d3d4a;
-  transform: scale(1.05);
-}
-#sidebar .grid span:active {
-  transform: scale(0.95);
-}
-
-/* active preset highlight */
-#sidebar .grid span.active-preset {
-  border-color: #6c8cff;
-  background: #2a2a3a;
-  box-shadow: 0 0 12px rgba(108, 140, 255, 0.15);
-}
-
-/* color wheel */
-#colorWheel {
-  transition: transform 0.15s ease;
-}
-#colorWheel:hover {
-  transform: scale(1.05);
-}
+    <script src="app.js"></script>
+</body>
+</html>
