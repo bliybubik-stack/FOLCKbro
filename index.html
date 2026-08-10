@@ -3,228 +3,219 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>FlockMod · Pro</title>
+    <title>Canvas Studio · Pro</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="style.css" rel="stylesheet" />
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="style.css" rel="stylesheet" />
 </head>
 <body>
-    <div class="flex h-screen w-screen overflow-hidden bg-[#0d0d0f] text-gray-200">
+    <!-- Main App -->
+    <div id="app" class="flex h-screen w-screen overflow-hidden bg-[#0d0d0f] text-gray-200">
 
-        <!-- ===== CANVAS AREA ===== -->
-        <div class="flex-1 flex flex-col bg-[#1a1a1e]">
-            <!-- Top toolbar -->
-            <div class="h-11 bg-[#141417] border-b border-[#2a2a30] flex items-center px-3 gap-1.5">
-                <button id="undoBtn" class="p-1.5 rounded hover:bg-[#2a2a30] transition-colors" title="Undo (Ctrl+Z)">
-                    <i data-lucide="undo-2" class="w-4 h-4 text-gray-400"></i>
-                </button>
-                <button id="redoBtn" class="p-1.5 rounded hover:bg-[#2a2a30] transition-colors" title="Redo (Ctrl+Y)">
-                    <i data-lucide="redo-2" class="w-4 h-4 text-gray-400"></i>
-                </button>
-                <div class="w-px h-6 bg-[#2a2a30] mx-1"></div>
-                <button id="clearBtn" class="p-1.5 rounded hover:bg-[#2a2a30] transition-colors" title="Clear Canvas">
-                    <i data-lucide="trash-2" class="w-4 h-4 text-gray-400"></i>
-                </button>
-                <div class="flex-1"></div>
-                <span class="text-[10px] text-gray-600 font-mono" id="canvasInfo">1920 × 1080</span>
+        <!-- ===== LEFT SIDEBAR ===== -->
+        <aside class="w-[64px] min-w-[64px] h-full bg-[#141416] border-r border-[#2a2a2e] flex flex-col items-center py-3 gap-1 z-20">
+            <!-- Logo -->
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center mb-2 shadow-lg shadow-blue-500/20">
+                <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                    <path d="M2 17l10 5 10-5"/>
+                    <path d="M2 12l10 5 10-5"/>
+                </svg>
             </div>
 
-            <!-- Canvas container -->
-            <div class="flex-1 flex items-center justify-center p-6 bg-[#1a1a1e]">
-                <div class="bg-white rounded-xl shadow-2xl overflow-hidden" style="width: 94%; height: 92%;">
-                    <canvas id="drawCanvas" class="w-full h-full block cursor-crosshair"></canvas>
+            <!-- Tool buttons -->
+            <button data-tool="brush" class="tool-btn w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#2a2a2e] transition-all duration-200 active:scale-95" title="Brush">
+                <i data-lucide="brush" class="w-5 h-5"></i>
+            </button>
+            <button data-tool="pencil" class="tool-btn w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#2a2a2e] transition-all duration-200 active:scale-95" title="Pencil">
+                <i data-lucide="pencil" class="w-5 h-5"></i>
+            </button>
+            <button data-tool="marker" class="tool-btn w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#2a2a2e] transition-all duration-200 active:scale-95" title="Marker">
+                <i data-lucide="highlighter" class="w-5 h-5"></i>
+            </button>
+            <button data-tool="airbrush" class="tool-btn w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#2a2a2e] transition-all duration-200 active:scale-95" title="Airbrush">
+                <i data-lucide="spray-can" class="w-5 h-5"></i>
+            </button>
+            <button data-tool="calligraphy" class="tool-btn w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#2a2a2e] transition-all duration-200 active:scale-95" title="Calligraphy">
+                <i data-lucide="feather" class="w-5 h-5"></i>
+            </button>
+            <button data-tool="charcoal" class="tool-btn w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#2a2a2e] transition-all duration-200 active:scale-95" title="Charcoal">
+                <i data-lucide="flame" class="w-5 h-5"></i>
+            </button>
+            <button data-tool="watercolor" class="tool-btn w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#2a2a2e] transition-all duration-200 active:scale-95" title="Watercolor">
+                <i data-lucide="droplets" class="w-5 h-5"></i>
+            </button>
+
+            <div class="w-8 h-px bg-[#2a2a2e] my-1"></div>
+
+            <button data-tool="eraser" class="tool-btn w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#2a2a2e] transition-all duration-200 active:scale-95" title="Eraser">
+                <i data-lucide="eraser" class="w-5 h-5"></i>
+            </button>
+            <button data-tool="fill" class="tool-btn w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#2a2a2e] transition-all duration-200 active:scale-95" title="Fill">
+                <i data-lucide="paint-bucket" class="w-5 h-5"></i>
+            </button>
+            <button data-tool="text" class="tool-btn w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#2a2a2e] transition-all duration-200 active:scale-95" title="Text">
+                <i data-lucide="type" class="w-5 h-5"></i>
+            </button>
+            <button data-tool="select" class="tool-btn w-10 h-10 rounded-xl flex items-center justify-center text-gray-400 hover:text-white hover:bg-[#2a2a2e] transition-all duration-200 active:scale-95" title="Select">
+                <i data-lucide="square" class="w-5 h-5"></i>
+            </button>
+
+            <div class="flex-1"></div>
+
+            <!-- Color preview -->
+            <div id="miniColorPreview" class="w-8 h-8 rounded-xl border-2 border-[#2a2a2e] cursor-pointer hover:border-[#4a4a4e] transition-all" style="background: #ff3366;"></div>
+        </aside>
+
+        <!-- ===== MAIN CONTENT ===== -->
+        <div class="flex-1 flex flex-col bg-[#121214]">
+            <!-- Top Bar -->
+            <header class="h-12 bg-[#1a1a1e] border-b border-[#2a2a2e] flex items-center px-4 justify-between">
+                <div class="flex items-center gap-3">
+                    <span class="text-xs font-medium text-gray-400">Canvas Studio</span>
+                    <span class="text-xs text-gray-600">·</span>
+                    <span class="text-xs text-gray-500" id="canvasInfo">1200 × 800</span>
                 </div>
-            </div>
+                <div class="flex items-center gap-2">
+                    <button id="undoBtn" class="px-3 py-1 text-xs bg-[#2a2a2e] rounded-lg hover:bg-[#3a3a3e] transition-all flex items-center gap-1.5">
+                        <i data-lucide="undo-2" class="w-3.5 h-3.5"></i> Undo
+                    </button>
+                    <button id="redoBtn" class="px-3 py-1 text-xs bg-[#2a2a2e] rounded-lg hover:bg-[#3a3a3e] transition-all flex items-center gap-1.5">
+                        <i data-lucide="redo-2" class="w-3.5 h-3.5"></i> Redo
+                    </button>
+                    <button id="clearBtn" class="px-3 py-1 text-xs bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all flex items-center gap-1.5">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Clear
+                    </button>
+                </div>
+            </header>
 
-            <!-- Bottom bar -->
-            <div class="h-10 bg-[#141417] border-t border-[#2a2a30] flex items-center px-4 gap-4">
-                <span class="text-[10px] text-gray-500" id="toolStatus">🖊 Pen</span>
-                <span class="text-[10px] text-gray-500">|</span>
-                <span class="text-[10px] text-gray-500" id="sizeStatus">Size: 8</span>
-                <span class="text-[10px] text-gray-500" id="opacityStatus">Opacity: 100%</span>
-                <div class="flex-1"></div>
-                <span class="text-[10px] text-gray-600" id="layerStatus">Layer 1/2</span>
+            <!-- Canvas Area -->
+            <div class="flex-1 relative bg-[#1a1a1e] flex items-center justify-center p-6">
+                <div class="bg-white rounded-xl shadow-2xl overflow-hidden" style="width: 95%; height: 92%;">
+                    <canvas id="drawCanvas" class="w-full h-full block"></canvas>
+                </div>
             </div>
         </div>
 
-        <!-- ===== SIDEBAR ===== -->
-        <aside class="w-[320px] min-w-[320px] h-full bg-[#141417] border-l border-[#2a2a30] flex flex-col overflow-hidden">
-
-            <!-- Sidebar header -->
-            <div class="h-11 flex items-center px-4 border-b border-[#2a2a30] gap-2">
-                <span class="text-xs font-bold tracking-wider text-gray-300">FlockMod</span>
-                <span class="text-[9px] text-gray-600 font-mono">v2.0</span>
-                <div class="flex-1"></div>
-                <span class="text-[9px] text-gray-600">fallback</span>
+        <!-- ===== RIGHT SIDEBAR ===== -->
+        <aside class="w-[320px] min-w-[320px] h-full bg-[#141416] border-l border-[#2a2a2e] flex flex-col overflow-hidden">
+            <!-- Tabs -->
+            <div class="flex border-b border-[#2a2a2e]">
+                <button class="tab-btn flex-1 py-2.5 text-xs font-medium text-gray-400 hover:text-white transition-all border-b-2 border-transparent hover:border-[#4a4a4e]" data-tab="brushes">Brushes</button>
+                <button class="tab-btn flex-1 py-2.5 text-xs font-medium text-gray-400 hover:text-white transition-all border-b-2 border-transparent hover:border-[#4a4a4e]" data-tab="settings">Settings</button>
+                <button class="tab-btn flex-1 py-2.5 text-xs font-medium text-gray-400 hover:text-white transition-all border-b-2 border-transparent hover:border-[#4a4a4e]" data-tab="layers">Layers</button>
             </div>
 
-            <!-- Scrollable content -->
-            <div class="flex-1 overflow-y-auto p-4 space-y-4 custom-scroll">
-
-                <!-- Tools -->
-                <div>
-                    <div class="text-[9px] uppercase tracking-widest text-gray-500 mb-2">Tools</div>
-                    <div class="grid grid-cols-4 gap-1.5">
-                        <button data-tool="pen" class="tool-btn active group relative p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
-                            <i data-lucide="pencil" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
-                            <span class="text-[8px] text-gray-500 block mt-0.5">Pen</span>
-                        </button>
-                        <button data-tool="marker" class="tool-btn group p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
-                            <i data-lucide="highlighter" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
-                            <span class="text-[8px] text-gray-500 block mt-0.5">Marker</span>
-                        </button>
-                        <button data-tool="text" class="tool-btn group p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
-                            <i data-lucide="type" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
-                            <span class="text-[8px] text-gray-500 block mt-0.5">Text</span>
-                        </button>
-                        <button data-tool="eraser" class="tool-btn group p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
-                            <i data-lucide="eraser" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
-                            <span class="text-[8px] text-gray-500 block mt-0.5">Eraser</span>
-                        </button>
-                        <button data-tool="fill" class="tool-btn group p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
-                            <i data-lucide="droplet" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
-                            <span class="text-[8px] text-gray-500 block mt-0.5">Fill</span>
-                        </button>
-                        <button data-tool="select" class="tool-btn group p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
-                            <i data-lucide="square-dashed" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
-                            <span class="text-[8px] text-gray-500 block mt-0.5">Select</span>
-                        </button>
-                        <button data-tool="drag" class="tool-btn group p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
-                            <i data-lucide="hand" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
-                            <span class="text-[8px] text-gray-500 block mt-0.5">Drag</span>
-                        </button>
-                        <button data-tool="transform" class="tool-btn group p-2 rounded-lg bg-[#1e1e24] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all">
-                            <i data-lucide="move" class="w-4 h-4 mx-auto text-gray-300 group-hover:text-white"></i>
-                            <span class="text-[8px] text-gray-500 block mt-0.5">Move</span>
-                        </button>
+            <!-- Tab Content -->
+            <div class="flex-1 overflow-y-auto p-3 space-y-3">
+                <!-- BRUSHES TAB -->
+                <div id="tab-brushes" class="tab-content">
+                    <div class="text-xs font-medium text-gray-500 mb-2">Brush Library</div>
+                    <div class="grid grid-cols-3 gap-1.5" id="brushGrid">
+                        <!-- Brush items will be generated by JS -->
                     </div>
                 </div>
 
-                <!-- Brush Settings -->
-                <div>
-                    <div class="text-[9px] uppercase tracking-widest text-gray-500 mb-2">Brush</div>
-                    <div class="space-y-2.5 bg-[#1a1a1e] rounded-xl p-3 border border-[#2a2a30]">
-                        <div class="flex items-center gap-3">
-                            <span class="text-[10px] text-gray-400 w-14">Size</span>
-                            <input type="range" id="sizeSlider" min="1" max="60" value="8" class="slider flex-1" />
-                            <span class="text-[10px] text-gray-300 w-6 text-right" id="sizeDisplay">8</span>
+                <!-- SETTINGS TAB -->
+                <div id="tab-settings" class="tab-content hidden">
+                    <div class="space-y-3">
+                        <div>
+                            <label class="text-xs text-gray-400 block mb-1">Size</label>
+                            <input type="range" id="sizeSlider" min="1" max="80" value="8" class="w-full h-1.5 bg-[#2a2a2e] rounded appearance-none">
+                            <div class="flex justify-between text-[10px] text-gray-500">
+                                <span>1</span>
+                                <span id="sizeDisplay">8px</span>
+                                <span>80</span>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-[10px] text-gray-400 w-14">Opacity</span>
-                            <input type="range" id="opacitySlider" min="5" max="100" value="100" class="slider flex-1" />
-                            <span class="text-[10px] text-gray-300 w-6 text-right" id="opacityDisplay">100</span>
+                        <div>
+                            <label class="text-xs text-gray-400 block mb-1">Opacity</label>
+                            <input type="range" id="opacitySlider" min="5" max="100" value="100" class="w-full h-1.5 bg-[#2a2a2e] rounded appearance-none">
+                            <div class="flex justify-between text-[10px] text-gray-500">
+                                <span>5%</span>
+                                <span id="opacityDisplay">100%</span>
+                                <span>100%</span>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-[10px] text-gray-400 w-14">Blur</span>
-                            <input type="range" id="blurSlider" min="0" max="25" value="0" class="slider flex-1" />
-                            <span class="text-[10px] text-gray-300 w-6 text-right" id="blurDisplay">0</span>
+                        <div>
+                            <label class="text-xs text-gray-400 block mb-1">Flow</label>
+                            <input type="range" id="flowSlider" min="1" max="100" value="100" class="w-full h-1.5 bg-[#2a2a2e] rounded appearance-none">
+                            <div class="flex justify-between text-[10px] text-gray-500">
+                                <span>1%</span>
+                                <span id="flowDisplay">100%</span>
+                                <span>100%</span>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-[10px] text-gray-400 w-14">Spacing</span>
-                            <input type="range" id="gapSlider" min="0" max="30" value="0" class="slider flex-1" />
-                            <span class="text-[10px] text-gray-300 w-6 text-right" id="gapDisplay">0</span>
+                        <div>
+                            <label class="text-xs text-gray-400 block mb-1">Hardness</label>
+                            <input type="range" id="hardnessSlider" min="0" max="100" value="100" class="w-full h-1.5 bg-[#2a2a2e] rounded appearance-none">
+                            <div class="flex justify-between text-[10px] text-gray-500">
+                                <span>Soft</span>
+                                <span id="hardnessDisplay">100%</span>
+                                <span>Hard</span>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <span class="text-[10px] text-gray-400 w-14">Pressure</span>
-                            <input type="range" id="pressureSlider" min="0" max="100" value="100" class="slider flex-1" />
-                            <span class="text-[10px] text-gray-300 w-6 text-right" id="pressureDisplay">100</span>
+                        <div>
+                            <label class="text-xs text-gray-400 block mb-1">Spacing</label>
+                            <input type="range" id="spacingSlider" min="0" max="50" value="0" class="w-full h-1.5 bg-[#2a2a2e] rounded appearance-none">
+                            <div class="flex justify-between text-[10px] text-gray-500">
+                                <span>0%</span>
+                                <span id="spacingDisplay">0%</span>
+                                <span>50%</span>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-3">
-                            <label class="text-[10px] text-gray-400 w-14">Pressure</label>
-                            <input type="checkbox" id="pressureToggle" class="toggle" />
-                            <span class="text-[9px] text-gray-500">Enabled</span>
+                        <div class="flex items-center gap-3 pt-1">
+                            <label class="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+                                <input type="checkbox" id="pressureToggle" class="w-3.5 h-3.5 accent-blue-500">
+                                Pressure Sensitivity
+                            </label>
+                            <label class="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+                                <input type="checkbox" id="smoothingToggle" class="w-3.5 h-3.5 accent-blue-500">
+                                Smoothing
+                            </label>
                         </div>
                     </div>
                 </div>
 
-                <!-- Color -->
-                <div>
-                    <div class="text-[9px] uppercase tracking-widest text-gray-500 mb-2">Color</div>
-                    <div class="bg-[#1a1a1e] rounded-xl p-3 border border-[#2a2a30]">
-                        <div class="relative w-full aspect-square max-w-[260px] mx-auto">
-                            <canvas id="colorWheel" class="w-full h-full rounded-full cursor-crosshair"></canvas>
-                        </div>
-                        <div class="flex items-center gap-3 mt-3">
-                            <div id="colorPreview" class="w-9 h-9 rounded-xl border border-[#2a2a30] flex-shrink-0" style="background:#ff3366;"></div>
-                            <input id="hexInput" class="flex-1 bg-[#0d0d0f] border border-[#2a2a30] rounded-lg px-3 py-1.5 text-xs font-mono text-gray-200 focus:border-[#4a4a5a] outline-none transition-colors" value="FF3366" maxlength="6" />
-                            <button id="copyColorBtn" class="p-1.5 rounded-lg bg-[#2a2a30] hover:bg-[#3a3a44] transition-colors">
-                                <i data-lucide="copy" class="w-4 h-4 text-gray-400"></i>
-                            </button>
-                        </div>
-                        <div id="colorHistory" class="flex gap-1.5 mt-3 flex-wrap"></div>
+                <!-- LAYERS TAB -->
+                <div id="tab-layers" class="tab-content hidden">
+                    <div class="flex items-center gap-2 mb-3">
+                        <button id="addLayerBtn" class="px-3 py-1 text-xs bg-blue-500/20 text-blue-400 rounded-lg hover:bg-blue-500/30 transition-all flex items-center gap-1">
+                            <i data-lucide="plus" class="w-3.5 h-3.5"></i> Add
+                        </button>
+                        <button id="removeLayerBtn" class="px-3 py-1 text-xs bg-red-500/20 text-red-400 rounded-lg hover:bg-red-500/30 transition-all flex items-center gap-1">
+                            <i data-lucide="minus" class="w-3.5 h-3.5"></i> Remove
+                        </button>
+                        <button id="mergeLayerBtn" class="px-3 py-1 text-xs bg-purple-500/20 text-purple-400 rounded-lg hover:bg-purple-500/30 transition-all flex items-center gap-1">
+                            <i data-lucide="layers" class="w-3.5 h-3.5"></i> Merge
+                        </button>
                     </div>
+                    <div id="layerList" class="space-y-1.5"></div>
                 </div>
+            </div>
 
-                <!-- Layers -->
-                <div>
-                    <div class="flex items-center justify-between mb-2">
-                        <span class="text-[9px] uppercase tracking-widest text-gray-500">Layers</span>
-                        <div class="flex gap-1">
-                            <button id="addLayer" class="p-1 rounded bg-[#2a2a30] hover:bg-[#3a3a44] transition-colors">
-                                <i data-lucide="plus" class="w-3.5 h-3.5 text-gray-400"></i>
-                            </button>
-                            <button id="removeLayer" class="p-1 rounded bg-[#2a2a30] hover:bg-[#3a3a44] transition-colors">
-                                <i data-lucide="minus" class="w-3.5 h-3.5 text-gray-400"></i>
-                            </button>
-                        </div>
+            <!-- Color Section -->
+            <div class="border-t border-[#2a2a2e] p-3">
+                <div class="flex items-center gap-3">
+                    <div id="colorPreview" class="w-10 h-10 rounded-xl border-2 border-[#2a2a2e] flex-shrink-0" style="background: #ff3366;"></div>
+                    <div class="flex-1">
+                        <input id="hexInput" class="w-full bg-[#1a1a1e] border border-[#2a2a2e] rounded-lg px-2 py-1 text-xs font-mono text-gray-200 focus:border-blue-500 focus:outline-none" value="FF3366" maxlength="6">
                     </div>
-                    <div id="layerList" class="space-y-1.5 max-h-[140px] overflow-y-auto custom-scroll pr-1"></div>
+                    <button id="randomColorBtn" class="px-2.5 py-1.5 text-xs bg-[#2a2a2e] rounded-lg hover:bg-[#3a3a3e] transition-all">
+                        <i data-lucide="shuffle" class="w-4 h-4"></i>
+                    </button>
                 </div>
-
-                <!-- Templates -->
-                <div>
-                    <div class="text-[9px] uppercase tracking-widest text-gray-500 mb-2">Templates</div>
-                    <div class="grid grid-cols-4 gap-1.5">
-                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Pencil</button>
-                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Watercolor</button>
-                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Oil</button>
-                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Pastel</button>
-                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Marker</button>
-                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Calligraphy</button>
-                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Hatching</button>
-                        <button class="template-btn text-[9px] px-2 py-1.5 rounded-lg bg-[#1a1a1e] border border-[#2a2a30] hover:bg-[#2a2a30] hover:border-[#3a3a44] transition-all text-gray-400 hover:text-gray-200">Airbrush</button>
-                    </div>
-                    <div class="text-[8px] text-gray-600 mt-1 text-center">Click to load · Right-click to save</div>
-                </div>
-
-                <!-- Presets -->
-                <div>
-                    <div class="text-[9px] uppercase tracking-widest text-gray-500 mb-2">Presets</div>
-                    <div class="grid grid-cols-9 gap-1">
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">1</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">2</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">3</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">4</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">5</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">6</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">7</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">8</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">9</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">10</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">11</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">12</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">13</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">14</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">15</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">16</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">17</span>
-                        <span class="preset-num text-[10px] text-center py-1 rounded bg-[#1a1a1e] border border-[#2a2a30] text-gray-400 hover:bg-[#2a2a30] hover:text-gray-200 transition-all cursor-pointer">18</span>
-                    </div>
-                </div>
+                <div class="flex items-center gap-1 mt-2 flex-wrap" id="colorHistory"></div>
             </div>
         </aside>
     </div>
 
     <!-- Toast -->
-    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#2a2a30] border border-[#3a3a44] rounded-xl px-5 py-2.5 text-sm text-gray-200 shadow-2xl opacity-0 transition-opacity duration-300 pointer-events-none">
-        <span id="toastMsg">Copied</span>
+    <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#1a1a1e] border border-[#2a2a2e] rounded-xl px-5 py-2.5 text-sm text-gray-200 shadow-2xl opacity-0 transition-all duration-300 pointer-events-none backdrop-blur-xl">
+        Toast message
     </div>
 
-    <script>
-        // Initialize Lucide icons
-        lucide.createIcons();
-    </script>
     <script src="app.js"></script>
 </body>
 </html>
